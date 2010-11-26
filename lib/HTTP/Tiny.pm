@@ -153,18 +153,13 @@ sub split_url {
     $scheme     = lc $scheme;
     $path_query = "/$path_query" unless $path_query =~ m<\A/>;
 
-    $authority =~ s/\A[^@]*@//;     # userinfo
-
-    my $port = do {
-        if ($authority =~ s/:([0-9]*)\z// && length $1) {
-            $1;
-        }
-        else {
-            ($scheme eq 'http' ? 80 : $scheme eq 'https' ? 443 : undef);
-        }
-    };
-
     my $host = lc $authority;
+       $host =~ s/\A[^@]*@//;   # userinfo
+    my $port = do {
+       $host =~ s/:([0-9]*)\z// && length $1
+         ? $1
+         : ($scheme eq 'http' ? 80 : $scheme eq 'https' ? 443 : undef);
+    };
 
     return ($scheme, $host, $port, $path_query);
 }
