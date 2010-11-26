@@ -120,6 +120,8 @@ my $Printable = sub {
     $_;
 };
 
+my $Token = qr/[\x21\x23-\x27\x2A\x2B\x2D\x2E\x30-\x39\x41-\x5A\x5E-\x7A\x7C\x7E]/;
+
 sub new {
     my ($class, %args) = @_;
     return bless {
@@ -353,9 +355,14 @@ sub write_header_lines {
             $field_name = $HeaderCase{$field_name};
         }
         else {
+            $field_name =~ /\A $Token+ \z/xo
+              or croak(q/Invalid HTTP header field name: / . $Printable->($field_name));
             $field_name =~ s/\b(\w)/\u$1/g;
+            $HeaderCase{lc $field_name} = $field_name;
         }
         for (ref $v eq 'ARRAY' ? @$v : $v) {
+            /[^\x0D\x0A]/
+              or croak(qq/Invalid HTTP header field value ($field_name): / . $Printable->($_));
             $buf .= $field_name;
             $buf .= ': ';
             $buf .= $_;
