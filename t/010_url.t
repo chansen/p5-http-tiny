@@ -22,7 +22,7 @@ my @tests = (
 
 for my $test (@tests) {
     my $url = shift(@$test);
-    my $got = [ HTTP::Tiny::Handle->split_url($url) ];
+    my $got = [ HTTP::Tiny->split_url($url) ];
     my $exp = $test;
     is_deeply($got, $exp, "->split_url('$url')");
 }

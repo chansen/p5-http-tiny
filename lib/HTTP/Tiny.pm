@@ -27,6 +27,27 @@ sub has_proxy {
     return defined $self->{proxy};
 }
 
+sub split_url {
+    @_ == 2 || croak(q/Usage: / . __PACKAGE__ . q/->split_url(url)/);
+    my ($proto, $url) = @_;
+
+    my ($scheme, $authority, $path_query) = $url =~ m<\A([^:/?#]+)://([^/?#]+)([^#]*)>
+      or croak(qq/Cannot parse URL: '$url'/);
+
+    $scheme     = lc $scheme;
+    $path_query = "/$path_query" unless $path_query =~ m<\A/>;
+
+    my $host = lc $authority;
+       $host =~ s/\A[^@]*@//;   # userinfo
+    my $port = do {
+       $host =~ s/:([0-9]*)\z// && length $1
+         ? $1
+         : ($scheme eq 'http' ? 80 : $scheme eq 'https' ? 443 : undef);
+    };
+
+    return ($scheme, $host, $port, $path_query);
+}
+
 sub get {
     my ($self, $url, %args) = @_;
 
@@ -49,22 +70,18 @@ sub get {
 sub _get {
     my ($self, $url, $args) = @_;
 
-    my ($scheme, $host, $port, $path_query)
-      = HTTP::Tiny::Handle->split_url($url);
+    my ($scheme, $host, $port, $path_query) = $self->split_url($url);
 
-    $scheme eq 'http'
-      or croak(qq/Unsupported URL scheme '$scheme'/);
+    my $host_port   = "$host:$port";
+    my $request_uri = $path_query;
+
+    if ($self->has_proxy) {
+        $request_uri = "$scheme://$host:$port$path_query";
+        ($scheme, $host, $port) = $self->split_url($self->proxy);
+    }
 
     my $handle = HTTP::Tiny::Handle->new(timeout => $self->{timeout});
-    my $request_uri;
-    if ($self->has_proxy) {
-        $handle->connect($self->proxy);
-        $request_uri = "$scheme://$host:$port$path_query";
-    }
-    else {
-        $handle->connect($url);
-        $request_uri = $path_query;
-    }
+       $handle->connect($scheme, $host, $port);
 
     my $req_headers = {};
     if ($args->{headers}) {
@@ -72,10 +89,9 @@ sub _get {
             $req_headers->{lc $k} = $v;
         }
     }
-    $req_headers->{'host'}       = "$host:$port";
-    $req_headers->{'connection'} = "close";
-    $req_headers->{'user-agent'} = $self->{agent}
-      unless $req_headers->{'user-agent'};
+    $req_headers->{'host'}         = $host_port;
+    $req_headers->{'connection'}   = "close";
+    $req_headers->{'user-agent'} ||= $self->{agent};
 
     $handle->write_request_header('GET', $request_uri, $req_headers);
 
@@ -143,38 +159,13 @@ sub port {
     return $_[0]->{port};
 }
 
-sub split_url {
-    @_ == 2 || croak(q/Usage: / . __PACKAGE__ . q/->split_url(url)/);
-    my ($proto, $url) = @_;
-
-    my ($scheme, $authority, $path_query) = $url =~ m<\A([^:/?#]+)://([^/?#]+)([^#]*)>
-      or croak(q/Cannot parse URL: / . $Printable->($url));
-
-    $scheme     = lc $scheme;
-    $path_query = "/$path_query" unless $path_query =~ m<\A/>;
-
-    my $host = lc $authority;
-       $host =~ s/\A[^@]*@//;   # userinfo
-    my $port = do {
-       $host =~ s/:([0-9]*)\z// && length $1
-         ? $1
-         : ($scheme eq 'http' ? 80 : $scheme eq 'https' ? 443 : undef);
-    };
-
-    return ($scheme, $host, $port, $path_query);
-}
-
 sub connect {
-    @_ == 2 || croak(q/Usage: $handle->connect(url)/);
-    my ($self, $url) = @_;
+    @_ == 4 || croak(q/Usage: $handle->connect(scheme, host, port)/);
+    my ($self, $scheme, $host, $port) = @_;
 
-    my ($scheme, $host, $port) = $self->split_url($url);
-
+    # XXX IO::Socket::SSL
     $scheme eq 'http'
       or croak(qq/Unsupported URL scheme '$scheme'/);
-
-    $host !~ /\A\[.*\]\z/
-      or croak(qq/Unsupported URL host '$host'/);
 
     $self->{fh} = IO::Socket::INET->new(
         PeerHost  => $host,
