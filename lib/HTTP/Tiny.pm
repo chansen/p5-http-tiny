@@ -50,9 +50,14 @@ sub split_url {
 
 sub get {
     my ($self, $url, %args) = @_;
+    return $self->request('GET', $url, %args);
+}
+
+sub request {
+    my ($self, $method, $url, %args) = @_;
 
     my ($status, $reason, $headers, $content) = eval {
-        $self->_get($url, \%args);
+        $self->_request($method, $url, \%args);
     };
 
     if (my $e = $@) {
@@ -67,8 +72,8 @@ sub get {
     return ($status, $reason, $headers, $content);
 }
 
-sub _get {
-    my ($self, $url, $args) = @_;
+sub _request {
+    my ($self, $method, $url, $args) = @_;
 
     my ($scheme, $host, $port, $path_query) = $self->split_url($url);
 
@@ -93,23 +98,62 @@ sub _get {
     $req_headers->{'connection'}   = "close";
     $req_headers->{'user-agent'} ||= $self->{agent};
 
-    $handle->write_request_header('GET', $request_uri, $req_headers);
+    my $content;
+    my $on_content;
+
+    if (defined $args->{content}) {
+        $content = $args->{content};
+        if (ref $content eq 'CODE') {
+            $req_headers->{'transfer-encoding'} = 'chunked'
+              unless $req_headers->{'content-length'}
+                  || $req_headers->{'transfer-encoding'};
+            $on_content = $content;
+        }
+        else {
+            utf8::downgrade($content, 1)
+              or croak(q/Wide character in request message body/);
+            $req_headers->{'content-length'} = length $content
+              unless $req_headers->{'content-length'}
+                  || $req_headers->{'transfer-encoding'};
+            $on_content = sub { substr $content, 0, length $content, '' };
+        }
+    }
+
+    $handle->write_request_header($method, $request_uri, $req_headers);
+
+    if ($on_content) {
+        if ($req_headers->{'content-length'}) {
+            $handle->write_content_body($on_content, $req_headers->{'content-length'});
+        }
+        else {
+            $handle->write_chunked_body($on_content);
+        }
+    }
 
     my ($status, $reason, $res_headers, $version)
       = $handle->read_response_header;
 
-    my $content;
-    my $on_content = $args->{on_content};
+    $content    = undef;
+    $on_content = $args->{on_content};
 
     if (!$on_content || $status !~ /^2/) {
-        $on_content = sub { $content .= $_[0] };
+        if (defined $self->{max_size}) {
+            $on_content = sub {
+                $content .= $_[0];
+                croak(qq/Size of response body exceeds the maximum allowed of $self->{max_size}/)
+                  if length $content > $self->{max_size};
+            };
+        }
+        else {
+            $on_content = sub { $content .= $_[0] };
+        }
     }
 
-    if ($status =~ /^1|[23]04/) {
-        # has no message body
+    if ($method eq 'HEAD' || $status =~ /^1|[23]04/) {
+        # response has no message body
     }
     elsif ($res_headers->{'content-length'}) {
-        $handle->read_content($on_content, $res_headers->{'content-length'});
+        $handle->read_content_body($on_content, $res_headers->{'content-length'});
     }
     elsif ($res_headers->{'transfer-encoding'}) {
         $handle->read_chunked_body($on_content);
@@ -362,8 +406,8 @@ sub write_header_lines {
     return $self->write($buf);
 }
 
-sub read_content {
-    @_ == 3 || croak(q/Usage: $handle->read_content(callback, content_length)/);
+sub read_content_body {
+    @_ == 3 || croak(q/Usage: $handle->read_content_body(callback, content_length)/);
     my ($self, $cb, $content_length) = @_;
 
     my $len = $content_length;
@@ -376,8 +420,8 @@ sub read_content {
     return $content_length;
 }
 
-sub write_content {
-    @_ == 2 || @_ == 3 || croak(q/Usage: $handle->write_content(callback [, content_length])/);
+sub write_content_body {
+    @_ == 2 || @_ == 3 || croak(q/Usage: $handle->write_content_body(callback [, content_length])/);
     my ($self, $cb, $content_length) = @_;
 
     my $len = 0;

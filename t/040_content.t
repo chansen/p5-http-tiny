@@ -21,7 +21,7 @@ use HTTP::Tiny;
     my $length   = $nchunks * length $chunk;
 
     {
-        my $got = $handle->write_content(sub { $nchunks-- ? $chunk : undef }, $length);
+        my $got = $handle->write_content_body(sub { $nchunks-- ? $chunk : undef }, $length);
         is($got, $length, "written $length octets");
     }
 
@@ -29,7 +29,7 @@ use HTTP::Tiny;
 
     {
         my $got = 0;
-        $handle->read_content(sub { $got += length $_[0] }, $length);
+        $handle->read_content_body(sub { $got += length $_[0] }, $length);
         is($got, $length, "read $length octets");
     }
 }
