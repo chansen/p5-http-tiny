@@ -95,7 +95,7 @@ sub _get {
 
     $handle->write_request_header('GET', $request_uri, $req_headers);
 
-    my ($version, $status, $reason, $res_headers)
+    my ($status, $reason, $res_headers, $version)
       = $handle->read_response_header;
 
     my $content;
@@ -465,7 +465,7 @@ sub read_response_header {
 
     my ($version, $status, $reason) = ($1, $2, $3);
 
-    return ($version, $status, $reason, $self->read_header_lines);
+    return ($status, $reason, $self->read_header_lines, $version);
 }
 
 sub write_request_header {

@@ -17,7 +17,7 @@ use HTTP::Tiny;
     my $response = join $CRLF, 'HTTP/1.1 200 OK', 'Foo: Foo', 'Bar: Bar', '', '';
     my $fh       = tmpfile($response);
     my $handle   = HTTP::Tiny::Handle->new(fh => $fh);
-    my $exp      = [ 'HTTP/1.1', 200, 'OK', { foo => 'Foo', bar => 'Bar' } ];
+    my $exp      = [ 200, 'OK', { foo => 'Foo', bar => 'Bar' }, 'HTTP/1.1' ];
     is_deeply([$handle->read_response_header], $exp, "->read_response_header CRLF");
 }
 
@@ -25,7 +25,7 @@ use HTTP::Tiny;
     my $response = join $LF, 'HTTP/1.1 200 OK', 'Foo: Foo', 'Bar: Bar', '', '';
     my $fh       = tmpfile($response);
     my $handle   = HTTP::Tiny::Handle->new(fh => $fh);
-    my $exp      = [ 'HTTP/1.1', 200, 'OK', { foo => 'Foo', bar => 'Bar' } ];
+    my $exp      = [ 200, 'OK', { foo => 'Foo', bar => 'Bar' }, 'HTTP/1.1' ];
     is_deeply([$handle->read_response_header], $exp, "->read_response_header LF");
 }
 
