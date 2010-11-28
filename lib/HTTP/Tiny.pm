@@ -105,7 +105,10 @@ sub _get {
         $on_content = sub { $content .= $_[0] };
     }
 
-    if ($res_headers->{'content-length'}) {
+    if ($status =~ /^1|[23]04/) {
+        # has no message body
+    }
+    elsif ($res_headers->{'content-length'}) {
         $handle->read_content($on_content, $res_headers->{'content-length'});
     }
     elsif ($res_headers->{'transfer-encoding'}) {
