@@ -26,27 +26,6 @@ BEGIN {
     }
 }
 
-sub split_url {
-    @_ == 2 || croak(q/Usage: / . __PACKAGE__ . q/->split_url(url)/);
-    my ($proto, $url) = @_;
-
-    my ($scheme, $authority, $path_query) = $url =~ m<\A([^:/?#]+)://([^/?#]+)([^#]*)>
-      or croak(qq/Cannot parse URL: '$url'/);
-
-    $scheme     = lc $scheme;
-    $path_query = "/$path_query" unless $path_query =~ m<\A/>;
-
-    my $host = lc $authority;
-       $host =~ s/\A[^@]*@//;   # userinfo
-    my $port = do {
-       $host =~ s/:([0-9]*)\z// && length $1
-         ? $1
-         : ($scheme eq 'http' ? 80 : $scheme eq 'https' ? 443 : undef);
-    };
-
-    return ($scheme, $host, $port, $path_query);
-}
-
 sub get {
     my ($self, $url, %args) = @_;
     return $self->request('GET', $url, %args);
@@ -74,7 +53,7 @@ sub request {
 sub _request {
     my ($self, $method, $url, $args) = @_;
 
-    my ($scheme, $host, $port, $path_query) = $self->split_url($url);
+    my ($scheme, $host, $port, $path_query) = $self->_split_url($url);
 
     my $handle      = HTTP::Tiny::Handle->new(timeout => $self->{timeout});
     my $request_uri = $path_query;
@@ -82,7 +61,7 @@ sub _request {
     if ($self->{proxy}) {
         $request_uri = "$scheme://$host:$port$path_query";
         # XXX CONNECT for https scheme
-        $handle->connect(($self->split_url($self->{proxy}))[0..2]);
+        $handle->connect(($self->_split_url($self->{proxy}))[0..2]);
     }
     else {
         $handle->connect($scheme, $host, $port);
@@ -175,6 +154,26 @@ sub _request {
     }
 
     return ($status, $reason, $res_headers, $content);
+}
+
+sub _split_url {
+    my $url = pop;
+
+    my ($scheme, $authority, $path_query) = $url =~ m<\A([^:/?#]+)://([^/?#]+)([^#]*)>
+      or croak(qq/Cannot parse URL: '$url'/);
+
+    $scheme     = lc $scheme;
+    $path_query = "/$path_query" unless $path_query =~ m<\A/>;
+
+    my $host = lc $authority;
+       $host =~ s/\A[^@]*@//;   # userinfo
+    my $port = do {
+       $host =~ s/:([0-9]*)\z// && length $1
+         ? $1
+         : ($scheme eq 'http' ? 80 : $scheme eq 'https' ? 443 : undef);
+    };
+
+    return ($scheme, $host, $port, $path_query);
 }
 
 package HTTP::Tiny::Handle;
