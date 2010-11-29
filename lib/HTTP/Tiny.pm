@@ -16,16 +16,14 @@ sub new {
     }, $class;
 }
 
-sub proxy {
-    @_ == 1 || @_ == 2 || croak(q/Usage: $http->proxy([url])/);
-    my $self = shift;
-    return @_ ? $self->{proxy} = $_[1] : $self->{proxy};
-}
-
-sub has_proxy {
-    @_ == 1 || croak(q/Usage: $http->has_proxy()/);
-    my ($self) = @_;
-    return defined $self->{proxy};
+BEGIN {
+    no strict 'refs';
+    for my $accessor (qw(agent max_redirect proxy timeout)) {
+        *{$accessor} = sub { 
+            @_ > 1 ? $_[0]->{$accessor} = $_[1]
+                   : $_[0]->{$accessor};
+        };
+    }
 }
 
 sub split_url {
@@ -81,10 +79,10 @@ sub _request {
     my $handle      = HTTP::Tiny::Handle->new(timeout => $self->{timeout});
     my $request_uri = $path_query;
 
-    if ($self->has_proxy) {
+    if ($self->{proxy}) {
         $request_uri = "$scheme://$host:$port$path_query";
         # XXX CONNECT for https scheme
-        $handle->connect(($self->split_url($self->proxy))[0..2]);
+        $handle->connect(($self->split_url($self->{proxy}))[0..2]);
     }
     else {
         $handle->connect($scheme, $host, $port);
