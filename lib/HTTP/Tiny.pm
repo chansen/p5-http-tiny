@@ -9,8 +9,9 @@ use Carp qw[croak];
 sub new {
     my($class, %args) = @_;
     return bless {
-        timeout => 60,
-        agent   => "HTTP-Tiny/$VERSION",
+        agent        => "HTTP-Tiny/$VERSION",
+        max_redirect => 5,
+        timeout      => 60,
         %args
     }, $class;
 }
@@ -77,16 +78,17 @@ sub _request {
 
     my ($scheme, $host, $port, $path_query) = $self->split_url($url);
 
-    my $host_port   = "$host:$port";
+    my $handle      = HTTP::Tiny::Handle->new(timeout => $self->{timeout});
     my $request_uri = $path_query;
 
     if ($self->has_proxy) {
         $request_uri = "$scheme://$host:$port$path_query";
-        ($scheme, $host, $port) = $self->split_url($self->proxy);
+        # XXX CONNECT for https scheme
+        $handle->connect(($self->split_url($self->proxy))[0..2]);
     }
-
-    my $handle = HTTP::Tiny::Handle->new(timeout => $self->{timeout});
-       $handle->connect($scheme, $host, $port);
+    else {
+        $handle->connect($scheme, $host, $port);
+    }
 
     my $req_headers = {};
     if ($args->{headers}) {
@@ -94,7 +96,7 @@ sub _request {
             $req_headers->{lc $k} = $v;
         }
     }
-    $req_headers->{'host'}         = $host_port;
+    $req_headers->{'host'}         = "$host:$port";
     $req_headers->{'connection'}   = "close";
     $req_headers->{'user-agent'} ||= $self->{agent};
 
@@ -160,6 +162,19 @@ sub _request {
     }
 
     $handle->close;
+
+    if ($status =~ /^30[12]/ && $method =~ /^GET|HEAD$/ && $res_headers->{location}) {
+        $args->{redirects} ||= 0;
+
+        if ($args->{redirects} < $self->{max_redirect}) {
+            my $location = $res_headers->{location};
+               $location = "$scheme://$host:$port$location"
+                 if $location =~ /^\//;
+
+            $args->{redirects}++;
+            return $self->_request($method, $location, $args);
+        }
+    }
 
     return ($status, $reason, $res_headers, $content);
 }
