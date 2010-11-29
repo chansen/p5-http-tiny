@@ -18,7 +18,7 @@ sub new {
 
 BEGIN {
     no strict 'refs';
-    for my $accessor (qw(agent max_redirect proxy timeout)) {
+    for my $accessor (qw(agent max_redirect max_size proxy timeout)) {
         *{$accessor} = sub { 
             @_ > 1 ? $_[0]->{$accessor} = $_[1]
                    : $_[0]->{$accessor};
