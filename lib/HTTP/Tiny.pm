@@ -18,7 +18,7 @@ sub new {
 
 BEGIN {
     no strict 'refs';
-    for my $accessor (qw(agent max_redirect max_size proxy timeout)) {
+    for my $accessor (qw(agent default_headers max_redirect max_size proxy timeout)) {
         *{$accessor} = sub { 
             @_ > 1 ? $_[0]->{$accessor} = $_[1]
                    : $_[0]->{$accessor};
@@ -55,11 +55,17 @@ sub _request {
 
     my ($scheme, $host, $port, $path_query) = $self->_split_url($url);
 
+    my $host_port = do {
+        ($scheme eq 'http' && $port == 80) || ($scheme eq 'https' && $port == 443)
+            ? $host
+            : "$host:$port"
+    };
+
     my $handle      = HTTP::Tiny::Handle->new(timeout => $self->{timeout});
     my $request_uri = $path_query;
 
     if ($self->{proxy}) {
-        $request_uri = "$scheme://$host:$port$path_query";
+        $request_uri = "$scheme://$host_port$path_query";
         # XXX CONNECT for https scheme
         $handle->connect(($self->_split_url($self->{proxy}))[0..2]);
     }
@@ -68,12 +74,13 @@ sub _request {
     }
 
     my $req_headers = {};
-    if ($args->{headers}) {
-        while (my ($k, $v) = each %{ $args->{headers} }) {
+    for ($self->{default_headers}, $args->{headers}) {
+        next unless defined;
+        while (my ($k, $v) = each %$_) {
             $req_headers->{lc $k} = $v;
         }
     }
-    $req_headers->{'host'}         = "$host:$port";
+    $req_headers->{'host'}         = $host_port;
     $req_headers->{'connection'}   = "close";
     $req_headers->{'user-agent'} ||= $self->{agent};
 
@@ -145,7 +152,7 @@ sub _request {
 
         if ($args->{redirects} < $self->{max_redirect}) {
             my $location = $res_headers->{location};
-               $location = "$scheme://$host:$port$location"
+               $location = "$scheme://$host_port$location"
                  if $location =~ /^\//;
 
             $args->{redirects}++;
