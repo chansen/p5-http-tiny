@@ -158,11 +158,8 @@ sub _request {
     if ($method eq 'HEAD' || $status =~ /^[23]04/) {
         # response has no message body
     }
-    elsif ($res_headers->{'content-length'}) {
-        $handle->read_content_body($response_body_cb, $res_headers->{'content-length'});
-    }
-    elsif ($res_headers->{'transfer-encoding'}) {
-        $handle->read_chunked_body($response_body_cb);
+    else {
+        $handle->read_body($response_body_cb, $res_headers->{'content-length'});
     }
 
     $handle->close;
@@ -442,6 +439,28 @@ sub write_header_lines {
     return $self->write($buf);
 }
 
+sub read_body {
+    @_ == 2 || @_ == 3 || croak(q/Usage: $handle->read_body(callback [, content_length])/);
+    my ($self, $cb, $content_length) = @_;
+    if ($content_length) {
+        return $self->read_content_body($cb, $content_length);
+    }
+    else {
+        return $self->read_chunked_body($cb);
+    }
+}
+
+sub write_body {
+    @_ == 2 || @_ == 3 || croak(q/Usage: $handle->write_body(callback [, content_length])/);
+    my ($self, $cb, $content_length) = @_;
+    if ($content_length) {
+        return $self->write_content_body($cb, $content_length);
+    }
+    else {
+        return $self->write_chunked_body($cb);
+    }
+}
+
 sub read_content_body {
     @_ == 3 || croak(q/Usage: $handle->read_content_body(callback, content_length)/);
     my ($self, $cb, $content_length) = @_;
@@ -454,17 +473,6 @@ sub read_content_body {
     }
 
     return $content_length;
-}
-
-sub write_body {
-    @_ == 2 || @_ == 3 || croak(q/Usage: $handle->write_body(callback [, content_length])/);
-    my ($self, $cb, $content_length) = @_;
-    if ($content_length) {
-        return $self->write_content_body($cb, $content_length);
-    }
-    else {
-        return $self->write_chunked_body($cb);
-    }
 }
 
 sub write_content_body {
