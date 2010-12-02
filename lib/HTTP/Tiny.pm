@@ -101,23 +101,23 @@ sub _request {
     }
 
     my $response_body;
-    my $response_body_cb = $args->{data_callback};
+    my $data_cb = $args->{data_callback};
 
     # XXX Should max_size apply even if a data callback is provided?
     # Perhaps it should for consistency. I'm also not clear why
     # max_size should be ignored on status other than 2XX.  Perhaps
-    # all $response_body_cb's should be wrapped in a max_size checking
+    # all $data_cb's should be wrapped in a max_size checking
     # callback if max_size is true -- dagolden, 2010-12-02
-    if (!$response_body_cb || $response->{status} !~ /^2/) {
+    if (!$data_cb || $response->{status} !~ /^2/) {
         if (defined $self->{max_size}) {
-            $response_body_cb = sub {
+            $data_cb = sub {
                 $response_body .= $_[0];
                 Carp::croak(qq/Size of response body exceeds the maximum allowed of $self->{max_size}/)
                   if length $response_body > $self->{max_size};
             };
         }
         else {
-            $response_body_cb = sub { $response_body .= $_[0] };
+            $data_cb = sub { $response_body .= $_[0] };
         }
     }
 
@@ -125,7 +125,7 @@ sub _request {
         # response has no message body
     }
     else {
-        $handle->read_body($response_body_cb, $response->{headers}{'content-length'});
+        $handle->read_body($data_cb, $response->{headers}{'content-length'});
     }
 
     $handle->close;
