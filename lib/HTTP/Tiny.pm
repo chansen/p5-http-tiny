@@ -116,12 +116,7 @@ sub _request {
     $handle->write_request_header($method, $request_uri, $req_headers);
 
     if ($request_body_cb) {
-        if ($req_headers->{'content-length'}) {
-            $handle->write_content_body($request_body_cb, $req_headers->{'content-length'});
-        }
-        else {
-            $handle->write_chunked_body($request_body_cb);
-        }
+        $handle->write_body($request_body_cb, $req_headers->{'content-length'});
     }
 
     my ($status, $reason, $res_headers, $version)
@@ -450,6 +445,17 @@ sub read_content_body {
     }
 
     return $content_length;
+}
+
+sub write_body {
+    @_ == 2 || @_ == 3 || croak(q/Usage: $handle->write_body(callback [, content_length])/);
+    my ($self, $cb, $content_length) = @_;
+    if ($content_length) {
+        return $self->write_content_body($cb, $content_length);
+    }
+    else {
+        return $self->write_chunked_body($cb);
+    }
 }
 
 sub write_content_body {
