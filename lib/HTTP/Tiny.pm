@@ -43,20 +43,20 @@ sub request {
     @_ == 3 || (@_ == 4 && ref $args eq 'HASH')
       or Carp::croak(q/Usage: $http->request(METHOD, URL, [HASHREF])/);
 
-    my ($status, $reason, $headers, $content) = eval {
-        $self->_request($method, $url, $args);
-    };
+    my $response = eval { $self->_request($method, $url, $args) };
 
-    if (my $e = $@) {
-        $status  = 599;
-        $reason  = 'Internal Exception';
-        $content = "$e";
-        $headers = {
-            'content-type'   => 'text/plain',
-            'content-length' => length $content,
+    if (my $e = "$@") {
+        $response = {
+            status  => 599,
+            reason  => 'Internal Exception',
+            content => $e,
+            headers => {
+                'content-type'   => 'text/plain',
+                'content-length' => length $e,
+            }
         };
     }
-    return ($status, $reason, $headers, $content);
+    return $response;
 }
 
 sub _request {
@@ -169,7 +169,12 @@ sub _request {
         }
     }
 
-    return ($status, $reason, $res_headers, $content);
+    return {
+        status  => $status,
+        reason  => $reason,
+        headers => $res_headers,
+        content => (defined($content) ? $content : ''),
+    }
 }
 
 sub _split_url {
