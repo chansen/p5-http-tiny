@@ -100,10 +100,9 @@ sub _request {
     $self->_prepare_cb_and_headers($request, $args);
     $handle->write_request($request);
 
-    my $response = $handle->read_response_header;
-    while ($response->{status} eq '100') {
-        $response = $handle->read_response_header
-    }
+    my $response;
+    do { $response = $handle->read_response_header }
+        until ($response->{status} ne '100');
 
     my ($status, $res_headers) = @{$response}{qw/status headers/};
 
