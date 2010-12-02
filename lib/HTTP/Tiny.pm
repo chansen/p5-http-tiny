@@ -126,15 +126,11 @@ sub _request {
 
     my ($status, $res_headers) = @{$response}{qw/status headers/};
 
-    if (   $status =~ /^30[12]/
-        && $method =~ /^GET|HEAD$/
-        && $res_headers->{location}
-        && $args->{redirects}++ < $self->{max_redirect}
-    ) {
+    if ( $self->_should_redirect($method, $response, $args) ) {
+        $handle->close;
         my $location = $res_headers->{location};
         $location = "$scheme://$host_port$location"
             if $location =~ /^\//;
-        $handle->close;
         return $self->_request($method, $location, $args);
     }
 
@@ -168,6 +164,15 @@ sub _request {
 
     $response->{content} = (defined($response_body) ? $response_body : '');
     return $response;
+}
+
+sub _should_redirect {
+    my ($self, $method, $response, $args) = @_;
+    return (   $response->{status} =~ /^30[12]/
+        && $method =~ /^GET|HEAD$/
+        && $response->{headers}{location}
+        && $args->{redirects}++ < $self->{max_redirect}
+    );
 }
 
 sub _split_url {
