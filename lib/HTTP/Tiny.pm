@@ -6,24 +6,29 @@ our $VERSION = '0.1';
 
 use Carp ();
 
-sub new {
-    my($class, %args) = @_;
-    return bless {
-        agent        => "HTTP-Tiny/$VERSION",
-        max_redirect => 5,
-        timeout      => 60,
-        %args
-    }, $class;
-}
-
+my @attributes;
 BEGIN {
+    @attributes = qw(agent default_headers max_redirect max_size proxy timeout);
     no strict 'refs';
-    for my $accessor (qw(agent default_headers max_redirect max_size proxy timeout)) {
+    for my $accessor ( @attributes ) {
         *{$accessor} = sub { 
-            @_ > 1 ? $_[0]->{$accessor} = $_[1]
-                   : $_[0]->{$accessor};
+            @_ > 1 ? $_[0]->{$accessor} = $_[1] : $_[0]->{$accessor};
         };
     }
+}
+
+sub new {
+    my($class, %args) = @_;
+    (my $agent = $class) =~ s{::}{/}g;
+    my $self = {
+        agent        => $agent . "/" . $class->VERSION,
+        max_redirect => 5,
+        timeout      => 60,
+    };
+    for my $key ( @attributes ) {
+        $self->{$key} = $args{$key} if exists $args{$key}
+    }
+    return bless $self, $class;
 }
 
 sub get {
