@@ -59,16 +59,17 @@ sub request {
     return $response;
 }
 
+my %DefaultPort = (
+    http => 80,
+    https => 443,
+);
+
 sub _request {
     my ($self, $method, $url, $args) = @_;
 
     my ($scheme, $host, $port, $path_query) = $self->_split_url($url);
 
-    my $host_port = do {
-        ($scheme eq 'http' && $port == 80) || ($scheme eq 'https' && $port == 443)
-            ? $host
-            : "$host:$port"
-    };
+    my $host_port = $port == $DefaultPort{$scheme} ? $host : "$host:$port";
 
     my $handle  = HTTP::Tiny::Handle->new(timeout => $self->{timeout});
 
