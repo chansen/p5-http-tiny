@@ -27,15 +27,15 @@ BEGIN {
 }
 
 sub get {
-    my ($self, $url, %args) = @_;
-    return $self->request('GET', $url, %args);
+    my ($self, $url, $args) = @_;
+    return $self->request('GET', $url, $args);
 }
 
 sub request {
-    my ($self, $method, $url, %args) = @_;
+    my ($self, $method, $url, $args) = @_;
 
     my ($status, $reason, $headers, $content) = eval {
-        $self->_request($method, $url, \%args);
+        $self->_request($method, $url, $args);
     };
 
     if (my $e = $@) {
