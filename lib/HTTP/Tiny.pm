@@ -233,16 +233,6 @@ sub new {
     }, $class;
 }
 
-sub host {
-    @_ == 1 || croak(q/Usage: $handle->host()/);
-    return $_[0]->{host};
-}
-
-sub port {
-    @_ == 1 || croak(q/Usage: $handle->port()/);
-    return $_[0]->{port};
-}
-
 sub connect {
     @_ == 4 || croak(q/Usage: $handle->connect(scheme, host, port)/);
     my ($self, $scheme, $host, $port) = @_;
