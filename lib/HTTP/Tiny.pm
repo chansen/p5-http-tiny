@@ -71,8 +71,9 @@ sub _request {
 
     my $request = {
         method    => $method,
-        uri       => $path_query,
+        scheme    => $scheme,
         host_port => ($port == $DefaultPort{$scheme} ? $host : "$host:$port"),
+        uri       => $path_query,
         headers     => {},
     };
 
@@ -96,11 +97,8 @@ sub _request {
 
     my ($status, $res_headers) = @{$response}{qw/status headers/};
 
-    if ( $self->_should_redirect($method, $response, $args) ) {
+    if ( my $location = $self->_maybe_redirect($request, $response, $args) ) {
         $handle->close;
-        my $location = $res_headers->{location};
-        $location = "$scheme://$request->{host_port}$location"
-            if $location =~ /^\//;
         return $self->_request($method, $location, $args);
     }
 
@@ -171,13 +169,19 @@ sub _prepare_headers_and_cb {
     return;
 }
 
-sub _should_redirect {
-    my ($self, $method, $response, $args) = @_;
-    return (   $response->{status} =~ /^30[12]/
-        && $method =~ /^GET|HEAD$/
-        && $response->{headers}{location}
+sub _maybe_redirect {
+    my ($self, $request, $response, $args) = @_;
+    my $headers = $response->{headers};
+    if (   $response->{status} =~ /^30[12]/
+        && $request->{method} =~ /^GET|HEAD$/
+        && $headers->{location}
         && $args->{redirects}++ < $self->{max_redirect}
-    );
+    ) {
+        return ($headers->{location} =~ /^\//)
+            ? "$request->{scheme}://$request->{host_port}$headers->{location}"
+            : $headers->{location} ;
+    }
+    return;
 }
 
 sub _split_url {
