@@ -585,12 +585,10 @@ sub write_request_header {
          + $self->write_header_lines($headers);
 }
 
-sub can_read {
-    @_ == 1 || @_ == 2 || croak(q/Usage: $handle->can_read([timeout])/);
-    my ($self, $timeout) = @_;
-
+sub _do_timeout {
+    my ($self, $type, $timeout) = @_;
     $timeout = $self->{timeout}
-      if @_ == 1;
+        unless defined $timeout && $timeout >= 0;
 
     my $fd = fileno $self->{fh};
     defined $fd && $fd >= 0
@@ -603,7 +601,9 @@ sub can_read {
     vec(my $fdset = '', $fd, 1) = 1;
 
     while () {
-        $nfound = select($fdset, undef, undef, $pending);
+        $nfound = ($type eq 'read')
+            ? select($fdset, undef, undef, $pending)
+            : select(undef, $fdset, undef, $pending) ;
         if ($nfound == -1) {
             $! == EINTR
               or croak(qq/select(2): '$!'/);
@@ -616,35 +616,16 @@ sub can_read {
     return $nfound;
 }
 
+sub can_read {
+    @_ == 1 || @_ == 2 || croak(q/Usage: $handle->can_read([timeout])/);
+    my $self = shift;
+    return $self->_do_timeout('read', @_)
+}
+
 sub can_write {
     @_ == 1 || @_ == 2 || croak(q/Usage: $handle->can_write([timeout])/);
-    my ($self, $timeout) = @_;
-
-    $timeout = $self->{timeout}
-      if @_ == 1;
-
-    my $fd = fileno $self->{fh};
-    defined $fd && $fd >= 0
-      or croak(q/select(2): 'Bad file descriptor'/);
-
-    my $initial = time;
-    my $pending = $timeout;
-    my $nfound;
-
-    vec(my $fdset = '', $fd, 1) = 1;
-
-    while () {
-        $nfound = select(undef, $fdset, undef, $pending);
-        if ($nfound == -1) {
-            $! == EINTR
-              or croak(qq/select(2): '$!'/);
-            redo if !$timeout || ($pending = $timeout - (time - $initial)) > 0;
-            $nfound = 0;
-        }
-        last;
-    }
-    $! = 0;
-    return $nfound;
+    my $self = shift;
+    return $self->_do_timeout('write', @_)
 }
 
 1;
