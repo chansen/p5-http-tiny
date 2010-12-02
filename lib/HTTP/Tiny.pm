@@ -93,54 +93,53 @@ sub _request {
     $req_headers->{'connection'}   = "close";
     $req_headers->{'user-agent'} ||= $self->{agent};
 
-    my $content;
-    my $on_content;
+    my $request_body_cb;
 
     if (defined $args->{content}) {
-        $content = $args->{content};
-        if (ref $content eq 'CODE') {
+        if (ref $args->{content} eq 'CODE') {
             $req_headers->{'transfer-encoding'} = 'chunked'
               unless $req_headers->{'content-length'}
                   || $req_headers->{'transfer-encoding'};
-            $on_content = $content;
+            $request_body_cb = $args->{content};
         }
         else {
+            my $content = $args->{content};
             utf8::downgrade($content, 1)
               or Carp::croak(q/Wide character in request message body/);
             $req_headers->{'content-length'} = length $content
               unless $req_headers->{'content-length'}
                   || $req_headers->{'transfer-encoding'};
-            $on_content = sub { substr $content, 0, length $content, '' };
+            $request_body_cb = sub { substr $content, 0, length $content, '' };
         }
     }
 
     $handle->write_request_header($method, $request_uri, $req_headers);
 
-    if ($on_content) {
+    if ($request_body_cb) {
         if ($req_headers->{'content-length'}) {
-            $handle->write_content_body($on_content, $req_headers->{'content-length'});
+            $handle->write_content_body($request_body_cb, $req_headers->{'content-length'});
         }
         else {
-            $handle->write_chunked_body($on_content);
+            $handle->write_chunked_body($request_body_cb);
         }
     }
 
     my ($status, $reason, $res_headers, $version)
       = $handle->read_response_header;
 
-    $content    = undef;
-    $on_content = $args->{on_content};
+    my $response_body;
+    my $response_body_cb = $args->{data_callback};
 
-    if (!$on_content || $status !~ /^2/) {
+    if (!$response_body_cb || $status !~ /^2/) {
         if (defined $self->{max_size}) {
-            $on_content = sub {
-                $content .= $_[0];
+            $response_body_cb = sub {
+                $response_body .= $_[0];
                 Carp::croak(qq/Size of response body exceeds the maximum allowed of $self->{max_size}/)
-                  if length $content > $self->{max_size};
+                  if length $response_body > $self->{max_size};
             };
         }
         else {
-            $on_content = sub { $content .= $_[0] };
+            $response_body_cb = sub { $response_body .= $_[0] };
         }
     }
 
@@ -148,10 +147,10 @@ sub _request {
         # response has no message body
     }
     elsif ($res_headers->{'content-length'}) {
-        $handle->read_content_body($on_content, $res_headers->{'content-length'});
+        $handle->read_content_body($response_body_cb, $res_headers->{'content-length'});
     }
     elsif ($res_headers->{'transfer-encoding'}) {
-        $handle->read_chunked_body($on_content);
+        $handle->read_chunked_body($response_body_cb);
     }
 
     $handle->close;
@@ -173,7 +172,7 @@ sub _request {
         status  => $status,
         reason  => $reason,
         headers => $res_headers,
-        content => (defined($content) ? $content : ''),
+        content => (defined($response_body) ? $response_body : ''),
     }
 }
 
