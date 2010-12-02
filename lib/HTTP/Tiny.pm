@@ -70,11 +70,16 @@ sub _request {
             : "$host:$port"
     };
 
-    my $handle      = HTTP::Tiny::Handle->new(timeout => $self->{timeout});
-    my $request_uri = $path_query;
+    my $handle  = HTTP::Tiny::Handle->new(timeout => $self->{timeout});
+
+    my $request = {
+        method  => $method,
+        uri     => $path_query,
+        headers => {},
+    };
 
     if ($self->{proxy}) {
-        $request_uri = "$scheme://$host_port$path_query";
+        $request->{uri} = "$scheme://$host_port$path_query";
         # XXX CONNECT for https scheme
         $handle->connect(($self->_split_url($self->{proxy}))[0..2]);
     }
@@ -82,42 +87,18 @@ sub _request {
         $handle->connect($scheme, $host, $port);
     }
 
-    my $req_headers = {};
     for ($self->{default_headers}, $args->{headers}) {
         next unless defined;
         while (my ($k, $v) = each %$_) {
-            $req_headers->{lc $k} = $v;
+            $request->{headers}{lc $k} = $v;
         }
     }
-    $req_headers->{'host'}         = $host_port;
-    $req_headers->{'connection'}   = "close";
-    $req_headers->{'user-agent'} ||= $self->{agent};
+    $request->{headers}{'host'}         = $host_port;
+    $request->{headers}{'connection'}   = "close";
+    $request->{headers}{'user-agent'} ||= $self->{agent};
 
-    my $request_body_cb;
-
-    if (defined $args->{content}) {
-        if (ref $args->{content} eq 'CODE') {
-            $req_headers->{'transfer-encoding'} = 'chunked'
-              unless $req_headers->{'content-length'}
-                  || $req_headers->{'transfer-encoding'};
-            $request_body_cb = $args->{content};
-        }
-        else {
-            my $content = $args->{content};
-            utf8::downgrade($content, 1)
-              or Carp::croak(q/Wide character in request message body/);
-            $req_headers->{'content-length'} = length $content
-              unless $req_headers->{'content-length'}
-                  || $req_headers->{'transfer-encoding'};
-            $request_body_cb = sub { substr $content, 0, length $content, '' };
-        }
-    }
-
-    $handle->write_request_header($method, $request_uri, $req_headers);
-
-    if ($request_body_cb) {
-        $handle->write_body($request_body_cb, $req_headers->{'content-length'});
-    }
+    $self->_prepare_cb_and_headers($request, $args);
+    $handle->write_request($request);
 
     my $response = $handle->read_response_header;
     while ($response->{status} eq '100') {
@@ -166,6 +147,29 @@ sub _request {
 
     $response->{content} = (defined($response_body) ? $response_body : '');
     return $response;
+}
+
+sub _prepare_cb_and_headers {
+    my ($self, $request, $args) = @_;
+    my $req_headers = $request->{headers};
+    if (defined $args->{content}) {
+        if (ref $args->{content} eq 'CODE') {
+            $req_headers->{'transfer-encoding'} = 'chunked'
+              unless $req_headers->{'content-length'}
+                  || $req_headers->{'transfer-encoding'};
+            $request->{cb} = $args->{content};
+        }
+        else {
+            my $content = $args->{content};
+            utf8::downgrade($content, 1)
+              or Carp::croak(q/Wide character in request message body/);
+            $req_headers->{'content-length'} = length $content
+              unless $req_headers->{'content-length'}
+                  || $req_headers->{'transfer-encoding'};
+            $request->{cb} = sub { substr $content, 0, length $content, '' };
+        }
+    }
+    return;
 }
 
 sub _should_redirect {
@@ -400,6 +404,15 @@ sub read_header_lines {
          }
     }
     return \%headers;
+}
+
+sub write_request {
+    @_ == 2 || croak(q/Usage: $handle->write_request(request)/);
+    my($self, $request) = @_;
+    $self->write_request_header(@{$request}{qw/method uri headers/});
+    $self->write_body($request->{cb}, $request->{headers}{'content-length'})
+        if $request->{cb};
+    return;
 }
 
 my %HeaderCase = (
