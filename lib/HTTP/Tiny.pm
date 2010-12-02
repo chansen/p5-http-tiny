@@ -73,9 +73,10 @@ sub _request {
     my $handle  = HTTP::Tiny::Handle->new(timeout => $self->{timeout});
 
     my $request = {
-        method  => $method,
-        uri     => $path_query,
-        headers => {},
+        host_port   => $host_port,
+        method      => $method,
+        uri         => $path_query,
+        headers     => {},
     };
 
     if ($self->{proxy}) {
@@ -87,17 +88,7 @@ sub _request {
         $handle->connect($scheme, $host, $port);
     }
 
-    for ($self->{default_headers}, $args->{headers}) {
-        next unless defined;
-        while (my ($k, $v) = each %$_) {
-            $request->{headers}{lc $k} = $v;
-        }
-    }
-    $request->{headers}{'host'}         = $host_port;
-    $request->{headers}{'connection'}   = "close";
-    $request->{headers}{'user-agent'} ||= $self->{agent};
-
-    $self->_prepare_cb_and_headers($request, $args);
+    $self->_prepare_headers_and_cb($request, $args);
     $handle->write_request($request);
 
     my $response;
@@ -148,23 +139,33 @@ sub _request {
     return $response;
 }
 
-sub _prepare_cb_and_headers {
+sub _prepare_headers_and_cb {
     my ($self, $request, $args) = @_;
-    my $req_headers = $request->{headers};
+
+    for ($self->{default_headers}, $args->{headers}) {
+        next unless defined;
+        while (my ($k, $v) = each %$_) {
+            $request->{headers}{lc $k} = $v;
+        }
+    }
+    $request->{headers}{'host'}         = $request->{host_port};
+    $request->{headers}{'connection'}   = "close";
+    $request->{headers}{'user-agent'} ||= $self->{agent};
+
     if (defined $args->{content}) {
         if (ref $args->{content} eq 'CODE') {
-            $req_headers->{'transfer-encoding'} = 'chunked'
-              unless $req_headers->{'content-length'}
-                  || $req_headers->{'transfer-encoding'};
+            $request->{headers}{'transfer-encoding'} = 'chunked'
+              unless $request->{headers}{'content-length'}
+                  || $request->{headers}{'transfer-encoding'};
             $request->{cb} = $args->{content};
         }
         else {
             my $content = $args->{content};
             utf8::downgrade($content, 1)
               or Carp::croak(q/Wide character in request message body/);
-            $req_headers->{'content-length'} = length $content
-              unless $req_headers->{'content-length'}
-                  || $req_headers->{'transfer-encoding'};
+            $request->{headers}{'content-length'} = length $content
+              unless $request->{headers}{'content-length'}
+                  || $request->{headers}{'transfer-encoding'};
             $request->{cb} = sub { substr $content, 0, length $content, '' };
         }
     }
