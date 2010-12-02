@@ -137,6 +137,11 @@ sub _request {
     my $response_body;
     my $response_body_cb = $args->{data_callback};
 
+    # XXX Should max_size apply even if a data callback is provided?
+    # Perhaps it should for consistency. I'm also not clear why
+    # max_size should be ignored on status other than 2XX.  Perhaps
+    # all $response_body_cb's should be wrapped in a max_size checking
+    # callback if max_size is true -- dagolden, 2010-12-02
     if (!$response_body_cb || $status !~ /^2/) {
         if (defined $self->{max_size}) {
             $response_body_cb = sub {
