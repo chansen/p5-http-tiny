@@ -122,6 +122,18 @@ sub _request {
     my ($status, $reason, $res_headers, $version)
       = $handle->read_response_header;
 
+    if (   $status =~ /^30[12]/
+        && $method =~ /^GET|HEAD$/
+        && $res_headers->{location}
+        && $args->{redirects}++ < $self->{max_redirect}
+    ) {
+        my $location = $res_headers->{location};
+        $location = "$scheme://$host_port$location"
+            if $location =~ /^\//;
+        $handle->close;
+        return $self->_request($method, $location, $args);
+    }
+
     my $response_body;
     my $response_body_cb = $args->{data_callback};
 
@@ -149,19 +161,6 @@ sub _request {
     }
 
     $handle->close;
-
-    if ($status =~ /^30[12]/ && $method =~ /^GET|HEAD$/ && $res_headers->{location}) {
-        $args->{redirects} ||= 0;
-
-        if ($args->{redirects} < $self->{max_redirect}) {
-            my $location = $res_headers->{location};
-               $location = "$scheme://$host_port$location"
-                 if $location =~ /^\//;
-
-            $args->{redirects}++;
-            return $self->_request($method, $location, $args);
-        }
-    }
 
     return {
         status  => $status,
