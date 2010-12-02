@@ -28,11 +28,15 @@ BEGIN {
 
 sub get {
     my ($self, $url, $args) = @_;
+    @_ == 2 || (@_ == 3 && ref $args eq 'HASH')
+      or Carp::croak(q/Usage: $http->get(URL, [HASHREF])/);
     return $self->request('GET', $url, $args);
 }
 
 sub request {
     my ($self, $method, $url, $args) = @_;
+    @_ == 3 || (@_ == 4 && ref $args eq 'HASH')
+      or Carp::croak(q/Usage: $http->request(METHOD, URL, [HASHREF])/);
 
     my ($status, $reason, $headers, $content) = eval {
         $self->_request($method, $url, $args);
