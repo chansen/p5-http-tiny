@@ -119,8 +119,9 @@ sub _request {
         $handle->write_body($request_body_cb, $req_headers->{'content-length'});
     }
 
-    my ($status, $reason, $res_headers, $version)
-      = $handle->read_response_header;
+    my $response = $handle->read_response_header;
+
+    my ($status, $res_headers) = @{$response}{qw/status headers/};
 
     if (   $status =~ /^30[12]/
         && $method =~ /^GET|HEAD$/
@@ -162,12 +163,8 @@ sub _request {
 
     $handle->close;
 
-    return {
-        status  => $status,
-        reason  => $reason,
-        headers => $res_headers,
-        content => (defined($response_body) ? $response_body : ''),
-    }
+    $response->{content} = (defined($response_body) ? $response_body : '');
+    return $response;
 }
 
 sub _split_url {
@@ -546,7 +543,12 @@ sub read_response_header {
 
     my ($version, $status, $reason) = ($1, $2, $3);
 
-    return ($status, $reason, $self->read_header_lines, $version);
+    return {
+        status   => $status,
+        reason   => $reason,
+        headers  => $self->read_header_lines,
+        protocol => $version
+    };
 }
 
 sub write_request_header {

@@ -7,6 +7,10 @@ use Test::More qw[no_plan];
 use t::Util    qw[tmpfile rewind $CRLF $LF];
 use HTTP::Tiny;
 
+sub _header {
+  return [ @{$_[0]}{qw/status reason headers protocol/} ]
+}
+
 {
     no warnings 'redefine';
     sub HTTP::Tiny::Handle::can_read  { 1 };
@@ -18,7 +22,7 @@ use HTTP::Tiny;
     my $fh       = tmpfile($response);
     my $handle   = HTTP::Tiny::Handle->new(fh => $fh);
     my $exp      = [ 200, 'OK', { foo => 'Foo', bar => 'Bar' }, 'HTTP/1.1' ];
-    is_deeply([$handle->read_response_header], $exp, "->read_response_header CRLF");
+    is_deeply(_header($handle->read_response_header), $exp, "->read_response_header CRLF");
 }
 
 {
@@ -26,6 +30,6 @@ use HTTP::Tiny;
     my $fh       = tmpfile($response);
     my $handle   = HTTP::Tiny::Handle->new(fh => $fh);
     my $exp      = [ 200, 'OK', { foo => 'Foo', bar => 'Bar' }, 'HTTP/1.1' ];
-    is_deeply([$handle->read_response_header], $exp, "->read_response_header LF");
+    is_deeply(_header($handle->read_response_header), $exp, "->read_response_header LF");
 }
 
