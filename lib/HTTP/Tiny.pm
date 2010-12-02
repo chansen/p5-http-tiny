@@ -120,6 +120,9 @@ sub _request {
     }
 
     my $response = $handle->read_response_header;
+    while ($response->{status} eq '100') {
+        $response = $handle->read_response_header
+    }
 
     my ($status, $res_headers) = @{$response}{qw/status headers/};
 
@@ -151,7 +154,7 @@ sub _request {
         }
     }
 
-    if ($method eq 'HEAD' || $status =~ /^1|[23]04/) {
+    if ($method eq 'HEAD' || $status =~ /^[23]04/) {
         # response has no message body
     }
     elsif ($res_headers->{'content-length'}) {
