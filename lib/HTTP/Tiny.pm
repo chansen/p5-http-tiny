@@ -4,7 +4,7 @@ use warnings;
 
 our $VERSION = '0.1';
 
-use Carp qw[croak];
+use Carp ();
 
 sub new {
     my($class, %args) = @_;
@@ -97,7 +97,7 @@ sub _request {
         }
         else {
             utf8::downgrade($content, 1)
-              or croak(q/Wide character in request message body/);
+              or Carp::croak(q/Wide character in request message body/);
             $req_headers->{'content-length'} = length $content
               unless $req_headers->{'content-length'}
                   || $req_headers->{'transfer-encoding'};
@@ -126,7 +126,7 @@ sub _request {
         if (defined $self->{max_size}) {
             $on_content = sub {
                 $content .= $_[0];
-                croak(qq/Size of response body exceeds the maximum allowed of $self->{max_size}/)
+                Carp::croak(qq/Size of response body exceeds the maximum allowed of $self->{max_size}/)
                   if length $content > $self->{max_size};
             };
         }
@@ -167,7 +167,7 @@ sub _split_url {
     my $url = pop;
 
     my ($scheme, $authority, $path_query) = $url =~ m<\A([^:/?#]+)://([^/?#]+)([^#]*)>
-      or croak(qq/Cannot parse URL: '$url'/);
+      or Carp::croak(qq/Cannot parse URL: '$url'/);
 
     $scheme     = lc $scheme;
     $path_query = "/$path_query" unless $path_query =~ m<\A/>;
