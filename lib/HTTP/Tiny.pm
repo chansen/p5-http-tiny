@@ -69,19 +69,17 @@ sub _request {
 
     my ($scheme, $host, $port, $path_query) = $self->_split_url($url);
 
-    my $host_port = $port == $DefaultPort{$scheme} ? $host : "$host:$port";
-
-    my $handle  = HTTP::Tiny::Handle->new(timeout => $self->{timeout});
-
     my $request = {
-        host_port   => $host_port,
-        method      => $method,
-        uri         => $path_query,
+        method    => $method,
+        uri       => $path_query,
+        host_port => ($port == $DefaultPort{$scheme} ? $host : "$host:$port"),
         headers     => {},
     };
 
+    my $handle  = HTTP::Tiny::Handle->new(timeout => $self->{timeout});
+
     if ($self->{proxy}) {
-        $request->{uri} = "$scheme://$host_port$path_query";
+        $request->{uri} = "$scheme://$request->{host_port}$path_query";
         # XXX CONNECT for https scheme
         $handle->connect(($self->_split_url($self->{proxy}))[0..2]);
     }
@@ -101,7 +99,7 @@ sub _request {
     if ( $self->_should_redirect($method, $response, $args) ) {
         $handle->close;
         my $location = $res_headers->{location};
-        $location = "$scheme://$host_port$location"
+        $location = "$scheme://$request->{host_port}$location"
             if $location =~ /^\//;
         return $self->_request($method, $location, $args);
     }
