@@ -95,8 +95,6 @@ sub _request {
     do { $response = $handle->read_response_header }
         until ($response->{status} ne '100');
 
-    my ($status, $res_headers) = @{$response}{qw/status headers/};
-
     if ( my $location = $self->_maybe_redirect($request, $response, $args) ) {
         $handle->close;
         return $self->_request($method, $location, $args);
@@ -110,7 +108,7 @@ sub _request {
     # max_size should be ignored on status other than 2XX.  Perhaps
     # all $response_body_cb's should be wrapped in a max_size checking
     # callback if max_size is true -- dagolden, 2010-12-02
-    if (!$response_body_cb || $status !~ /^2/) {
+    if (!$response_body_cb || $response->{status} !~ /^2/) {
         if (defined $self->{max_size}) {
             $response_body_cb = sub {
                 $response_body .= $_[0];
@@ -123,11 +121,11 @@ sub _request {
         }
     }
 
-    if ($method eq 'HEAD' || $status =~ /^[23]04/) {
+    if ($method eq 'HEAD' || $response->{status} =~ /^[23]04/) {
         # response has no message body
     }
     else {
-        $handle->read_body($response_body_cb, $res_headers->{'content-length'});
+        $handle->read_body($response_body_cb, $response->{headers}{'content-length'});
     }
 
     $handle->close;
