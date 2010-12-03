@@ -19,7 +19,7 @@ BEGIN {
 
 sub new {
     my($class, %args) = @_;
-    (my $agent = $class) =~ s{::}{/}g;
+    (my $agent = $class) =~ s{::}{-}g;
     my $self = {
         agent        => $agent . "/" . $class->VERSION,
         max_redirect => 5,
