@@ -482,11 +482,11 @@ sub write_content_body {
     while () {
         my $data = $cb->();
 
-        utf8::downgrade($data, 1)
-          or croak(q/Wide character in write_content()/);
-
         defined $data && length $data
           or last;
+
+        utf8::downgrade($data, 1)
+          or croak(q/Wide character in write_content()/);
 
         $len += $self->write($data);
     }
@@ -532,11 +532,11 @@ sub write_chunked_body {
     while () {
         my $data = $cb->();
 
-        utf8::downgrade($data, 1)
-          or croak(q/Wide character in write_chunked_body()/);
-
         defined $data && length $data
           or last;
+
+        utf8::downgrade($data, 1)
+          or croak(q/Wide character in write_chunked_body()/);
 
         $len += length $data;
 
