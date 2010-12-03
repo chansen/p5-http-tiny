@@ -214,7 +214,7 @@ use Carp       qw[croak];
 use Errno      qw[EINTR];
 use IO::Socket qw[SOCK_STREAM];
 
-sub BUFSIZE () { 32768 }
+sub BUFSIZE () { 32768 } # XXX Should be an attribute? -- dagolden, 2010-12-03
 
 my $Printable = sub {
     local $_ = shift;
