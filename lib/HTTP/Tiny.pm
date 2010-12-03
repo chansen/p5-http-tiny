@@ -475,7 +475,7 @@ sub read_content_body {
 }
 
 sub write_content_body {
-    @_ == 2 || @_ == 3 || croak(q/Usage: $handle->write_content_body(callback [, content_length])/);
+    @_ == 3 || croak(q/Usage: $handle->write_content_body(callback, content_length)/);
     my ($self, $cb, $content_length) = @_;
 
     my $len = 0;
@@ -491,7 +491,7 @@ sub write_content_body {
         $len += $self->write($data);
     }
 
-    @_ < 3 || $len == $content_length
+    $len == $content_length
       or croak(qq/Content-Length missmatch (got: $len expected: $content_length)/);
 
     return $len;
