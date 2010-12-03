@@ -442,11 +442,12 @@ sub read_body {
     @_ == 2 || @_ == 3 || croak(q/Usage: $handle->read_body(callback [, content_length])/);
     my ($self, $cb, $content_length) = @_;
     if ($content_length) {
-        return $self->read_content_body($cb, $content_length);
+        $self->read_content_body($cb, $content_length);
     }
     else {
-        return $self->read_chunked_body($cb);
+        $self->read_chunked_body($cb);
     }
+    return;
 }
 
 sub write_body {
