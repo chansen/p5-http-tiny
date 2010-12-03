@@ -7,16 +7,15 @@ use HTTP::Tiny;
 
 my $url = shift(@ARGV) || 'http://example.com';
 
-my ($status_code, $reason_phrase, $headers, $content) =
-  HTTP::Tiny->new->get($url);
+my $response = HTTP::Tiny->new->get($url);
 
-print "$status_code $reason_phrase\n";
+print "$response->{status} $response->{reason}\n";
 
-while (my ($k, $v) = each %$headers) {
+while (my ($k, $v) = each %{$response->{headers}}) {
     for (ref $v eq 'ARRAY' ? @$v : $v) {
         print "$k: $_\n";
     }
 }
 
-print $content if defined $content;
+print $response->{content} if defined $response->{content};
 

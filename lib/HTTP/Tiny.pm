@@ -35,7 +35,7 @@ sub get {
     my ($self, $url, $args) = @_;
     @_ == 2 || (@_ == 3 && ref $args eq 'HASH')
       or Carp::croak(q/Usage: $http->get(URL, [HASHREF])/);
-    return $self->request('GET', $url, $args);
+    return $self->request('GET', $url, $args || {});
 }
 
 sub request {
