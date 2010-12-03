@@ -287,7 +287,7 @@ sub write {
         if (defined $r) {
             $len -= $r;
             $off += $r;
-            last unless $len;
+            last unless $len > 0;
         }
         elsif ($! != EINTR) {
             croak(qq/Could not write to socket: '$!'/);
@@ -311,7 +311,7 @@ sub read {
         $off += $take;
     }
 
-    while ($len) {
+    while ($len > 0) {
         $self->can_read
           or croak(q/Timed out while waiting for socket to become ready for reading/);
         my $r = sysread($self->{fh}, $buf, $len, $off);
@@ -474,7 +474,7 @@ sub read_content_body {
     my ($self, $cb, $content_length) = @_;
 
     my $len = $content_length;
-    while ($len) {
+    while ($len > 0) {
         my $read = ($len > BUFSIZE) ? BUFSIZE : $len;
         $cb->($self->read($read));
         $len -= $read;
@@ -519,7 +519,7 @@ sub read_chunked_body {
         my $len = hex($1)
           or last;
 
-        while ($len) {
+        while ($len > 0) {
             my $read = ($len > BUFSIZE) ? BUFSIZE : $len;
             $cb->($self->read($read));
             $len -= $read;
