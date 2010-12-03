@@ -300,7 +300,6 @@ sub read {
     @_ == 2 || @_ == 3 || croak(q/Usage: $handle->read(len [, partial])/);
     my ($self, $len, $partial) = @_;
 
-    my $off  = 0;
     my $buf  = '';
     my $got = length $self->{rbuf};
 
@@ -308,17 +307,15 @@ sub read {
         my $take = ($got < $len) ? $got : $len;
         $buf  = substr($self->{rbuf}, 0, $take, '');
         $len -= $take;
-        $off += $take;
     }
 
     while ($len > 0) {
         $self->can_read
           or croak(q/Timed out while waiting for socket to become ready for reading/);
-        my $r = sysread($self->{fh}, $buf, $len, $off);
+        my $r = sysread($self->{fh}, $buf, $len, length $buf);
         if (defined $r) {
             last unless $r;
             $len -= $r;
-            $off += $r;
         }
         elsif ($! != EINTR) {
             croak(qq/Could not read from socket: '$!'/);
@@ -334,21 +331,18 @@ sub readline {
     @_ == 1 || croak(q/Usage: $handle->readline()/);
     my ($self) = @_;
 
-    my $off = length $self->{rbuf};
-
     while () {
         if ($self->{rbuf} =~ s/\A ([^\x0D\x0A]* \x0D?\x0A)//x) {
             return $1;
         }
-        if ($off >= $self->{max_line_size}) {
+        if (length $self->{rbuf} >= $self->{max_line_size}) {
             croak(qq/Line size exceeds the maximum allowed size of $self->{max_line_size}/);
         }
         $self->can_read
           or croak(q/Timed out while waiting for socket to become ready for reading/);
-        my $r = sysread($self->{fh}, $self->{rbuf}, BUFSIZE, $off);
+        my $r = sysread($self->{fh}, $self->{rbuf}, BUFSIZE, length $self->{rbuf});
         if (defined $r) {
             last unless $r;
-            $off += $r;
         }
         elsif ($! != EINTR) {
             croak(qq/Could not read from socket: '$!'/);
