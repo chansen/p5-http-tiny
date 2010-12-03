@@ -510,11 +510,7 @@ sub read_chunked_body {
         my $len = hex($1)
           or last;
 
-        while ($len > 0) {
-            my $read = ($len > BUFSIZE) ? BUFSIZE : $len;
-            $cb->($self->read($read));
-            $len -= $read;
-        }
+        $self->read_content_body($cb, $len);
 
         $self->read(2) eq "\x0D\x0A"
           or croak(q/Malformed chunk: missing CRLF after chunk data/);
