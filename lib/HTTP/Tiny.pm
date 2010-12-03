@@ -572,7 +572,7 @@ sub write_request_header {
     @_ == 4 || @_ == 5 || croak(q/Usage: $handle->write_request_header(method, request_uri, headers [, protocol])/);
     my ($self, $method, $request_uri, $headers, $protocol) = @_;
 
-    $protocol ||= 'HTTP/1.1';
+    $protocol ||= 'HTTP/1.1'; # XXX never provided -- dagolden, 2010-12-03
 
     return $self->write("$method $request_uri $protocol\x0D\x0A")
          + $self->write_header_lines($headers);
