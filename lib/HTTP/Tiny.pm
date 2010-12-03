@@ -431,10 +431,7 @@ sub write_header_lines {
         for (ref $v eq 'ARRAY' ? @$v : $v) {
             /[^\x0D\x0A]/
               or croak(qq/Invalid HTTP header field value ($field_name): / . $Printable->($_));
-            $buf .= $field_name;
-            $buf .= ': ';
-            $buf .= $_;
-            $buf .= "\x0D\x0A";
+            $buf .= "$field_name: $_\x0D\x0A";
         }
     }
     $buf .= "\x0D\x0A";
