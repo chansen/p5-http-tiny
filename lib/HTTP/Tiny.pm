@@ -205,7 +205,8 @@ sub _split_url {
     return ($scheme, $host, $port, $path_query);
 }
 
-package HTTP::Tiny::Handle;
+package
+    HTTP::Tiny::Handle; # hide from PAUSE/indexers
 use strict;
 use warnings;
 
