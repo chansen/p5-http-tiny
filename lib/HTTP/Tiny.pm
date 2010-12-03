@@ -472,7 +472,7 @@ sub read_content_body {
         $len -= $read;
     }
 
-    return $content_length;
+    return $content_length; # XXX ignored? -- dagolden, 2010-12-03
 }
 
 sub write_content_body {
@@ -516,14 +516,14 @@ sub read_chunked_body {
         $self->read(2) eq "\x0D\x0A"
           or croak(q/Malformed chunk: missing CRLF after chunk data/);
     }
-    return $self->read_header_lines;
+    return $self->read_header_lines; # XXX ignored? -- dagolden, 2010-12-03
 }
 
 sub write_chunked_body {
     @_ == 2 || @_ == 3 || croak(q/Usage: $handle->write_chunked_body(callback [, trailers])/);
     my ($self, $cb, $trailers) = @_;
 
-    $trailers ||= {};
+    $trailers ||= {}; # XXX not used; remove? -- dagolden, 2010-12-03
 
     my $len = 0;
     while () {
@@ -545,7 +545,7 @@ sub write_chunked_body {
         $self->write($chunk);
     }
     $self->write("0\x0D\x0A");
-    $self->write_header_lines($trailers);
+    $self->write_header_lines($trailers); # XXX remove? -- dagolden, 2010-12-03
     return $len;
 }
 
