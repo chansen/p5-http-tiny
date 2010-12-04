@@ -10,6 +10,8 @@ BEGIN {
         rewind
         tmpfile
         slurp
+        set_socket_source
+        monkey_patch
         $CRLF
         $LF
     );
@@ -62,5 +64,34 @@ sub slurp (*) {
     return $buf;
 }
 
+{
+    my ($request,$reponse);
+
+    sub set_socket_source {
+        ($req_fh, $res_fh) = @_;
+    }
+
+    sub monkey_patch {
+        no warnings 'redefine';
+        *HTTP::Tiny::Handle::can_read = sub {1};
+        *HTTP::Tiny::Handle::can_write = sub {1};
+        *HTTP::Tiny::Handle::connect = sub {
+            my ($self, $scheme, $host, $port) = @_;
+            $self->{host} = $host;
+            $self->{port} = $port;
+            $self->{fh} = $req_fh;
+            return $self;
+        };
+        my $original_write_request = \&HTTP::TIny::Handle::write_request;
+        *HTTP::TIny::Handle::write_request = sub {
+            my ($self, $request) = @_;
+            $original_write_request->($self, $request);
+            $self->{fh} = $res_fh;
+        }
+    }
+}
+
 1;
 
+
+# vim: et ts=4 sts=4 sw=4:
