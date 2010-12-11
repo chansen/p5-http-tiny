@@ -2,8 +2,7 @@
 package HTTP::Tiny;
 use strict;
 use warnings;
-
-our $VERSION = '0.1';
+# ABSTRACT: A tiny HTTP client
 
 use Carp ();
 
@@ -624,5 +623,43 @@ sub can_write {
 
 1;
 
-__END__
+=for Pod::Coverage
+agent
+default_headers
+get
+max_redirect
+max_size
+new
+proxy
+request
+timeout
+
+=head1 SYNOPSIS
+
+    use HTTP::Tiny;
+
+    my $response = HTTP::Tiny->new->get('http://example.com/');
+
+    print "$response->{status} $response->{reason}\n";
+
+    while (my ($k, $v) = each %{$response->{headers}}) {
+        for (ref $v eq 'ARRAY' ? @$v : $v) {
+            print "$k: $_\n";
+        }
+    }
+
+    print $response->{content} if defined $response->{content};
+
+=head1 DESCRIPTION
+
+This is a very simple HTTP/1.1 client, designed primarily for doing simple GET
+requests without the overhead of a large framework like L<LWP::UserAgent>.
+
+It is more correct and more complete than L<HTTP::Lite>.  It supports
+proxies (currently only non-authenticating ones) and redirection.  It
+also correctly resumes after EINTR.
+
+Additional documentation and improved tests will be forthcoming.
+
+=cut
 
