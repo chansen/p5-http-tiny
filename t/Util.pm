@@ -20,8 +20,11 @@ BEGIN {
     *import = \&Exporter::import;
 }
 
-*CRLF = \"\x0D\x0A";
-*LF   = \"\x0A";
+{
+    no warnings 'once';
+    *CRLF = \"\x0D\x0A";
+    *LF   = \"\x0A";
+}
 
 sub rewind(*) {
     seek($_[0], 0, SEEK_SET)
@@ -65,14 +68,14 @@ sub slurp (*) {
 }
 
 {
-    my ($request,$reponse);
+    my ($req_fh, $res_fh);
 
     sub set_socket_source {
         ($req_fh, $res_fh) = @_;
     }
 
     sub monkey_patch {
-        no warnings 'redefine';
+        no warnings qw/redefine once/;
         *HTTP::Tiny::Handle::can_read = sub {1};
         *HTTP::Tiny::Handle::can_write = sub {1};
         *HTTP::Tiny::Handle::connect = sub {
