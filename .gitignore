@@ -5,6 +5,7 @@
 *.rej
 *.orig
 *~
+/.build
 /Build
 /Build.bat
 /Makefile
@@ -15,3 +16,4 @@
 /PM_to_blib
 /MYMETA.yml
 /*.tar.gz
+/HTTP-Tiny-*
