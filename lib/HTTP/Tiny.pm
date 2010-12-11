@@ -1,3 +1,4 @@
+# vim: ts=4 sts=4 sw=4 et:
 package HTTP::Tiny;
 use strict;
 use warnings;
@@ -625,4 +626,3 @@ sub can_write {
 
 __END__
 
-# vim: ts=4 sts=4 sw=4 et:
