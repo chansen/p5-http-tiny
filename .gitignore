@@ -1,0 +1,17 @@
+*.bak
+*.old
+*.tmp
+*.tar.gz
+*.rej
+*.orig
+*~
+/Build
+/Build.bat
+/Makefile
+/_build
+/blib
+/cover_db
+/pm_to_blib
+/PM_to_blib
+/MYMETA.yml
+/*.tar.gz
