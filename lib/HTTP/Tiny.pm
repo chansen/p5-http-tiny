@@ -6,6 +6,28 @@ use warnings;
 
 use Carp ();
 
+=method new
+
+    $http = HTTP::Tiny->new( %attributes );
+
+This constructor returns a new HTTP::Tiny object.  Valid attributes include:
+
+=for :list
+* agent
+A user-agent string (defaults to 'HTTP::Tiny/$VERSION')
+* default_headers
+A hashref of default headers to apply to requests
+* max_redirect
+Maximum number of redirects allowed (defaults to 5)
+* max_size
+Maximum response size (only when not using a data callback)
+* proxy
+URL of a proxy server to use
+* timeout
+Request timeout in seconds (default is 60)
+
+=cut
+
 my @attributes;
 BEGIN {
     @attributes = qw(agent default_headers max_redirect max_size proxy timeout);
@@ -31,12 +53,68 @@ sub new {
     return bless $self, $class;
 }
 
+=method get
+
+    $response = $http->get($url);
+    $response = $http->get($url, \%options);
+
+Executes a C<GET> request for the given URL.  Internally, it just calls
+C<request()> with 'GET' as the method.  See C<request()> for valid options
+and a description of the response.
+
+=cut
+
 sub get {
     my ($self, $url, $args) = @_;
     @_ == 2 || (@_ == 3 && ref $args eq 'HASH')
       or Carp::croak(q/Usage: $http->get(URL, [HASHREF])/);
     return $self->request('GET', $url, $args || {});
 }
+
+=method request
+
+    $response = $http->request($method, $url);
+    $response = $http->request($method, $url, \%options);
+
+Executes an HTTP request of the given method type ('GET',
+'HEAD', 'PUT', etc.) on the given URL.  A hashref of options
+may be appended to modify the request.
+
+Valid options are:
+
+=for :list
+* headers
+A hashref containing headers to include with the request
+* content
+A scalar to include as the body of the request OR a code reference
+that will be called iteratively to produce the body of the response
+* data_callback
+A code reference that will be called with chunks of the response
+body
+
+[XXX describe how callbacks work]
+
+The C<response> method returns a hashref containing the response.  The hashref
+will have the following keys:
+
+=for :list
+* status
+The HTTP status code of the response
+* reason
+The response phrase returned by the server
+* content
+The body of the response.  If the response does not have any content
+or if a data callback is provided to consume the response body,
+this will be the empty string
+* headers
+A hashref of header fields.  All header field names will be normalized 
+to be lower case. If a header is repeated, the value will be an arrayref;
+it will otherwise be a scalar string containing the value
+
+On an exception during the execution of the request, the C<status> field will
+contain 599, and the C<content> field will contain the text of the exception.
+
+=cut
 
 sub request {
     my ($self, $method, $url, $args) = @_;
@@ -626,12 +704,9 @@ sub can_write {
 =for Pod::Coverage
 agent
 default_headers
-get
 max_redirect
 max_size
-new
 proxy
-request
 timeout
 
 =head1 SYNOPSIS
