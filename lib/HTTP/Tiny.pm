@@ -212,8 +212,10 @@ sub _prepare_headers_and_cb {
         }
         else {
             my $content = $args->{content};
-            utf8::downgrade($content, 1)
-              or Carp::croak(q/Wide character in request message body/);
+            if ( $] ge '5.008' ) {
+                utf8::downgrade($content, 1)
+                    or Carp::croak(q/Wide character in request message body/);
+            }
             $request->{headers}{'content-length'} = length $content
               unless $request->{headers}{'content-length'}
                   || $request->{headers}{'transfer-encoding'};
@@ -352,8 +354,10 @@ sub write {
     @_ == 2 || croak(q/Usage: $handle->write(buf)/);
     my ($self, $buf) = @_;
 
-    utf8::downgrade($buf, 1)
-      or croak(q/Wide character in write()/);
+    if ( $] ge '5.008' ) {
+        utf8::downgrade($buf, 1)
+            or croak(q/Wide character in write()/);
+    }
 
     my $len = length $buf;
     my $off = 0;
@@ -564,8 +568,10 @@ sub write_content_body {
         defined $data && length $data
           or last;
 
-        utf8::downgrade($data, 1)
-          or croak(q/Wide character in write_content()/);
+        if ( $] ge '5.008' ) {
+            utf8::downgrade($data, 1)
+                or croak(q/Wide character in write_content()/);
+        }
 
         $len += $self->write($data);
     }
@@ -610,8 +616,10 @@ sub write_chunked_body {
         defined $data && length $data
           or last;
 
-        utf8::downgrade($data, 1)
-          or croak(q/Wide character in write_chunked_body()/);
+        if ( $] ge '5.008' ) {
+            utf8::downgrade($data, 1)
+                or croak(q/Wide character in write_chunked_body()/);
+        }
 
         $len += length $data;
 
