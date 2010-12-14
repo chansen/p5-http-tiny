@@ -2,6 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  - Added some initial documentation
+
+  - Skips utf8::* code on Perls older than 5.8
+
 0.001     2010-12-11 07:59:16 EST5EDT
 
   - Initial CPAN release
