@@ -285,6 +285,13 @@ sub _split_url {
     return ($scheme, $host, $port, $path_query);
 }
 
+sub _http_date {
+    my ($self, $time) = @_;
+    my $datetime = gmtime($time);
+    $datetime =~ s{(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)}{$1, $3 $2 $5 $4 GMT};
+    return $datetime;
+}
+
 package
     HTTP::Tiny::Handle; # hide from PAUSE/indexers
 use strict;
