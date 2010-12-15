@@ -797,6 +797,8 @@ timeout
 
     my $response = HTTP::Tiny->new->get('http://example.com/');
 
+    die "Failed!\n" unless $response->{ok};
+
     print "$response->{status} $response->{reason}\n";
 
     while (my ($k, $v) = each %{$response->{headers}}) {
