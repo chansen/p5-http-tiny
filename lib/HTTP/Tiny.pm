@@ -71,6 +71,55 @@ sub get {
     return $self->request('GET', $url, $args || {});
 }
 
+=method mirror
+
+    $response = $http->mirror($url, $file, \%options)
+    if ( $response->{ok} ) {
+        print "$file is up to date\n";
+    }
+
+Executes a C<GET> request for the URL and saves the response body to the
+file name provided.  If the file already exists, the request will
+includes an C<If-Modified-Since> header with the modification timestamp
+of the file.  You may specificy a different C<If-Modified-Since> header
+yourself in the C<< $options->{headers} >> hash.
+
+The C<ok> field of the response will be true if the status code is 2XX
+or 304 (unmodified).
+
+If the file was modified and the server response includes a properly
+formatted C<Last-Modified> header, the file modification time will
+be updated accordingly.
+
+=cut
+
+sub mirror {
+    my ($self, $url, $file, $args) = @_;
+    @_ == 3 || (@_ == 4 && ref $args eq 'HASH')
+      or Carp::croak(q/Usage: $http->get(URL, FILE, [HASHREF])/);
+    if ( -e $file and my $mtime = (stat($file))[9] ) {
+        $args->{headers}{'if-modified-since'} ||= $self->_http_date($mtime);
+    }
+    my $tempfile = $file . int(rand(2**31));
+    open my $fh, ">", $tempfile
+        or Carp::croak(qq/Error: Could not open temporary file $tempfile for downloading: $!/);
+    $args->{data_callback} = sub { print {$fh} $_[0] };
+    my $response = $self->request('GET', $url, $args);
+    close $fh
+        or Carp::croak(qq/Error: Could not close temporary file $tempfile: $!/);
+    if ( $response->{ok} ) {
+        rename $tempfile, $file
+            or Carp::croak "Error replacing $file with $tempfile: $!\n";
+        my $lm = $response->{headers}{'last-modified'};
+        if ( $lm and my $mtime = $self->_parsed_http_date($lm) ) {
+            utime $mtime, $mtime, $file;
+        }
+    }
+    $response->{ok} ||= $response->{status} eq '304';
+    unlink $tempfile;
+    return $response;
+}
+
 =method request
 
     $response = $http->request($method, $url);
@@ -294,6 +343,20 @@ sub _http_date {
     my $datetime = gmtime($time);
     $datetime =~ s{(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)}{$1, $3 $2 $5 $4 GMT};
     return $datetime;
+}
+
+# Adapted from HTTP::Date for strictly conforming date strings
+my $MoY = "Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec";
+sub _parse_http_date {
+    my ($self, $str) = @_;
+    if ($str =~ /^[SMTWF][a-z][a-z], (\d\d) ($MoY) (\d\d\d\d) (\d\d):(\d\d):(\d\d) GMT$/) {
+        require Time::Local;
+        return eval {
+            my $t = Time::Local::timegm($6, $5, $4, $1, (index($MoY,$2)/4), $3);
+            $t < 0 ? undef : $t;
+        };
+    }
+    return;
 }
 
 package
