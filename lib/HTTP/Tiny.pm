@@ -111,7 +111,7 @@ sub mirror {
         rename $tempfile, $file
             or Carp::croak "Error replacing $file with $tempfile: $!\n";
         my $lm = $response->{headers}{'last-modified'};
-        if ( $lm and my $mtime = $self->_parsed_http_date($lm) ) {
+        if ( $lm and my $mtime = $self->_parse_http_date($lm) ) {
             utime $mtime, $mtime, $file;
         }
     }
