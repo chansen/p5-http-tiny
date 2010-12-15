@@ -98,6 +98,8 @@ The C<response> method returns a hashref containing the response.  The hashref
 will have the following keys:
 
 =for :list
+* ok
+Boolean indicating whether the operation returned a 2XX status code
 * status
 The HTTP status code of the response
 * reason
@@ -125,6 +127,7 @@ sub request {
 
     if (my $e = "$@") {
         $response = {
+            ok      => q{},
             status  => 599,
             reason  => 'Internal Exception',
             content => $e,
@@ -187,6 +190,7 @@ sub _request {
     }
 
     $handle->close;
+    $response->{ok} = substr($response->{status},0,1) eq '2';
     return $response;
 }
 
