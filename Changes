@@ -2,6 +2,11 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  - Added 'ok' response field to simplify checking success
+
+  - Added a 'mirror' method mirror content to a file, but shortcut
+    if not modified
+
 0.002     2010-12-13 21:59:39 EST5EDT
 
   - Added some initial documentation
