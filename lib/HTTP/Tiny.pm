@@ -74,7 +74,7 @@ sub get {
 =method mirror
 
     $response = $http->mirror($url, $file, \%options)
-    if ( $response->{ok} ) {
+    if ( $response->{success} ) {
         print "$file is up to date\n";
     }
 
@@ -84,7 +84,7 @@ includes an C<If-Modified-Since> header with the modification timestamp
 of the file.  You may specificy a different C<If-Modified-Since> header
 yourself in the C<< $options->{headers} >> hash.
 
-The C<ok> field of the response will be true if the status code is 2XX
+The C<success> field of the response will be true if the status code is 2XX
 or 304 (unmodified).
 
 If the file was modified and the server response includes a properly
@@ -107,7 +107,7 @@ sub mirror {
     my $response = $self->request('GET', $url, $args);
     close $fh
         or Carp::croak(qq/Error: Could not close temporary file $tempfile: $!/);
-    if ( $response->{ok} ) {
+    if ( $response->{success} ) {
         rename $tempfile, $file
             or Carp::croak "Error replacing $file with $tempfile: $!\n";
         my $lm = $response->{headers}{'last-modified'};
@@ -115,7 +115,7 @@ sub mirror {
             utime $mtime, $mtime, $file;
         }
     }
-    $response->{ok} ||= $response->{status} eq '304';
+    $response->{success} ||= $response->{status} eq '304';
     unlink $tempfile;
     return $response;
 }
@@ -147,7 +147,7 @@ The C<response> method returns a hashref containing the response.  The hashref
 will have the following keys:
 
 =for :list
-* ok
+* success
 Boolean indicating whether the operation returned a 2XX status code
 * status
 The HTTP status code of the response
@@ -176,7 +176,7 @@ sub request {
 
     if (my $e = "$@") {
         $response = {
-            ok      => q{},
+            success => q{},
             status  => 599,
             reason  => 'Internal Exception',
             content => $e,
@@ -239,7 +239,7 @@ sub _request {
     }
 
     $handle->close;
-    $response->{ok} = substr($response->{status},0,1) eq '2';
+    $response->{success} = substr($response->{status},0,1) eq '2';
     return $response;
 }
 
@@ -797,7 +797,7 @@ timeout
 
     my $response = HTTP::Tiny->new->get('http://example.com/');
 
-    die "Failed!\n" unless $response->{ok};
+    die "Failed!\n" unless $response->{success};
 
     print "$response->{status} $response->{reason}\n";
 

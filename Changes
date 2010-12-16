@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  - Renamed 'ok' response field to 'success'
+
 0.003     2010-12-15 12:30:42 EST5EDT
 
   - Added 'ok' response field to simplify checking success
