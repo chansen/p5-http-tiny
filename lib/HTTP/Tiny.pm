@@ -338,25 +338,35 @@ sub _split_url {
     return ($scheme, $host, $port, $path_query);
 }
 
+# Date conversions adapted from HTTP::Date
+my $DoW = "Sun|Mon|Tue|Wed|Thu|Fri|Sat";
+my $MoY = "Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec";
 sub _http_date {
-    my ($self, $time) = @_;
-    my $datetime = gmtime($time);
-    $datetime =~ s{(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)}{$1, $3 $2 $5 $4 GMT};
-    return $datetime;
+    my ($sec, $min, $hour, $mday, $mon, $year, $wday) = gmtime($_[1]);
+    return sprintf("%s, %02d %s %04d %02d:%02d:%02d GMT",
+        substr($DoW,$wday*4,3),
+        $mday, substr($MoY,$mon*4,3), $year+1900,
+        $hour, $min, $sec
+    );
 }
 
-# Adapted from HTTP::Date for strictly conforming date strings
-my $MoY = "Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec";
 sub _parse_http_date {
     my ($self, $str) = @_;
-    if ($str =~ /^[SMTWF][a-z][a-z], (\d\d) ($MoY) (\d\d\d\d) (\d\d):(\d\d):(\d\d) GMT$/) {
-        require Time::Local;
-        return eval {
-            my $t = Time::Local::timegm($6, $5, $4, $1, (index($MoY,$2)/4), $3);
-            $t < 0 ? undef : $t;
-        };
+    require Time::Local;
+    my @tl_parts;
+    if ($str =~ /^[SMTWF][a-z]+, +(\d{1,2}) ($MoY) +(\d\d\d\d) +(\d\d):(\d\d):(\d\d) +GMT$/) {
+        @tl_parts = ($6, $5, $4, $1, (index($MoY,$2)/4), $3);
     }
-    return;
+    elsif ($str =~ /^[SMTWF][a-z]+, +(\d\d)-($MoY)-(\d{2,4}) +(\d\d):(\d\d):(\d\d) +GMT$/ ) {
+        @tl_parts = ($6, $5, $4, $1, (index($MoY,$2)/4), $3);
+    }
+    elsif ($str =~ /^[SMTWF][a-z]+ +($MoY) +(\d{1,2}) +(\d\d):(\d\d):(\d\d) +(?:[^0-9]+ +)?(\d\d\d\d)$/ ) {
+        @tl_parts = ($5, $4, $3, $2, (index($MoY,$1)/4), $6);
+    }
+    return eval {
+        my $t = @tl_parts ? Time::Local::timegm(@tl_parts) : -1;
+        $t < 0 ? undef : $t;
+    };
 }
 
 package

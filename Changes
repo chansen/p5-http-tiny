@@ -4,6 +4,8 @@ Release notes for HTTP-Tiny
 
   - Renamed 'ok' response field to 'success'
 
+  - Handle all required HTTP/1.1 date formats
+
 0.003     2010-12-15 12:30:42 EST5EDT
 
   - Added 'ok' response field to simplify checking success
