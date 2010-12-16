@@ -141,7 +141,13 @@ that will be called iteratively to produce the body of the response
 A code reference that will be called with chunks of the response
 body
 
-[XXX describe how callbacks work]
+If the C<content> option is a code reference, it will be called iteratively
+to provide the content body of the request.  It should return the empty
+string or undef when the iterator is exhausted.
+
+If the C<data_callback> option is provided, it will be called iteratively
+with a chunk of response body data as the sole argument until the entire
+response body is received.
 
 The C<response> method returns a hashref containing the response.  The hashref
 will have the following keys:
