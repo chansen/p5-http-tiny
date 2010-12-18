@@ -10,6 +10,7 @@ BEGIN {
         rewind
         tmpfile
         slurp
+        sort_headers
         set_socket_source
         monkey_patch
         $CRLF
@@ -20,11 +21,8 @@ BEGIN {
     *import = \&Exporter::import;
 }
 
-{
-    no warnings 'once';
-    *CRLF = \"\x0D\x0A";
-    *LF   = \"\x0A";
-}
+our $CRLF = "\x0D\x0A";
+our $LF   = "\x0A";
 
 sub rewind(*) {
     seek($_[0], 0, SEEK_SET)
@@ -67,6 +65,14 @@ sub slurp (*) {
     return $buf;
 }
 
+sub sort_headers {
+    my ($text) = shift;
+    my @lines = split /$CRLF/, $text;
+    my @output = shift(@lines);
+    push @output, sort @lines;
+    return join($CRLF, @output);
+}
+
 {
     my ($req_fh, $res_fh);
 
@@ -85,8 +91,8 @@ sub slurp (*) {
             $self->{fh} = $req_fh;
             return $self;
         };
-        my $original_write_request = \&HTTP::TIny::Handle::write_request;
-        *HTTP::TIny::Handle::write_request = sub {
+        my $original_write_request = \&HTTP::Tiny::Handle::write_request;
+        *HTTP::Tiny::Handle::write_request = sub {
             my ($self, $request) = @_;
             $original_write_request->($self, $request);
             $self->{fh} = $res_fh;

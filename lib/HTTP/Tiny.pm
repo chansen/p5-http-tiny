@@ -43,7 +43,7 @@ sub new {
     my($class, %args) = @_;
     (my $agent = $class) =~ s{::}{-}g;
     my $self = {
-        agent        => $agent . "/" . $class->VERSION,
+        agent        => $agent . "/" . ($class->VERSION || 0),
         max_redirect => 5,
         timeout      => 60,
     };
