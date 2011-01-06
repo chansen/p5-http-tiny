@@ -4,11 +4,13 @@ use strict;
 use warnings;
 
 use IO::File q[SEEK_SET];
+use IO::Dir;
 
 BEGIN {
     our @EXPORT_OK = qw(
         rewind
         tmpfile
+        dir_list
         slurp
         sort_headers
         set_socket_source
@@ -45,6 +47,14 @@ sub tmpfile {
     }
 
     return $fh;
+}
+
+sub dir_list {
+    my ($dir, $filter) = @_;
+    $filter ||= qr/./;
+    my $d = IO::Dir->new($dir)
+        or return;
+    return map { "$dir/$_" } grep { /$filter/ } grep { /^[^.]/ } $d->read;
 }
 
 sub slurp (*) {
