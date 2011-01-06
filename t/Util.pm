@@ -55,7 +55,7 @@ sub dir_list {
     $filter ||= qr/./;
     my $d = IO::Dir->new($dir)
         or return;
-    return map { "$dir/$_" } grep { /$filter/ } grep { /^[^.]/ } $d->read;
+    return map { "$dir/$_" } sort grep { /$filter/ } grep { /^[^.]/ } $d->read;
 }
 
 sub slurp (*) {

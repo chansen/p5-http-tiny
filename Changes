@@ -2,7 +2,7 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
-  - Add a few tests for the get() method
+  - Add a few tests for the get() and mirror() methods
 
 0.004     2010-12-15 22:53:59 EST5EDT
 
