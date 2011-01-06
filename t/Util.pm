@@ -12,6 +12,7 @@ BEGIN {
         tmpfile
         dir_list
         slurp
+        parse_case
         sort_headers
         set_socket_source
         monkey_patch
@@ -73,6 +74,23 @@ sub slurp (*) {
       || die(qq[I/O read mismatch (expexted: $exp got: $got)]);
 
     return $buf;
+}
+
+sub parse_case {
+    my ($case) = @_;
+    my %args;
+    my $key = '';
+    for my $line ( split "\n", $case ) {
+        chomp $line;
+        if ( substr($line,0,1) eq q{ } ) {
+            $line =~ s/^\s+//;
+            push @{$args{$key}}, $line;
+        }
+        else {
+            $key = $line;
+        }
+    }
+    return \%args;
 }
 
 sub sort_headers {
