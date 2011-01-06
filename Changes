@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  - Add a few tests for the get() method
+
 0.004     2010-12-15 22:53:59 EST5EDT
 
   - Renamed 'ok' response field to 'success'
