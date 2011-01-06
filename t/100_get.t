@@ -9,6 +9,11 @@ use t::Util    qw[tmpfile rewind slurp monkey_patch dir_list parse_case
 use HTTP::Tiny;
 BEGIN { monkey_patch() }
 
+my %response_codes = (
+  'index.html'        => '200',
+  'missing.html'      => '404',
+);
+
 for my $file ( dir_list("t/cases", qr/^get/ ) ) {
   my $data = do { local (@ARGV,$/) = $file; <> };
   my ($params, $expect_req, $give_res) = split /--+\n/, $data;
@@ -36,6 +41,8 @@ for my $file ( dir_list("t/cases", qr/^get/ ) ) {
   my $http = HTTP::Tiny->new;
   set_socket_source($req_fh, $res_fh);
 
+  (my $url_basename = $url) =~ s{.*/}{}; 
+
   my @call_args = %options ? ($url, \%options) : ($url);
   my $response  = $http->get(@call_args);
 
@@ -44,8 +51,17 @@ for my $file ( dir_list("t/cases", qr/^get/ ) ) {
   my $label = "get on $url";
   $label .= " (@{[keys %options]})" if %options;
   is( sort_headers($got_req), sort_headers($expect_req), "$label request" );
-  is( $response->{status}, '200', "$label response" )
+
+  my $rc = $response_codes{$url_basename};
+  is( $response->{status}, $rc, "$label response code $rc" )
     or diag $response->{content};
+
+  if ( $rc eq '200' ) {
+    ok( $response->{success}, "$label success flag true" );
+  }
+  else {
+    ok( ! $response->{success}, "$label success flag false" );
+  }
 }
 
 done_testing;
