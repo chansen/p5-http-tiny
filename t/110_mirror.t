@@ -76,22 +76,20 @@ for my $file ( dir_list("t/cases", qr/^mirror/ ) ) {
   is( sort_headers($got_req), sort_headers($expect_req), "$label request" );
 
   my $rc = $response_codes{$url_basename};
+  is( $response->{status}, $rc, "$label response code $rc" )
+    or diag $response->{content};
 
   if ( $rc eq '200' ) {
     ok( $response->{success}, "$label success flag true" );
-    is( $response->{status}, $rc, "$label response code $rc" );
     ok( -e $tempfile, "$label file created" );
   }
   elsif ( $rc eq '304' ) {
     ok( $response->{success}, "$label success flag true" );
-    is( $response->{status}, $rc, "$label response code $rc" );
     is( (stat($tempfile))[9], $timestamp{$url_basename}, 
       "$label file not overwritten" );
   }
   else {
     ok( ! $response->{success}, "$label success flag false" );
-    is( $response->{status}, $rc, "$label response code $rc" )
-      or diag $response->{content};
     ok( ! -e $tempfile, "$label file not created" );
   }
 }
