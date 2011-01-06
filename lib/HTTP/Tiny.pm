@@ -210,7 +210,7 @@ sub _request {
         scheme    => $scheme,
         host_port => ($port == $DefaultPort{$scheme} ? $host : "$host:$port"),
         uri       => $path_query,
-        headers     => {},
+        headers   => {},
     };
 
     my $handle  = HTTP::Tiny::Handle->new(timeout => $self->{timeout});
