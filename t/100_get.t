@@ -50,7 +50,9 @@ for my $file ( dir_list("t/cases", qr/^get/ ) ) {
   my $response  = $http->get(@call_args);
 
   my ($got_host, $got_port) = connect_args();
-  my ($exp_host, $exp_port) = $url =~ m{^http://([^:/]+?):?(\d*)/}g;
+  my ($exp_host, $exp_port) = ( 
+    ($new_args{proxy} || $url ) =~ m{^http://([^:/]+?):?(\d*)/}g
+  );
   $exp_port ||= 80;
 
   my $got_req = slurp($req_fh);
