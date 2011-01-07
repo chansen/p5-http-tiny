@@ -15,13 +15,6 @@ BEGIN { monkey_patch() }
 my $tempdir = tempdir( TMPDIR => 1, CLEANUP => 1 );
 my $tempfile = $tempdir . "/tempfile.txt";
 
-my %response_codes = (
-  'new.txt'           => '200',
-  'modified.txt'      => '200',
-  'not-modified.txt'  => '304',
-  'missing.txt'       => '404',
-);
-
 my $known_epoch = 760233600;
 my $day = 24*3600;
 
@@ -75,11 +68,11 @@ for my $file ( dir_list("t/cases", qr/^mirror/ ) ) {
 
   is( sort_headers($got_req), sort_headers($expect_req), "$label request" );
 
-  my $rc = $response_codes{$url_basename};
+  my ($rc) = $give_res =~ m{\S+\s+(\d+)}g;
   is( $response->{status}, $rc, "$label response code $rc" )
     or diag $response->{content};
 
-  if ( $rc eq '200' ) {
+  if ( substr($rc,0,1) eq '2' ) {
     ok( $response->{success}, "$label success flag true" );
     ok( -e $tempfile, "$label file created" );
   }

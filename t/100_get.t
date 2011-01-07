@@ -10,13 +10,6 @@ use t::Util    qw[tmpfile rewind slurp monkey_patch dir_list parse_case
 use HTTP::Tiny;
 BEGIN { monkey_patch() }
 
-my %response_codes = (
-  'index.html'        => '200',
-  'chunked.html'      => '200',
-  'cb.html'           => '200',
-  'missing.html'      => '404',
-);
-
 for my $file ( dir_list("t/cases", qr/^get/ ) ) {
   my $data = do { local (@ARGV,$/) = $file; <> };
   my ($params, $expect_req, $give_res) = split /--+\n/, $data;
@@ -61,11 +54,11 @@ for my $file ( dir_list("t/cases", qr/^get/ ) ) {
 
   is( sort_headers($got_req), sort_headers($expect_req), "$label request" );
 
-  my $rc = $response_codes{$url_basename};
+  my ($rc) = $give_res =~ m{\S+\s+(\d+)}g;
   is( $response->{status}, $rc, "$label response code $rc" )
     or diag $response->{content};
 
-  if ( $rc eq '200' ) {
+  if ( substr($rc,0,1) eq '2' ) {
     ok( $response->{success}, "$label success flag true" );
   }
   else {
