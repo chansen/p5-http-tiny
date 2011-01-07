@@ -1,5 +1,7 @@
 url
   http://example.com/cb.html
+expected
+  abcdefghijklmnopqrstuvwxyz1234567890abcdef
 data_cb
   sub { $main::data .= $_[0] }
 ----------

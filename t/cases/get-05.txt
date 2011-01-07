@@ -1,5 +1,7 @@
 url
   http://example.com/chunked.html
+expected
+  abcdefghijklmnopqrstuvwxyz1234567890abcdef
 ----------
 GET /chunked.html HTTP/1.1
 Host: example.com

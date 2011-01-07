@@ -12,28 +12,27 @@ use HTTP::Tiny;
 BEGIN { monkey_patch() }
 
 for my $file ( dir_list("t/cases", qr/^get/ ) ) {
+  my $label = basename($file);
   my $data = do { local (@ARGV,$/) = $file; <> };
   my ($params, $expect_req, $give_res) = split /--+\n/, $data;
-
-  # figure out what request to make
   my $case = parse_case($params);
-  my $url = $case->{url}->[0];
-  my %options;
 
+  my $url = $case->{url}->[0];
   my %headers = hashify( $case->{headers} );
   my %new_args = hashify( $case->{new_args} );
 
+  my %options;
   $options{headers} = \%headers if %headers;
-
   if ( $case->{data_cb} ) {
     $main::data = '';
     $options{data_callback} = eval join "\n", @{$case->{data_cb}};
     die unless ref( $options{data_callback} ) eq 'CODE';
   }
 
-  # cleanup source data
   my $version = HTTP::Tiny->VERSION || 0;
   my $agent = $new_args{agent} || "HTTP-Tiny/$version";
+
+  # cleanup source data
   $expect_req =~ s{HTTP-Tiny/VERSION}{$agent};
   s{\n}{$CRLF}g for ($expect_req, $give_res);
 
@@ -57,8 +56,6 @@ for my $file ( dir_list("t/cases", qr/^get/ ) ) {
 
   my $got_req = slurp($req_fh);
 
-  my $label = basename($file);
-
   is ($got_host, $exp_host, "$label host $exp_host");
   is ($got_port, $exp_port, "$label port $exp_port");
   is( sort_headers($got_req), sort_headers($expect_req), "$label request data");
@@ -74,12 +71,16 @@ for my $file ( dir_list("t/cases", qr/^get/ ) ) {
     ok( ! $response->{success}, "$label success flag false" );
   }
 
+  my $exp_content = $case->{expected}
+                  ? join("$CRLF", @{$case->{expected}}) : '';
+
   if ( $options{data_callback} ) {
-    my ($expected) = reverse split "$CRLF", $give_res;
-    is ( $main::data, $expected, "$label cb got content" );
+    is ( $main::data, $exp_content, "$label cb got content" );
     is ( $response->{content}, '', "$label resp content empty" );
   }
-
+  else {
+    is ( $response->{content}, $exp_content, "$label content" );
+  }
 }
 
 done_testing;

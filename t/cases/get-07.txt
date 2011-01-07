@@ -2,6 +2,8 @@ new_args
   proxy: http://proxy.example.com:8080/
 url
   http://example.com/index.html
+expected
+  abcdefghijklmnopqrstuvwxyz1234567890abcdef
 ----------
 GET http://example.com/index.html HTTP/1.1
 Host: example.com

@@ -1,5 +1,7 @@
 url
   http://example.com:9000/index.html
+expected
+  abcdefghijklmnopqrstuvwxyz1234567890abcdef
 ----------
 GET /index.html HTTP/1.1
 Host: example.com:9000

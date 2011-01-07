@@ -1,5 +1,7 @@
 url
   http://example.com/index.html
+expected
+  abcdefghijklmnopqrstuvwxyz1234567890abcdef
 headers
   Accept: */*
   X-Custom: This is a custom header
