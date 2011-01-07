@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 
+use File::Basename;
 use Test::More 0.88;
 use t::Util    qw[tmpfile rewind slurp monkey_patch dir_list parse_case
                   set_socket_source sort_headers $CRLF $LF];
@@ -70,8 +71,7 @@ for my $file ( dir_list("t/cases", qr/^mirror/ ) ) {
 
   my $got_req = slurp($req_fh);
 
-  my $label = "mirror $url";
-  $label .= " (@{[keys %options]})" if %options;
+  my $label = basename($file);
 
   is( sort_headers($got_req), sort_headers($expect_req), "$label request" );
 
