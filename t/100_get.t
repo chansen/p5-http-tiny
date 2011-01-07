@@ -11,6 +11,8 @@ BEGIN { monkey_patch() }
 
 my %response_codes = (
   'index.html'        => '200',
+  'chunked.html'      => '200',
+  'cb.html'           => '200',
   'missing.html'      => '404',
 );
 
@@ -34,6 +36,12 @@ for my $file ( dir_list("t/cases", qr/^get/ ) ) {
   }
   $options{headers} = \%headers if %headers;
 
+  if ( $case->{data_cb} ) {
+    $main::data = '';
+    $options{data_callback} = eval join "\n", @{$case->{data_cb}};
+    die unless ref( $options{data_callback} ) eq 'CODE';
+  }
+
   # setup mocking and test
   my $res_fh = tmpfile($give_res);
   my $req_fh = tmpfile();
@@ -48,7 +56,7 @@ for my $file ( dir_list("t/cases", qr/^get/ ) ) {
 
   my $got_req = slurp($req_fh);
 
-  my $label = "get on $url";
+  my $label = "$file";
   $label .= " (@{[keys %options]})" if %options;
   is( sort_headers($got_req), sort_headers($expect_req), "$label request" );
 
@@ -62,6 +70,13 @@ for my $file ( dir_list("t/cases", qr/^get/ ) ) {
   else {
     ok( ! $response->{success}, "$label success flag false" );
   }
+
+  if ( $options{data_callback} ) {
+    my ($expected) = reverse split "$CRLF", $give_res;
+    is ( $main::data, $expected, "$label cb got content" );
+    is ( $response->{content}, '', "$label resp content empty" );
+  }
+
 }
 
 done_testing;
