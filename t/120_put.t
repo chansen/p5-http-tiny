@@ -12,6 +12,7 @@ BEGIN { monkey_patch() }
 my %response_codes = (
   'new.txt'        => '201',
   'callback.txt'   => '201',
+  'chunked.txt'    => '201',
 );
 
 for my $file ( dir_list("t/cases", qr/^put/ ) ) {
