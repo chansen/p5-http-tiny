@@ -15,6 +15,7 @@ BEGIN {
         parse_case
         hashify
         sort_headers
+        connect_args
         set_socket_source
         monkey_patch
         $CRLF
@@ -119,11 +120,13 @@ sub sort_headers {
 }
 
 {
-    my ($req_fh, $res_fh);
+    my ($req_fh, $res_fh, $monkey_host, $monkey_port);
 
     sub set_socket_source {
         ($req_fh, $res_fh) = @_;
     }
+
+    sub connect_args { return ($monkey_host, $monkey_port) }
 
     sub monkey_patch {
         no warnings qw/redefine once/;
@@ -131,8 +134,8 @@ sub sort_headers {
         *HTTP::Tiny::Handle::can_write = sub {1};
         *HTTP::Tiny::Handle::connect = sub {
             my ($self, $scheme, $host, $port) = @_;
-            $self->{host} = $host;
-            $self->{port} = $port;
+            $self->{host} = $monkey_host = $host;
+            $self->{port} = $monkey_port = $port;
             $self->{fh} = $req_fh;
             return $self;
         };
