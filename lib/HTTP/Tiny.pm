@@ -315,9 +315,9 @@ sub _maybe_redirect {
     my ($self, $request, $response, $args) = @_;
     my $headers = $response->{headers};
     if (   $response->{status} =~ /^30[12]/
-        && $request->{method} =~ /^GET|HEAD$/
-        && $headers->{location}
-        && $args->{redirects}++ < $self->{max_redirect}
+        and $request->{method} =~ /^GET|HEAD$/
+        and $headers->{location}
+        and ++$args->{redirects} < $self->{max_redirect}
     ) {
         return ($headers->{location} =~ /^\//)
             ? "$request->{scheme}://$request->{host_port}$headers->{location}"
