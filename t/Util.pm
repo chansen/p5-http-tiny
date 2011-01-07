@@ -13,6 +13,7 @@ BEGIN {
         dir_list
         slurp
         parse_case
+        hashify
         sort_headers
         set_socket_source
         monkey_patch
@@ -91,6 +92,17 @@ sub parse_case {
         }
     }
     return \%args;
+}
+
+sub hashify {
+    my ($lines) = @_;
+    return unless $lines;
+    my %hash;
+    for my $line ( @$lines ) {
+        my ($k,$v) = ($line =~ m{^([^:]+): (.*)$}g);
+        $hash{$k} = $v;
+    }
+    return %hash;
 }
 
 sub sort_headers {

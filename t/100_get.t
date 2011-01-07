@@ -6,28 +6,22 @@ use warnings;
 use File::Basename;
 use Test::More 0.88;
 use t::Util    qw[tmpfile rewind slurp monkey_patch dir_list parse_case
-                  set_socket_source sort_headers $CRLF $LF];
+                  hashify set_socket_source sort_headers $CRLF $LF];
 use HTTP::Tiny;
 BEGIN { monkey_patch() }
 
 for my $file ( dir_list("t/cases", qr/^get/ ) ) {
   my $data = do { local (@ARGV,$/) = $file; <> };
   my ($params, $expect_req, $give_res) = split /--+\n/, $data;
-  # cleanup source data
-  my $version = HTTP::Tiny->VERSION || 0;
-  $expect_req =~ s{VERSION}{$version};
-  s{\n}{$CRLF}g for ($expect_req, $give_res);
-  
+
   # figure out what request to make
   my $case = parse_case($params);
   my $url = $case->{url}->[0];
   my %options;
 
-  my %headers;
-  for my $line ( @{ $case->{headers} } ) {
-    my ($k,$v) = ($line =~ m{^([^:]+): (.*)$}g);
-    $headers{$k} = $v;
-  }
+  my %headers = hashify( $case->{headers} );
+  my %new_args = hashify( $case->{new_args} );
+
   $options{headers} = \%headers if %headers;
 
   if ( $case->{data_cb} ) {
@@ -36,14 +30,20 @@ for my $file ( dir_list("t/cases", qr/^get/ ) ) {
     die unless ref( $options{data_callback} ) eq 'CODE';
   }
 
+  # cleanup source data
+  my $version = HTTP::Tiny->VERSION || 0;
+  my $agent = $new_args{agent} || "HTTP-Tiny/$version";
+  $expect_req =~ s{HTTP-Tiny/VERSION}{$agent};
+  s{\n}{$CRLF}g for ($expect_req, $give_res);
+
   # setup mocking and test
   my $res_fh = tmpfile($give_res);
   my $req_fh = tmpfile();
 
-  my $http = HTTP::Tiny->new;
+  my $http = HTTP::Tiny->new(%new_args);
   set_socket_source($req_fh, $res_fh);
 
-  (my $url_basename = $url) =~ s{.*/}{}; 
+  (my $url_basename = $url) =~ s{.*/}{};
 
   my @call_args = %options ? ($url, \%options) : ($url);
   my $response  = $http->get(@call_args);
