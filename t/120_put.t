@@ -11,6 +11,7 @@ BEGIN { monkey_patch() }
 
 my %response_codes = (
   'new.txt'        => '201',
+  'callback.txt'   => '201',
 );
 
 for my $file ( dir_list("t/cases", qr/^put/ ) ) {
@@ -35,6 +36,9 @@ for my $file ( dir_list("t/cases", qr/^put/ ) ) {
 
   if ( $case->{content} ) {
     $options{content} = $case->{content}->[0];
+  }
+  elsif ( $case->{content_cb} ) {
+    $options{content} = eval join "\n", @{$case->{content_cb}};
   }
 
   # setup mocking and test
