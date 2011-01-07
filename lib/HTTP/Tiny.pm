@@ -241,7 +241,9 @@ sub _request {
     }
     else {
         my $data_cb = $self->_prepare_data_cb($response, $args);
-        $handle->read_body($data_cb, $response->{headers}{'content-length'});
+        my $rh = $response->{headers};
+        $handle->read_body($data_cb, $rh->{'content-length'})
+            if $rh->{'content-length'} || $rh->{'transfer-encoding'};
     }
 
     $handle->close;

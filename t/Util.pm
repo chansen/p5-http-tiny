@@ -96,9 +96,14 @@ sub parse_case {
 sub sort_headers {
     my ($text) = shift;
     my @lines = split /$CRLF/, $text;
-    my @output = shift(@lines);
-    push @output, sort @lines;
-    return join($CRLF, @output);
+    my $request = shift(@lines);
+    my @headers;
+    while (my $line = shift @lines) {
+        last unless length $line;
+        push @headers, $line;
+    }
+    @headers = sort @headers;
+    return join($CRLF, $request, @headers, '', @lines);
 }
 
 {
