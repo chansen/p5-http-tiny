@@ -70,7 +70,7 @@ for my $file ( dir_list("t/cases", qr/^mirror/ ) ) {
 
   my $got_req = slurp($req_fh);
 
-  my $label = "get on $url";
+  my $label = "mirror $url";
   $label .= " (@{[keys %options]})" if %options;
 
   is( sort_headers($got_req), sort_headers($expect_req), "$label request" );
