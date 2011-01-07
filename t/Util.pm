@@ -109,7 +109,7 @@ sub hashify {
 sub sort_headers {
     my ($text) = shift;
     my @lines = split /$CRLF/, $text;
-    my $request = shift(@lines);
+    my $request = shift(@lines) || '';
     my @headers;
     while (my $line = shift @lines) {
         last unless length $line;
@@ -120,10 +120,11 @@ sub sort_headers {
 }
 
 {
-    my ($req_fh, $res_fh, $monkey_host, $monkey_port);
+    my (@req_fh, @res_fh, $monkey_host, $monkey_port);
 
     sub set_socket_source {
-        ($req_fh, $res_fh) = @_;
+        push @req_fh, shift;
+        push @res_fh, shift;
     }
 
     sub connect_args { return ($monkey_host, $monkey_port) }
@@ -136,14 +137,14 @@ sub sort_headers {
             my ($self, $scheme, $host, $port) = @_;
             $self->{host} = $monkey_host = $host;
             $self->{port} = $monkey_port = $port;
-            $self->{fh} = $req_fh;
+            $self->{fh} = shift @req_fh;
             return $self;
         };
         my $original_write_request = \&HTTP::Tiny::Handle::write_request;
         *HTTP::Tiny::Handle::write_request = sub {
             my ($self, $request) = @_;
             $original_write_request->($self, $request);
-            $self->{fh} = $res_fh;
+            $self->{fh} = shift @res_fh;
         }
     }
 }
