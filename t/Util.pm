@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use IO::File q[SEEK_SET];
-use File::Temp 0.14 ();
 use IO::Dir;
 
 BEGIN {
@@ -37,7 +36,7 @@ sub rewind(*) {
 }
 
 sub tmpfile {
-    my $fh = File::Temp->new
+    my $fh = IO::File->new_tmpfile
       || die(qq/Couldn't create a new temporary file: '$!'/);
 
     binmode($fh)
