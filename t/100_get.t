@@ -82,7 +82,7 @@ for my $file ( dir_list("t/cases", qr/^get/ ) ) {
     : sub {
         my ($text, $msg) = @_;
         my $exp_content =
-          $case->{expected} ? join("$CRLF", @{$case->{expected}}) : '';
+          $case->{expected} ? join("$CRLF", @{$case->{expected}}, '') : '';
         is ( $text, $exp_content, $msg );
       }
     ;
