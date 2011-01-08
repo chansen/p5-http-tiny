@@ -61,6 +61,9 @@ for my $file ( dir_list("t/cases", qr/^get/ ) ) {
   is( sort_headers($got_req), sort_headers($expect_req), "$label request data");
 
   my ($rc) = $give_res =~ m{\S+\s+(\d+)}g;
+  # maybe override
+  $rc = $case->{expected_rc}[0] if defined $case->{expected_rc};
+
   is( $response->{status}, $rc, "$label response code $rc" )
     or diag $response->{content};
 
@@ -71,15 +74,25 @@ for my $file ( dir_list("t/cases", qr/^get/ ) ) {
     ok( ! $response->{success}, "$label success flag false" );
   }
 
-  my $exp_content = $case->{expected}
-                  ? join("$CRLF", @{$case->{expected}}) : '';
+  my $check_expected = $case->{expected_like}
+    ?  sub {
+        my ($text, $msg) = @_;
+        like( $text, "/".$case->{expected_like}->[0]."/", $msg );
+      }
+    : sub {
+        my ($text, $msg) = @_;
+        my $exp_content =
+          $case->{expected} ? join("$CRLF", @{$case->{expected}}) : '';
+        is ( $text, $exp_content, $msg );
+      }
+    ;
 
   if ( $options{data_callback} ) {
-    is ( $main::data, $exp_content, "$label cb got content" );
+    $check_expected->( $main::data, "$label cb got content" );
     is ( $response->{content}, '', "$label resp content empty" );
   }
   else {
-    is ( $response->{content}, $exp_content, "$label content" );
+    $check_expected->( $response->{content}, "$label content" );
   }
 }
 
