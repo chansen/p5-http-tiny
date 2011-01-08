@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use IO::File q[SEEK_SET];
-use File::Temp ();
+use File::Temp 0.14 ();
 use IO::Dir;
 
 BEGIN {
