@@ -2,7 +2,7 @@
 package HTTP::Tiny;
 use strict;
 use warnings;
-# ABSTRACT: A tiny HTTP client
+# ABSTRACT: A small, simple, correct HTTP/1.1 client
 
 use Carp ();
 
