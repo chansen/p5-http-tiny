@@ -242,8 +242,7 @@ sub _request {
     else {
         my $data_cb = $self->_prepare_data_cb($response, $args);
         my $rh = $response->{headers};
-        $handle->read_body($data_cb, $rh->{'content-length'})
-            if $rh->{'content-length'} || $rh->{'transfer-encoding'};
+        $handle->read_body($data_cb, $rh);
     }
 
     $handle->close;
@@ -614,12 +613,14 @@ sub write_header_lines {
 
 sub read_body {
     @_ == 2 || @_ == 3 || croak(q/Usage: $handle->read_body(callback [, content_length])/);
-    my ($self, $cb, $content_length) = @_;
-    if ($content_length) {
-        $self->read_content_body($cb, $content_length);
+    my ($self, $cb, $headers) = @_;
+    if ( defined ($headers->{'transfer-encoding'})
+        && $headers->{'transfer-encoding'} =~ /chunked/
+    ) {
+        $self->read_chunked_body($cb);
     }
     else {
-        $self->read_chunked_body($cb);
+        $self->read_content_body($cb, $headers->{'content-length'});
     }
     return;
 }
@@ -639,11 +640,17 @@ sub read_content_body {
     @_ == 3 || croak(q/Usage: $handle->read_content_body(callback, content_length)/);
     my ($self, $cb, $content_length) = @_;
 
-    my $len = $content_length;
-    while ($len > 0) {
-        my $read = ($len > BUFSIZE) ? BUFSIZE : $len;
-        $cb->($self->read($read));
-        $len -= $read;
+    if ( $content_length ) {
+        my $len = $content_length;
+        while ($len > 0) {
+            my $read = ($len > BUFSIZE) ? BUFSIZE : $len;
+            $cb->($self->read($read));
+            $len -= $read;
+        }
+    }
+    else {
+        my $chunk;
+        $cb->($chunk) while length( $chunk = $self->read(BUFSIZE, 1) );
     }
 
     return $content_length; # XXX ignored? -- dagolden, 2010-12-03

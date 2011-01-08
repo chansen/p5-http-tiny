@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  - Fixed bug getting content for servers which do not sent Content-Length
+
   - Add test coverage for get(), mirror() and request()
 
   - Add test coverage for requests with static and generated content
