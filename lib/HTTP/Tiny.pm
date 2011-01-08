@@ -20,7 +20,8 @@ A hashref of default headers to apply to requests
 * max_redirect
 Maximum number of redirects allowed (defaults to 5)
 * max_size
-Maximum response size (only when not using a data callback)
+Maximum response size (only when not using a data callback).  If defined,
+responses larger than this will die with an error message
 * proxy
 URL of a proxy server to use
 * timeout
@@ -832,7 +833,7 @@ timeout
         }
     }
 
-    print $response->{content} if defined $response->{content};
+    print $response->{content} if length $response->{content};
 
 =head1 DESCRIPTION
 
@@ -842,8 +843,6 @@ requests without the overhead of a large framework like L<LWP::UserAgent>.
 It is more correct and more complete than L<HTTP::Lite>.  It supports
 proxies (currently only non-authenticating ones) and redirection.  It
 also correctly resumes after EINTR.
-
-Additional documentation and improved tests will be forthcoming.
 
 =cut
 
