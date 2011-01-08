@@ -317,7 +317,7 @@ sub _maybe_redirect {
     if (   $response->{status} =~ /^30[12]/
         and $request->{method} =~ /^GET|HEAD$/
         and $headers->{location}
-        and ++$args->{redirects} < $self->{max_redirect}
+        and ++$args->{redirects} <= $self->{max_redirect}
     ) {
         return ($headers->{location} =~ /^\//)
             ? "$request->{scheme}://$request->{host_port}$headers->{location}"
