@@ -17,10 +17,10 @@ for my $file ( dir_list("t/cases", qr/^put/ ) ) {
   my $version = HTTP::Tiny->VERSION || 0;
   $expect_req =~ s{VERSION}{$version};
   s{\n}{$CRLF}g for ($expect_req, $give_res);
-  
+
   # figure out what request to make
   my $case = parse_case($params);
-  my $url = $case->{url}->[0];
+  my $url = $case->{url}[0];
   my %options;
 
   my %headers;
@@ -31,7 +31,7 @@ for my $file ( dir_list("t/cases", qr/^put/ ) ) {
   $options{headers} = \%headers if %headers;
 
   if ( $case->{content} ) {
-    $options{content} = $case->{content}->[0];
+    $options{content} = $case->{content}[0];
   }
   elsif ( $case->{content_cb} ) {
     $options{content} = eval join "\n", @{$case->{content_cb}};
@@ -44,7 +44,7 @@ for my $file ( dir_list("t/cases", qr/^put/ ) ) {
   my $http = HTTP::Tiny->new;
   set_socket_source($req_fh, $res_fh);
 
-  (my $url_basename = $url) =~ s{.*/}{}; 
+  (my $url_basename = $url) =~ s{.*/}{};
 
   my @call_args = %options ? ($url, \%options) : ($url);
   my $response  = $http->request('PUT',@call_args);

@@ -9,5 +9,5 @@ User-Agent: HTTP-Tiny/VERSION
 ----------
 HTTP/1.1 404 Not Found
 Date: Thu, 03 Feb 1994 00:00:00 GMT
-Content-Length: 0 
+Content-Length: 0
 

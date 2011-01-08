@@ -17,7 +17,7 @@ for my $file ( dir_list("t/cases", qr/^get/ ) ) {
   my ($params, $expect_req, $give_res) = split /--+\n/, $data;
   my $case = parse_case($params);
 
-  my $url = $case->{url}->[0];
+  my $url = $case->{url}[0];
   my %headers = hashify( $case->{headers} );
   my %new_args = hashify( $case->{new_args} );
 
@@ -49,7 +49,7 @@ for my $file ( dir_list("t/cases", qr/^get/ ) ) {
   my $response  = $http->get(@call_args);
 
   my ($got_host, $got_port) = connect_args();
-  my ($exp_host, $exp_port) = ( 
+  my ($exp_host, $exp_port) = (
     ($new_args{proxy} || $url ) =~ m{^http://([^:/]+?):?(\d*)/}g
   );
   $exp_port ||= 80;
@@ -77,7 +77,7 @@ for my $file ( dir_list("t/cases", qr/^get/ ) ) {
   my $check_expected = $case->{expected_like}
     ?  sub {
         my ($text, $msg) = @_;
-        like( $text, "/".$case->{expected_like}->[0]."/", $msg );
+        like( $text, "/".$case->{expected_like}[0]."/", $msg );
       }
     : sub {
         my ($text, $msg) = @_;

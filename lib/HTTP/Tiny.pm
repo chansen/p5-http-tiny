@@ -33,7 +33,7 @@ BEGIN {
     @attributes = qw(agent default_headers max_redirect max_size proxy timeout);
     no strict 'refs';
     for my $accessor ( @attributes ) {
-        *{$accessor} = sub { 
+        *{$accessor} = sub {
             @_ > 1 ? $_[0]->{$accessor} = $_[1] : $_[0]->{$accessor};
         };
     }
@@ -164,7 +164,7 @@ The body of the response.  If the response does not have any content
 or if a data callback is provided to consume the response body,
 this will be the empty string
 * headers
-A hashref of header fields.  All header field names will be normalized 
+A hashref of header fields.  All header field names will be normalized
 to be lower case. If a header is repeated, the value will be an arrayref;
 it will otherwise be a scalar string containing the value
 

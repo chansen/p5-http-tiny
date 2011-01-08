@@ -18,7 +18,7 @@ for my $file ( dir_list("t/cases", qr/^redirect/ ) ) {
   my ($params, @case_pairs) = split /--+\n/, $data;
   my $case = parse_case($params);
 
-  my $url = $case->{url}->[0];
+  my $url = $case->{url}[0];
   my %headers = hashify( $case->{headers} );
   my %new_args = hashify( $case->{new_args} );
 
