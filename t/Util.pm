@@ -145,7 +145,8 @@ sub sort_headers {
             my ($self, $request) = @_;
             $original_write_request->($self, $request);
             $self->{fh} = shift @res_fh;
-        }
+        };
+        *HTTP::Tiny::Handle::close = sub { 1 }; # don't close our temps
     }
 }
 
