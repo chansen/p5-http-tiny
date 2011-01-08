@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  - Add additional test for no Content-Length header
+
 0.005     2011-01-08 06:32:05 EST5EDT
 
   - Fixed bug getting content for servers which do not sent Content-Length
