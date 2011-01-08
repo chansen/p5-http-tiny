@@ -46,7 +46,7 @@ for my $file ( dir_list("t/cases", qr/^redirect/ ) ) {
 
   my $http = HTTP::Tiny->new(%new_args);
   my $response  = $http->get(@call_args);
-  my $calls = 0 
+  my $calls = 0
     + (defined($new_args{max_redirect}) ? $new_args{max_redirect} : 5);
 
   for my $i ( 0 .. $calls ) {
