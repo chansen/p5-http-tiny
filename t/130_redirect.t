@@ -53,7 +53,7 @@ for my $file ( dir_list("t/cases", qr/^redirect/ ) ) {
     last unless @socket_pairs;
     my ($req_fh, $res_fh, $expect_req) = @{ shift @socket_pairs };
     my $got_req = slurp($req_fh);
-    is( sort_headers($got_req), sort_headers($expect_req), "$label request $i data");
+    is( sort_headers($got_req), sort_headers($expect_req), "$label request ($i)");
     $i++;
   }
 
