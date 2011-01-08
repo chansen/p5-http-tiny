@@ -6,7 +6,8 @@ use warnings;
 use File::Basename;
 use Test::More 0.88;
 use t::Util qw[tmpfile rewind slurp monkey_patch dir_list parse_case
-  hashify connect_args set_socket_source sort_headers $CRLF $LF];
+  hashify connect_args clear_socket_source set_socket_source sort_headers
+  $CRLF $LF];
 
 use HTTP::Tiny;
 BEGIN { monkey_patch() }
@@ -42,10 +43,12 @@ for my $file ( dir_list("t/cases", qr/^redirect/ ) ) {
     push @socket_pairs, [$req_fh, $res_fh, $expect_req];
   }
 
-  set_socket_source(@{$_}[0,1]) for @socket_pairs;
+  clear_socket_source();
+  set_socket_source(@$_) for @socket_pairs;
 
   my $http = HTTP::Tiny->new(%new_args);
   my $response  = $http->get(@call_args);
+
   my $calls = 0
     + (defined($new_args{max_redirect}) ? $new_args{max_redirect} : 5);
 

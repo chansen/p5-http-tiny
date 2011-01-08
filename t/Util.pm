@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use IO::File q[SEEK_SET];
+use File::Temp ();
 use IO::Dir;
 
 BEGIN {
@@ -16,6 +17,7 @@ BEGIN {
         hashify
         sort_headers
         connect_args
+        clear_socket_source
         set_socket_source
         monkey_patch
         $CRLF
@@ -35,7 +37,7 @@ sub rewind(*) {
 }
 
 sub tmpfile {
-    my $fh = IO::File->new_tmpfile
+    my $fh = File::Temp->new
       || die(qq/Couldn't create a new temporary file: '$!'/);
 
     binmode($fh)
@@ -122,9 +124,15 @@ sub sort_headers {
 {
     my (@req_fh, @res_fh, $monkey_host, $monkey_port);
 
+    sub clear_socket_source {
+        @req_fh = ();
+        @res_fh = ();
+    }
+
     sub set_socket_source {
-        push @req_fh, shift;
-        push @res_fh, shift;
+        my ($req_fh, $res_fh) = @_;
+        push @req_fh, $req_fh;
+        push @res_fh, $res_fh;
     }
 
     sub connect_args { return ($monkey_host, $monkey_port) }
