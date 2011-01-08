@@ -2,9 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
-  - Add test coverage for get() and mirror()
+  - Add test coverage for get(), mirror() and request()
+
   - Add test coverage for requests with static and generated content
-  
+
 0.004     2010-12-15 22:53:59 EST5EDT
 
   - Renamed 'ok' response field to 'success'
