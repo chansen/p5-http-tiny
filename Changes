@@ -2,7 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
-  - Add additional test for no Content-Length header
+  - Transfer-Encodings are case insensitive
+
+  - Add additional test for proper behavior when both Content-Length
+    and Transfer-Encoding headers are received
 
 0.005     2011-01-08 06:32:05 EST5EDT
 
