@@ -616,7 +616,7 @@ sub read_body {
     @_ == 2 || @_ == 3 || croak(q/Usage: $handle->read_body(callback [, content_length])/);
     my ($self, $cb, $headers) = @_;
     if ( defined ($headers->{'transfer-encoding'})
-        && $headers->{'transfer-encoding'} =~ /chunked/
+        && $headers->{'transfer-encoding'} =~ /chunked/i
     ) {
         $self->read_chunked_body($cb);
     }
