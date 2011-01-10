@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+0.006     2011-01-10 07:28:11 EST5EDT
+
   - Transfer-Encodings are case insensitive
 
   - Add additional test for proper behavior when both Content-Length
