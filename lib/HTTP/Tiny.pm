@@ -232,7 +232,7 @@ sub _request {
 
     my $response;
     do { $response = $handle->read_response_header }
-        until ($response->{status} ne '100');
+        until (substr($response->{status},0,1) ne '1');
 
     if ( my $location = $self->_maybe_redirect($request, $response, $args) ) {
         $handle->close;
