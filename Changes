@@ -4,6 +4,8 @@ Release notes for HTTP-Tiny
 
   - Expand http:///.../ as http://localhost/.../ and set Host header
 
+  - Add test that chunked transfer extensions are (correctly) ignored
+
 0.006     2011-01-10 07:28:11 EST5EDT
 
   - Transfer-Encodings are case insensitive
