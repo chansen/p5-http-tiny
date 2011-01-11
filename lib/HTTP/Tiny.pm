@@ -324,7 +324,7 @@ sub _prepare_data_cb {
 sub _maybe_redirect {
     my ($self, $request, $response, $args) = @_;
     my $headers = $response->{headers};
-    if (   $response->{status} =~ /^30[12]/
+    if (   $response->{status} =~ /^30[1237]/
         and $request->{method} =~ /^GET|HEAD$/
         and $headers->{location}
         and ++$args->{redirects} <= $self->{max_redirect}
