@@ -20,7 +20,8 @@ use HTTP::Tiny;
     my $exp     = ['A'..'Z'];
     my $got     = [];
     my $cb      = sub { push @$got, $_[0] };
-    is_deeply($handle->read_chunked_body($cb), {}, 'chunked trailers');
+    $handle->read_chunked_body($cb,my $got_trailing = {});
+    is_deeply($got_trailing, {}, 'chunked trailers');
     is_deeply($got, $exp, "chunked chunks");
 }
 
@@ -41,7 +42,8 @@ use HTTP::Tiny;
 
     {
         my $cb = sub { push @$got, $_[0] };
-        is_deeply($handle->read_chunked_body($cb), $trailers, 'roundtrip chunked trailers');
+        $handle->read_chunked_body($cb,my $got_trailing = {});
+        is_deeply($got_trailing, $trailers, 'roundtrip chunked trailers');
     }
 
     is_deeply($got, $exp, "roundtrip chunked chunks");

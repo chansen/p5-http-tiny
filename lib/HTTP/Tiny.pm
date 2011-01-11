@@ -529,10 +529,9 @@ sub readline {
 }
 
 sub read_header_lines {
-    @_ == 1 || croak(q/Usage: $handle->read_header_lines()/);
-    my ($self) = @_;
-
-    my %headers = ();
+    @_ == 1 || @_ == 2 || croak(q/Usage: $handle->read_header_lines([headers])/);
+    my ($self, $headers) = @_;
+    $headers ||= {};
     my $lines   = 0;
     my $val;
 
@@ -544,15 +543,15 @@ sub read_header_lines {
          }
          elsif ($line =~ /\A ([^\x00-\x1F\x7F:]+) : [\x09\x20]* ([^\x0D\x0A]*)/x) {
              my ($field_name) = lc $1;
-             if (exists $headers{$field_name}) {
-                 for ($headers{$field_name}) {
+             if (exists $headers->{$field_name}) {
+                 for ($headers->{$field_name}) {
                      $_ = [$_] unless ref $_ eq "ARRAY";
                      push @$_, $2;
                      $val = \$_->[-1];
                  }
              }
              else {
-                 $val = \($headers{$field_name} = $2);
+                 $val = \($headers->{$field_name} = $2);
              }
          }
          elsif ($line =~ /\A [\x09\x20]+ ([^\x0D\x0A]*)/x) {
@@ -569,7 +568,7 @@ sub read_header_lines {
             croak(q/Malformed header line: / . $Printable->($line));
          }
     }
-    return \%headers;
+    return $headers;
 }
 
 sub write_request {
@@ -621,19 +620,7 @@ sub read_body {
     if ( defined ($headers->{'transfer-encoding'})
         && $headers->{'transfer-encoding'} =~ /chunked/i
     ) {
-        my $trailers = $self->read_chunked_body($cb);
-
-        while (my ($k, $v) = each %$trailers) {
-            if (exists $headers->{$k}) {
-                for ($headers->{$k}) {
-                    $_ = [$_] unless ref $_ eq 'ARRAY';
-                    push @$_, ref $v eq 'ARRAY' ? @$v : $v;
-                }
-            }
-            else {
-                $headers->{$k} = $v;
-            }
-        }
+        $self->read_chunked_body($cb, $headers);
     }
     else {
         $self->read_content_body($cb, $headers->{'content-length'});
@@ -698,8 +685,8 @@ sub write_content_body {
 }
 
 sub read_chunked_body {
-    @_ == 2 || croak(q/Usage: $handle->read_chunked_body(callback)/);
-    my ($self, $cb) = @_;
+    @_ == 3 || croak(q/Usage: $handle->read_chunked_body(callback, $headers)/);
+    my ($self, $cb, $headers) = @_;
 
     while () {
         my $head = $self->readline;
@@ -715,7 +702,8 @@ sub read_chunked_body {
         $self->read(2) eq "\x0D\x0A"
           or croak(q/Malformed chunk: missing CRLF after chunk data/);
     }
-    return $self->read_header_lines; # XXX ignored? -- dagolden, 2010-12-03
+    $self->read_header_lines($headers);
+    return;
 }
 
 sub write_chunked_body {
