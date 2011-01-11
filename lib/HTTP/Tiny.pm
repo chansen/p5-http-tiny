@@ -849,5 +849,19 @@ It is more correct and more complete than L<HTTP::Lite>.  It supports
 proxies (currently only non-authenticating ones) and redirection.  It
 also correctly resumes after EINTR.
 
+=head1 LIMITATIONS
+
+Not all HTTP/1.1 features are supported.  Some particular limitations of note
+include:
+
+=over
+
+=item *
+
+Persistant connections are not supported.  The C<Connection> headers will
+always be set to C<close>.
+
+=back
+
 =cut
 
