@@ -851,15 +851,34 @@ also correctly resumes after EINTR.
 
 =head1 LIMITATIONS
 
-Not all HTTP/1.1 features are supported.  Some particular limitations of note
+HTTP::Tiny is I<conditionally compliant> with the
+L<HTTP/1.1 specification|http://www.w3.org/Protocols/rfc2616/rfc2616.html>.
+
+It attempts to meet all "MUST" requirements of the specification, but does not
+implement all "SHOULD" requirements.  Some particular limitations of note
 include:
 
 =over
 
 =item *
 
-Persistant connections are not supported.  The C<Connection> headers will
+HTTP::Tiny focuses on correct transport.  Users are responsible for ensuring
+that user-defined headers and content are compliant with the HTTP/1.1
+specification.
+
+=item *
+
+Persistant connections are not supported.  The C<Connection> header will
 always be set to C<close>.
+
+=item *
+
+There is no provision for delaying a request body using an C<Expect> header.
+Unexpected C<1XX> responses are silently ignored as per the specification.
+
+=item *
+
+Only 'chunked' C<Transfer-Encoding> is supported.
 
 =back
 

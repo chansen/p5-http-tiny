@@ -2,14 +2,19 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
-  - Improve handling of malformed or unsupported HTTP protocols
+  - Trailing headers from chunked transfer encoding are now merged
+    into the response headers instead of ignored
 
-  - Document that the headers hash option may contain an array reference
+  - Improved handling of malformed or unsupported HTTP protocols
+
+  - Expanded http:///.../ as http://localhost/.../ and set Host header
+
+  - Documented that the headers hash option may contain an array reference
     to output multiple values of the same header field
 
-  - Expand http:///.../ as http://localhost/.../ and set Host header
+  - Improved documentation of limitations
 
-  - Add test that chunked transfer extensions are (correctly) ignored
+  - Added numerous new tests to ensure compliance with the HTTP/1.1 spec
 
 0.006     2011-01-10 07:28:11 EST5EDT
 
