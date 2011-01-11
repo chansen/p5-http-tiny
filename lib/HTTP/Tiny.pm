@@ -617,9 +617,8 @@ sub write_header_lines {
 sub read_body {
     @_ == 3 || croak(q/Usage: $handle->read_body(callback, headers)/);
     my ($self, $cb, $headers) = @_;
-    if ( defined ($headers->{'transfer-encoding'})
-        && $headers->{'transfer-encoding'} =~ /chunked/i
-    ) {
+    my $te = $headers->{'transfer-encoding'} || '';
+    if ( grep { /chunked/i } ( ref $te eq 'ARRAY' ? @$te : $te ) ) {
         $self->read_chunked_body($cb, $headers);
     }
     else {
