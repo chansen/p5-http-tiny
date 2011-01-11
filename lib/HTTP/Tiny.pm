@@ -276,6 +276,7 @@ sub _prepare_headers_and_cb {
     $request->{headers}{'user-agent'} ||= $self->{agent};
 
     if (defined $args->{content}) {
+        $request->{headers}{'content-type'} ||= "application/octet-stream";
         if (ref $args->{content} eq 'CODE') {
             $request->{headers}{'transfer-encoding'} = 'chunked'
               unless $request->{headers}{'content-length'}

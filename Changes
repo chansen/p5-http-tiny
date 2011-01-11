@@ -7,6 +7,9 @@ Release notes for HTTP-Tiny
   - Retry (once) a request that fails due to a closed socket
     (per RFC2616 8.1.4)
 
+  - Automatically sets request Content-Type to 'application/octet-stream'
+    if there is content the user has not defined its type
+
   - Trailing headers from chunked transfer encoding are now merged
     into the response headers instead of ignored
 
