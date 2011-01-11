@@ -176,12 +176,20 @@ contain 599, and the C<content> field will contain the text of the exception.
 
 =cut
 
+my %idempotent = map { $_ => 1 } qw/GET HEAD PUT DELETE OPTIONS TRACE/;
+
 sub request {
     my ($self, $method, $url, $args) = @_;
     @_ == 3 || (@_ == 4 && ref $args eq 'HASH')
       or Carp::croak(q/Usage: $http->request(METHOD, URL, [HASHREF])/);
 
-    my $response = eval { $self->_request($method, $url, $args) };
+    # RFC 2616 Section 8.1.4 mandates a single retry on broken socket
+    my $response;
+    for ( 0 .. 1 ) {
+        $response = eval { $self->_request($method, $url, $args) };
+        last unless $@ && $idempotent{$method}
+            && $@ =~ m{^(?:Socket closed|Unexpected end)};
+    }
 
     if (my $e = "$@") {
         $response = {
@@ -386,7 +394,7 @@ use strict;
 use warnings;
 
 use Carp       qw[croak];
-use Errno      qw[EINTR];
+use Errno      qw[EINTR EPIPE];
 use IO::Socket qw[SOCK_STREAM];
 
 sub BUFSIZE () { 32768 } # XXX Should be an attribute? -- dagolden, 2010-12-03
@@ -457,6 +465,8 @@ sub write {
     my $len = length $buf;
     my $off = 0;
 
+    local $SIG{PIPE} = 'IGNORE';
+
     while () {
         $self->can_write
           or croak(q/Timed out while waiting for socket to become ready for writing/);
@@ -465,6 +475,9 @@ sub write {
             $len -= $r;
             $off += $r;
             last unless $len > 0;
+        }
+        elsif ($! == EPIPE) {
+            croak(qq/Socket closed by remote server: $!/);
         }
         elsif ($! != EINTR) {
             croak(qq/Could not write to socket: '$!'/);
