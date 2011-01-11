@@ -908,6 +908,10 @@ Unexpected C<1XX> responses are silently ignored as per the specification.
 
 Only 'chunked' C<Transfer-Encoding> is supported.
 
+=item *
+
+There is no support for a Request-URI of '*' for the 'OPTIONS' request.
+
 =back
 
 =cut
