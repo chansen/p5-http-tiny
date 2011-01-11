@@ -134,7 +134,9 @@ Valid options are:
 
 =for :list
 * headers
-A hashref containing headers to include with the request
+A hashref containing headers to include with the request.  If the value for
+a header is an array reference, the header will be output multiple times with
+each value in the array.
 * content
 A scalar to include as the body of the request OR a code reference
 that will be called iteratively to produce the body of the response
