@@ -329,13 +329,14 @@ sub _maybe_redirect {
 sub _split_url {
     my $url = pop;
 
-    my ($scheme, $authority, $path_query) = $url =~ m<\A([^:/?#]+)://([^/?#]+)([^#]*)>
+    # URI regex adapted from the URI module
+    my ($scheme, $authority, $path_query) = $url =~ m<\A([^:/?#]+)://([^/?#]*)([^#]*)>
       or Carp::croak(qq/Cannot parse URL: '$url'/);
 
     $scheme     = lc $scheme;
     $path_query = "/$path_query" unless $path_query =~ m<\A/>;
 
-    my $host = lc $authority;
+    my $host = (length($authority)) ? lc $authority : 'localhost';
        $host =~ s/\A[^@]*@//;   # userinfo
     my $port = do {
        $host =~ s/:([0-9]*)\z// && length $1

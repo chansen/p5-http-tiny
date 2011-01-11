@@ -52,6 +52,7 @@ for my $file ( dir_list("t/cases", qr/^get/ ) ) {
   my ($exp_host, $exp_port) = (
     ($new_args{proxy} || $url ) =~ m{^http://([^:/]+?):?(\d*)/}g
   );
+  $exp_host ||= 'localhost';
   $exp_port ||= 80;
 
   my $got_req = slurp($req_fh);
