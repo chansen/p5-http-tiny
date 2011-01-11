@@ -2,6 +2,16 @@ url
   http://example.com/chunked.html
 expected
   abcdefghijklmnopqrstuvwxyz1234567890abcdef
+expected_headers
+  transfer-encoding: chunked
+  x-a: Foo
+  x-a: Bar
+  x-a: Baz
+  x-b: Foo
+  x-b: Bar
+  x-b: Baz
+  x-c: Foo
+
 ----------
 GET /chunked.html HTTP/1.1
 Host: example.com
@@ -10,8 +20,6 @@ User-Agent: HTTP-Tiny/VERSION
 
 ----------
 HTTP/1.1 200 OK
-Date: Thu, 03 Feb 1994 00:00:00 GMT
-Content-Type: text/plain
 Transfer-Encoding: chunked
 X-A: Foo
 X-B: Foo

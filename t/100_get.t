@@ -75,6 +75,11 @@ for my $file ( dir_list("t/cases", qr/^get/ ) ) {
     ok( ! $response->{success}, "$label success flag false" );
   }
 
+  if (defined $case->{expected_headers}) {
+    my %expected = hashify( $case->{expected_headers} );
+    is_deeply($response->{headers}, \%expected, "$label expected headers");
+  }
+
   my $check_expected = $case->{expected_like}
     ?  sub {
         my ($text, $msg) = @_;

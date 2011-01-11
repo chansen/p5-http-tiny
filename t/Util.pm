@@ -102,7 +102,7 @@ sub hashify {
     my %hash;
     for my $line ( @$lines ) {
         my ($k,$v) = ($line =~ m{^([^:]+): (.*)$}g);
-        $hash{$k} = [ $hash{$k} ] if exists $hash{$k};
+        $hash{$k} = [ $hash{$k} ] if exists $hash{$k} && ref $hash{$k} ne 'ARRAY';
         if ( ref($hash{$k}) eq 'ARRAY' ) {
             push @{$hash{$k}}, $v;
         }
