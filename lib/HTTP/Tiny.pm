@@ -756,7 +756,7 @@ sub read_response_header {
         status   => $status,
         reason   => $reason,
         headers  => $self->read_header_lines,
-        protocol => $version
+        protocol => $protocol,
     };
 }
 
