@@ -919,5 +919,10 @@ There is no support for a Request-URI of '*' for the 'OPTIONS' request.
 
 =back
 
+=head1 SEE ALSO
+
+=for :list
+* L<LWP::UserAgent>
+
 =cut
 
