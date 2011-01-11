@@ -19,12 +19,13 @@ for my $file ( dir_list("t/cases", qr/^redirect/ ) ) {
   my $case = parse_case($params);
 
   my $url = $case->{url}[0];
+  my $method = $case->{method}[0] || 'GET';
   my %headers = hashify( $case->{headers} );
   my %new_args = hashify( $case->{new_args} );
 
   my %options;
   $options{headers} = \%headers if %headers;
-  my @call_args = %options ? ($url, \%options) : ($url);
+  my $call_args = %options ? [$method, $url, \%options] : [$method, $url];
 
   my $version = HTTP::Tiny->VERSION || 0;
   my $agent = $new_args{agent} || "HTTP-Tiny/$version";
@@ -47,7 +48,7 @@ for my $file ( dir_list("t/cases", qr/^redirect/ ) ) {
   set_socket_source(@$_) for @socket_pairs;
 
   my $http = HTTP::Tiny->new(%new_args);
-  my $response  = $http->get(@call_args);
+  my $response  = $http->request(@$call_args);
 
   my $calls = 0
     + (defined($new_args{max_redirect}) ? $new_args{max_redirect} : 5);
