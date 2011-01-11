@@ -487,8 +487,8 @@ sub write {
 }
 
 sub read {
-    @_ == 2 || @_ == 3 || croak(q/Usage: $handle->read(len [, partial])/);
-    my ($self, $len, $partial) = @_;
+    @_ == 2 || @_ == 3 || croak(q/Usage: $handle->read(len [, allow_partial])/);
+    my ($self, $len, $allow_partial) = @_;
 
     my $buf  = '';
     my $got = length $self->{rbuf};
@@ -511,7 +511,7 @@ sub read {
             croak(qq/Could not read from socket: '$!'/);
         }
     }
-    if ($len && !$partial) {
+    if ($len && !$allow_partial) {
         croak(q/Unexpected end of stream/);
     }
     return $buf;
@@ -659,7 +659,7 @@ sub read_content_body {
         my $len = $content_length;
         while ($len > 0) {
             my $read = ($len > BUFSIZE) ? BUFSIZE : $len;
-            $cb->($self->read($read));
+            $cb->($self->read($read, 0));
             $len -= $read;
         }
     }
