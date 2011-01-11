@@ -243,9 +243,9 @@ sub _request {
     do { $response = $handle->read_response_header }
         until (substr($response->{status},0,1) ne '1');
 
-    if ( my $location = $self->_maybe_redirect($request, $response, $args) ) {
+    if ( my @redir_args = $self->_maybe_redirect($request, $response, $args) ) {
         $handle->close;
-        return $self->_request($method, $location, $args);
+        return $self->_request(@redir_args, $args);
     }
 
     if ($method eq 'HEAD' || $response->{status} =~ /^[23]04/) {
@@ -330,9 +330,10 @@ sub _maybe_redirect {
         and $headers->{location}
         and ++$args->{redirects} <= $self->{max_redirect}
     ) {
-        return ($headers->{location} =~ /^\//)
+        my $location = ($headers->{location} =~ /^\//)
             ? "$request->{scheme}://$request->{host_port}$headers->{location}"
             : $headers->{location} ;
+        return (($status eq '303' ? 'GET' : $method), $location);
     }
     return;
 }
