@@ -744,10 +744,13 @@ sub read_response_header {
 
     my $line = $self->readline;
 
-    $line =~ /\A (HTTP\/1.[0-1]) [\x09\x20]+ ([0-9]{3}) [\x09\x20]+ ([^\x0D\x0A]*) \x0D?\x0A/x
+    $line =~ /\A (HTTP\/(0*\d+\.0*\d+)) [\x09\x20]+ ([0-9]{3}) [\x09\x20]+ ([^\x0D\x0A]*) \x0D?\x0A/x
       or croak(q/Malformed Status-Line: / . $Printable->($line));
 
-    my ($version, $status, $reason) = ($1, $2, $3);
+    my ($protocol, $version, $status, $reason) = ($1, $2, $3, $4);
+
+    croak (qq/Unsupported HTTP protocol: $protocol/)
+        unless $version =~ /0*1\.0*[01]/;
 
     return {
         status   => $status,
