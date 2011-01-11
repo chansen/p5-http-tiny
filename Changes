@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  - Added support for redirecting 303 and 307 response codes
+
   - Retry (once) a request that fails due to a closed socket
     (per RFC2616 8.1.4)
 
