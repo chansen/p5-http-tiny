@@ -621,7 +621,19 @@ sub read_body {
     if ( defined ($headers->{'transfer-encoding'})
         && $headers->{'transfer-encoding'} =~ /chunked/i
     ) {
-        $self->read_chunked_body($cb);
+        my $trailers = $self->read_chunked_body($cb);
+
+        while (my ($k, $v) = each %$trailers) {
+            if (exists $headers->{$k}) {
+                for ($headers->{$k}) {
+                    $_ = [$_] unless ref $_ eq 'ARRAY';
+                    push @$_, ref $v eq 'ARRAY' ? @$v : $v;
+                }
+            }
+            else {
+                $headers->{$k} = $v;
+            }
+        }
     }
     else {
         $self->read_content_body($cb, $headers->{'content-length'});
