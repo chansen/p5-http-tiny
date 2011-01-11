@@ -17,6 +17,8 @@ Release notes for HTTP-Tiny
 
   - Expanded http:///.../ as http://localhost/.../ and set Host header
 
+  - Documented that URL's must be escaped/encoded
+
   - Documented that the headers hash option may contain an array reference
     to output multiple values of the same header field
 

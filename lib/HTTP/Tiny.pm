@@ -60,8 +60,9 @@ sub new {
     $response = $http->get($url, \%options);
 
 Executes a C<GET> request for the given URL.  The URL must have unsafe
-characters escaped.  Internally, it just calls C<request()> with 'GET' as the
-method.  See C<request()> for valid options and a description of the response.
+characters escaped and international domain names encoded.  Internally, it just
+calls C<request()> with 'GET' as the method.  See C<request()> for valid
+options and a description of the response.
 
 =cut
 
@@ -80,10 +81,11 @@ sub get {
     }
 
 Executes a C<GET> request for the URL and saves the response body to the file
-name provided.  The URL must have unsafe characters escaped.  If the file
-already exists, the request will includes an C<If-Modified-Since> header with
-the modification timestamp of the file.  You may specificy a different
-C<If-Modified-Since> header yourself in the C<< $options->{headers} >> hash.
+name provided.  The URL must have unsafe characters escaped and international
+domain names encoded.  If the file already exists, the request will includes an
+C<If-Modified-Since> header with the modification timestamp of the file.  You
+may specificy a different C<If-Modified-Since> header yourself in the C<<
+$options->{headers} >> hash.
 
 The C<success> field of the response will be true if the status code is 2XX
 or 304 (unmodified).
@@ -127,8 +129,9 @@ sub mirror {
     $response = $http->request($method, $url, \%options);
 
 Executes an HTTP request of the given method type ('GET', 'HEAD', 'PUT', etc.)
-on the given URL.  The URL must have unsafe characters escaped.  A hashref of
-options may be appended to modify the request.
+on the given URL.  The URL must have unsafe characters escaped and
+international domain names encoded.  A hashref of options may be appended to
+modify the request.
 
 Valid options are:
 
@@ -884,7 +887,9 @@ specification.
 
 =item *
 
-Users must ensure that URLs are properly escaped. See L<URI::Escape>.
+Users must ensure that URLs are properly escaped for unsafe characters and that
+international domain names are properly encoded to ASCII. See L<URI::Escape>,
+L<URI::_punycode> and L<Net::IDN::Encode>.
 
 =item *
 
