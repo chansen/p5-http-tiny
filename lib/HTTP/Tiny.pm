@@ -23,7 +23,7 @@ Maximum number of redirects allowed (defaults to 5)
 Maximum response size (only when not using a data callback).  If defined,
 responses larger than this will die with an error message
 * proxy
-URL of a proxy server to use
+URL of a proxy server to use.
 * timeout
 Request timeout in seconds (default is 60)
 
@@ -59,9 +59,9 @@ sub new {
     $response = $http->get($url);
     $response = $http->get($url, \%options);
 
-Executes a C<GET> request for the given URL.  Internally, it just calls
-C<request()> with 'GET' as the method.  See C<request()> for valid options
-and a description of the response.
+Executes a C<GET> request for the given URL.  The URL must have unsafe
+characters escaped.  Internally, it just calls C<request()> with 'GET' as the
+method.  See C<request()> for valid options and a description of the response.
 
 =cut
 
@@ -79,11 +79,11 @@ sub get {
         print "$file is up to date\n";
     }
 
-Executes a C<GET> request for the URL and saves the response body to the
-file name provided.  If the file already exists, the request will
-includes an C<If-Modified-Since> header with the modification timestamp
-of the file.  You may specificy a different C<If-Modified-Since> header
-yourself in the C<< $options->{headers} >> hash.
+Executes a C<GET> request for the URL and saves the response body to the file
+name provided.  The URL must have unsafe characters escaped.  If the file
+already exists, the request will includes an C<If-Modified-Since> header with
+the modification timestamp of the file.  You may specificy a different
+C<If-Modified-Since> header yourself in the C<< $options->{headers} >> hash.
 
 The C<success> field of the response will be true if the status code is 2XX
 or 304 (unmodified).
@@ -126,9 +126,9 @@ sub mirror {
     $response = $http->request($method, $url);
     $response = $http->request($method, $url, \%options);
 
-Executes an HTTP request of the given method type ('GET',
-'HEAD', 'PUT', etc.) on the given URL.  A hashref of options
-may be appended to modify the request.
+Executes an HTTP request of the given method type ('GET', 'HEAD', 'PUT', etc.)
+on the given URL.  The URL must have unsafe characters escaped.  A hashref of
+options may be appended to modify the request.
 
 Valid options are:
 
@@ -136,7 +136,7 @@ Valid options are:
 * headers
 A hashref containing headers to include with the request.  If the value for
 a header is an array reference, the header will be output multiple times with
-each value in the array.
+each value in the array.  These headers over-write any default headers.
 * content
 A scalar to include as the body of the request OR a code reference
 that will be called iteratively to produce the body of the response
@@ -881,6 +881,10 @@ Some particular limitations of note include:
 HTTP::Tiny focuses on correct transport.  Users are responsible for ensuring
 that user-defined headers and content are compliant with the HTTP/1.1
 specification.
+
+=item *
+
+Users must ensure that URLs are properly escaped. See L<URI::Escape>.
 
 =item *
 
