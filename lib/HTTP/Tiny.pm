@@ -868,10 +868,10 @@ also correctly resumes after EINTR.
 
 HTTP::Tiny is I<conditionally compliant> with the
 L<HTTP/1.1 specification|http://www.w3.org/Protocols/rfc2616/rfc2616.html>.
-
 It attempts to meet all "MUST" requirements of the specification, but does not
-implement all "SHOULD" requirements.  Some particular limitations of note
-include:
+implement all "SHOULD" requirements.
+
+Some particular limitations of note include:
 
 =over
 
@@ -880,6 +880,14 @@ include:
 HTTP::Tiny focuses on correct transport.  Users are responsible for ensuring
 that user-defined headers and content are compliant with the HTTP/1.1
 specification.
+
+=item *
+
+Redirection is very strict against the specification.  Redirection is only
+automatic for response codes 301, 302 and 307 if the request method is 'GET' or
+'HEAD'.  Response code 303 is always converted into a 'GET' redirection, as
+mandated by the specification.  There is no automatic support for status 305
+("Use proxy") redirections.
 
 =item *
 
