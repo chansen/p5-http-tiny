@@ -616,7 +616,7 @@ sub write_header_lines {
 }
 
 sub read_body {
-    @_ == 2 || @_ == 3 || croak(q/Usage: $handle->read_body(callback [, content_length])/);
+    @_ == 2 || @_ == 3 || croak(q/Usage: $handle->read_body(callback, headers)/);
     my ($self, $cb, $headers) = @_;
     if ( defined ($headers->{'transfer-encoding'})
         && $headers->{'transfer-encoding'} =~ /chunked/i
