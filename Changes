@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  - Additional limitations documented
+
 0.007     2011-01-12 04:56:16 EST5EDT
 
   - Added support for redirecting 303 and 307 response codes

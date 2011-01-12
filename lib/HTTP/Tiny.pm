@@ -906,6 +906,16 @@ always be set to C<close>.
 
 =item *
 
+Cookies are not directly supported.  Users that set a C<Cookie> header
+should also set C<max_redirect> to zero to ensure cookies are not
+inappropriately re-transmitted.
+
+=item *
+
+Proxy environment variables are not supported.
+
+=item *
+
 There is no provision for delaying a request body using an C<Expect> header.
 Unexpected C<1XX> responses are silently ignored as per the specification.
 
