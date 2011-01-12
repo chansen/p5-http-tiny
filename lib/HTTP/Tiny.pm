@@ -232,7 +232,9 @@ sub _request {
 
     if ($self->{proxy}) {
         $request->{uri} = "$scheme://$request->{host_port}$path_query";
-        # XXX CONNECT for https scheme
+        # XXX eventually CONNECT for https scheme?
+        croak(qq/HTTPS via proxy is not supported/)
+            if $request->{scheme} eq 'https';
         $handle->connect(($self->_split_url($self->{proxy}))[0..2]);
     }
     else {
@@ -431,11 +433,17 @@ sub connect {
     @_ == 4 || croak(q/Usage: $handle->connect(scheme, host, port)/);
     my ($self, $scheme, $host, $port) = @_;
 
-    # XXX IO::Socket::SSL
-    $scheme eq 'http'
-      or croak(qq/Unsupported URL scheme '$scheme'/);
+    if ( $scheme eq 'https' ) {
+        eval "require IO::Socket::SSL"
+            unless exists $INC{'IO/Socket/SSL.pm'};
+        croak(qq/IO::Socket::SSL must be installed for https support\n/)
+            unless $INC{'IO/Socket/SSL.pm'};
+    }
+    elsif ( $scheme ne 'http' ) {
+      croak(qq/Unsupported URL scheme '$scheme'/);
+    }
 
-    $self->{fh} = IO::Socket::INET->new(
+    $self->{fh} = 'IO::Socket::INET'->new(
         PeerHost  => $host,
         PeerPort  => $port,
         Proto     => 'tcp',
@@ -445,6 +453,13 @@ sub connect {
 
     binmode($self->{fh})
       or croak(qq/Could not binmode() socket: '$!'/);
+
+    if ( $scheme eq 'https') {
+        IO::Socket::SSL->start_SSL($self->{fh});
+        ref($self->{fh}) eq 'IO::Socket::SSL'
+            and $self->{fh}->verify_hostname( $host, 'http' )
+            or croak(qq/SSL connection failed for $host\n/);
+    }
 
     $self->{host} = $host;
     $self->{port} = $port;
