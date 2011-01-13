@@ -312,11 +312,6 @@ sub _prepare_data_cb {
     my $data_cb = $args->{data_callback};
     $response->{content} = '';
 
-    # XXX Should max_size apply even if a data callback is provided?
-    # Perhaps it should for consistency. I'm also not clear why
-    # max_size should be ignored on status other than 2XX.  Perhaps
-    # all $data_cb's should be wrapped in a max_size checking
-    # callback if max_size is true -- dagolden, 2010-12-02
     if (!$data_cb || $response->{status} !~ /^2/) {
         if (defined $self->{max_size}) {
             $data_cb = sub {
@@ -409,7 +404,7 @@ use Carp       qw[croak];
 use Errno      qw[EINTR EPIPE];
 use IO::Socket qw[SOCK_STREAM];
 
-sub BUFSIZE () { 32768 } # XXX Should be an attribute? -- dagolden, 2010-12-03
+sub BUFSIZE () { 32768 }
 
 my $Printable = sub {
     local $_ = shift;
