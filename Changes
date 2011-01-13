@@ -2,6 +2,9 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  - Added support for direct 'https' connections if IO::Socket::SSL
+    is installed
+
   - Added support for a callback to provide trailing headers for
     chunked transfer encoding
 
