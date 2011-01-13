@@ -687,7 +687,7 @@ sub read_content_body {
         $cb->($chunk) while length( $chunk = $self->read(BUFSIZE, 1) );
     }
 
-    return $content_length; # XXX ignored? -- dagolden, 2010-12-03
+    return;
 }
 
 sub write_content_body {
