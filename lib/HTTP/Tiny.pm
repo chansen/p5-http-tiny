@@ -235,7 +235,6 @@ sub _request {
 
     if ($self->{proxy}) {
         $request->{uri} = "$scheme://$request->{host_port}$path_query";
-        # XXX eventually CONNECT for https scheme?
         croak(qq/HTTPS via proxy is not supported/)
             if $request->{scheme} eq 'https';
         $handle->connect(($self->_split_url($self->{proxy}))[0..2]);
@@ -921,6 +920,11 @@ mandated by the specification.  There is no automatic support for status 305
 
 Persistant connections are not supported.  The C<Connection> header will
 always be set to C<close>.
+
+=item *
+
+Direct C<https> connections are supported only if L<IO::Socket::SSL> is
+installed.  There is no support for C<https> connections via proxy.
 
 =item *
 
