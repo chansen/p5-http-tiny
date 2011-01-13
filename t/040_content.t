@@ -21,7 +21,11 @@ use HTTP::Tiny;
     my $length   = $nchunks * length $chunk;
 
     {
-        my $got = $handle->write_content_body(sub { $nchunks-- ? $chunk : undef }, $length);
+        my $request = {
+          cb => sub { $nchunks-- ? $chunk : undef },
+          headers => { 'content-length' => $length }
+        };
+        my $got = $handle->write_content_body($request);
         is($got, $length, "written $length octets");
     }
 

@@ -2,6 +2,9 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  - Added support for a callback to provide trailing headers for
+    chunked transfer encoding
+
   - Additional limitations documented
 
 0.007     2011-01-12 04:56:16 EST5EDT

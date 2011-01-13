@@ -143,6 +143,9 @@ each value in the array.  These headers over-write any default headers.
 * content
 A scalar to include as the body of the request OR a code reference
 that will be called iteratively to produce the body of the response
+* trailer_callback
+A code reference that will be called if it exists to provide a hashref
+of trailing headers (only used with chunked transfer-encoding)
 * data_callback
 A code reference that will be called with chunks of the response
 body
@@ -299,6 +302,8 @@ sub _prepare_headers_and_cb {
                   || $request->{headers}{'transfer-encoding'};
             $request->{cb} = sub { substr $content, 0, length $content, '' };
         }
+        $request->{trailer_cb} = $args->{trailer_callback}
+            if ref $args->{trailer_callback} eq 'CODE';
     }
     return;
 }
@@ -609,8 +614,7 @@ sub write_request {
     @_ == 2 || croak(q/Usage: $handle->write_request(request)/);
     my($self, $request) = @_;
     $self->write_request_header(@{$request}{qw/method uri headers/});
-    $self->write_body($request->{cb}, $request->{headers}{'content-length'})
-        if $request->{cb};
+    $self->write_body($request) if $request->{cb};
     return;
 }
 
@@ -623,7 +627,7 @@ my %HeaderCase = (
 );
 
 sub write_header_lines {
-    @_ == 2 || croak(q/Usage: $handle->write_header_lines(headers)/);
+    (@_ == 2 && ref $_[1] eq 'HASH') || croak(q/Usage: $handle->write_header_lines(headers)/);
     my($self, $headers) = @_;
 
     my $buf = '';
@@ -662,13 +666,13 @@ sub read_body {
 }
 
 sub write_body {
-    @_ == 2 || @_ == 3 || croak(q/Usage: $handle->write_body(callback [, content_length])/);
-    my ($self, $cb, $content_length) = @_;
-    if ($content_length) {
-        return $self->write_content_body($cb, $content_length);
+    @_ == 2 || croak(q/Usage: $handle->write_body(request)/);
+    my ($self, $request) = @_;
+    if ($request->{headers}{'content-length'}) {
+        return $self->write_content_body($request);
     }
     else {
-        return $self->write_chunked_body($cb);
+        return $self->write_chunked_body($request);
     }
 }
 
@@ -693,12 +697,12 @@ sub read_content_body {
 }
 
 sub write_content_body {
-    @_ == 3 || croak(q/Usage: $handle->write_content_body(callback, content_length)/);
-    my ($self, $cb, $content_length) = @_;
+    @_ == 2 || croak(q/Usage: $handle->write_content_body(request)/);
+    my ($self, $request) = @_;
 
-    my $len = 0;
+    my ($len, $content_length) = (0, $request->{headers}{'content-length'});
     while () {
-        my $data = $cb->();
+        my $data = $request->{cb}->();
 
         defined $data && length $data
           or last;
@@ -740,14 +744,12 @@ sub read_chunked_body {
 }
 
 sub write_chunked_body {
-    @_ == 2 || @_ == 3 || croak(q/Usage: $handle->write_chunked_body(callback [, trailers])/);
-    my ($self, $cb, $trailers) = @_;
-
-    $trailers ||= {}; # XXX not used; remove? -- dagolden, 2010-12-03
+    @_ == 2 || croak(q/Usage: $handle->write_chunked_body(request)/);
+    my ($self, $request) = @_;
 
     my $len = 0;
     while () {
-        my $data = $cb->();
+        my $data = $request->{cb}->();
 
         defined $data && length $data
           or last;
@@ -767,7 +769,8 @@ sub write_chunked_body {
         $self->write($chunk);
     }
     $self->write("0\x0D\x0A");
-    $self->write_header_lines($trailers); # XXX remove? -- dagolden, 2010-12-03
+    $self->write_header_lines($request->{trailer_cb}->())
+        if ref $request->{trailer_cb} eq 'CODE';
     return $len;
 }
 

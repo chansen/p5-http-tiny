@@ -35,7 +35,11 @@ use HTTP::Tiny;
 
     {
         my @chunks = @$exp;
-        $handle->write_chunked_body(sub { shift @chunks }, $trailers);
+        my $request = {
+          cb => sub { shift @chunks },
+          trailer_cb => sub { $trailers },
+        };
+        $handle->write_chunked_body($request);
     }
 
     rewind($fh);

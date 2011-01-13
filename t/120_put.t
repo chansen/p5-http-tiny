@@ -37,6 +37,10 @@ for my $file ( dir_list("t/cases", qr/^put/ ) ) {
     $options{content} = eval join "\n", @{$case->{content_cb}};
   }
 
+  if ( $case->{trailer_cb} ) {
+    $options{trailer_callback} = eval join "\n", @{$case->{trailer_cb}};
+  }
+
   # setup mocking and test
   my $res_fh = tmpfile($give_res);
   my $req_fh = tmpfile();
