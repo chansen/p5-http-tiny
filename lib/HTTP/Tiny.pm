@@ -147,18 +147,21 @@ that will be called iteratively to produce the body of the response
 A code reference that will be called if it exists to provide a hashref
 of trailing headers (only used with chunked transfer-encoding)
 * data_callback
-A code reference that will be called with chunks of the response
-body
+A code reference that will be called for each chunks of the response
+body received.
 
 If the C<content> option is a code reference, it will be called iteratively
 to provide the content body of the request.  It should return the empty
 string or undef when the iterator is exhausted.
 
-If the C<data_callback> option is provided, it will be called iteratively
-with a chunk of response body data as the sole argument until the entire
-response body is received.
+If the C<data_callback> option is provided, it will be called iteratively until
+the entire response body is received.  The first argument will be a string
+containing a chunk of the response body, the second argument will be the
+in-progress response hash reference, as described below.  (This allows
+customizing the action of the callback based on the C<status> or C<headers>
+received prior to the content body.)
 
-The C<response> method returns a hashref containing the response.  The hashref
+The C<request> method returns a hashref containing the response.  The hashref
 will have the following keys:
 
 =for :list
@@ -260,8 +263,7 @@ sub _request {
     }
     else {
         my $data_cb = $self->_prepare_data_cb($response, $args);
-        my $rh = $response->{headers};
-        $handle->read_body($data_cb, $rh);
+        $handle->read_body($data_cb, $response);
     }
 
     $handle->close;
@@ -315,13 +317,13 @@ sub _prepare_data_cb {
     if (!$data_cb || $response->{status} !~ /^2/) {
         if (defined $self->{max_size}) {
             $data_cb = sub {
-                $response->{content} .= $_[0];
-                Carp::croak(qq/Size of response body exceeds the maximum allowed of $self->{max_size}/)
-                  if length $response->{content} > $self->{max_size};
+                $_[1]->{content} .= $_[0];
+                die(qq/Size of response body exceeds the maximum allowed of $self->{max_size}\n/)
+                  if length $_[1]->{content} > $self->{max_size};
             };
         }
         else {
-            $data_cb = sub { $response->{content} .= $_[0] };
+            $data_cb = sub { $_[1]->{content} .= $_[0] };
         }
     }
     return $data_cb;
@@ -647,14 +649,14 @@ sub write_header_lines {
 }
 
 sub read_body {
-    @_ == 3 || croak(q/Usage: $handle->read_body(callback, headers)/);
-    my ($self, $cb, $headers) = @_;
-    my $te = $headers->{'transfer-encoding'} || '';
+    @_ == 3 || croak(q/Usage: $handle->read_body(callback, response)/);
+    my ($self, $cb, $response) = @_;
+    my $te = $response->{headers}{'transfer-encoding'} || '';
     if ( grep { /chunked/i } ( ref $te eq 'ARRAY' ? @$te : $te ) ) {
-        $self->read_chunked_body($cb, $headers);
+        $self->read_chunked_body($cb, $response);
     }
     else {
-        $self->read_content_body($cb, $headers->{'content-length'});
+        $self->read_content_body($cb, $response);
     }
     return;
 }
@@ -671,20 +673,21 @@ sub write_body {
 }
 
 sub read_content_body {
-    @_ == 3 || croak(q/Usage: $handle->read_content_body(callback, content_length)/);
-    my ($self, $cb, $content_length) = @_;
+    @_ == 3 || @_ == 4 || croak(q/Usage: $handle->read_content_body(callback, response, [read_length])/);
+    my ($self, $cb, $response, $content_length) = @_;
+    $content_length ||= $response->{headers}{'content-length'};
 
     if ( $content_length ) {
         my $len = $content_length;
         while ($len > 0) {
             my $read = ($len > BUFSIZE) ? BUFSIZE : $len;
-            $cb->($self->read($read, 0));
+            $cb->($self->read($read, 0), $response);
             $len -= $read;
         }
     }
     else {
         my $chunk;
-        $cb->($chunk) while length( $chunk = $self->read(BUFSIZE, 1) );
+        $cb->($chunk, $response) while length( $chunk = $self->read(BUFSIZE, 1) );
     }
 
     return;
@@ -716,8 +719,8 @@ sub write_content_body {
 }
 
 sub read_chunked_body {
-    @_ == 3 || croak(q/Usage: $handle->read_chunked_body(callback, $headers)/);
-    my ($self, $cb, $headers) = @_;
+    @_ == 3 || croak(q/Usage: $handle->read_chunked_body(callback, $response)/);
+    my ($self, $cb, $response) = @_;
 
     while () {
         my $head = $self->readline;
@@ -728,12 +731,12 @@ sub read_chunked_body {
         my $len = hex($1)
           or last;
 
-        $self->read_content_body($cb, $len);
+        $self->read_content_body($cb, $response, $len);
 
         $self->read(2) eq "\x0D\x0A"
           or croak(q/Malformed chunk: missing CRLF after chunk data/);
     }
-    $self->read_header_lines($headers);
+    $self->read_header_lines($response->{headers});
     return;
 }
 

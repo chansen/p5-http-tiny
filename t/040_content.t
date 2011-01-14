@@ -33,7 +33,7 @@ use HTTP::Tiny;
 
     {
         my $got = 0;
-        $handle->read_content_body(sub { $got += length $_[0] }, $length);
+        $handle->read_content_body(sub { $got += length $_[0] }, {}, $length);
         is($got, $length, "read $length octets");
     }
 }
