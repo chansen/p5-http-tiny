@@ -17,5 +17,5 @@ while (my ($k, $v) = each %{$response->{headers}}) {
     }
 }
 
-print $response->{content} if defined $response->{content};
+print $response->{content} if length $response->{content};
 
