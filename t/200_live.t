@@ -24,15 +24,17 @@ plan 'skip_all' => "Internet connection timed out"
 
 my $response = HTTP::Tiny->new->get($test_url);
 
-ok( $response->{success}, "Successful request to $test_url" );
-like( $response->{content}, $test_re, "Saw expected content" )
-  or dump_headers($response->{headers});
+ok( $response->{status} ne '599', "Request to $test_url completed" )
+  or dump_hash($response);
+ok( $response->{content}, "Got content" );
 
-sub dump_headers {
+sub dump_hash {
   my $hash = shift;
-  for my $k ( sort keys %$hash ) {
-    print "# $k\: $hash->{$k}\n";
-  }
+  $hash->{content} = substr($hash->{content},0,160) . "...";
+  require Data::Dumper;
+  my $dumped = Data::Dumper::Dumper($hash);
+  $dumped =~ s{^}{# };
+  print $dumped;
 }
 
 done_testing;
