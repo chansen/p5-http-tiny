@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  - Added workaround for IO::Socket::SSL certificate verification bug
+
   - Minor documentation improvements
 
   - POST example added to the eg/ directory in the distribution tarball
