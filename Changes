@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+0.009     2011-01-17 16:29:22 EST5EDT
+
   - Added workaround for IO::Socket::SSL certificate verification bug
 
   - Minor documentation improvements
