@@ -2,6 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  - Minor documentation improvements
+
+  - POST example added to the eg/ directory in the distribution tarball
+
 0.008     2011-01-14 06:34:55 EST5EDT
 
   - Added support for direct 'https' connections if IO::Socket::SSL

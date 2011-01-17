@@ -128,8 +128,8 @@ sub mirror {
     $response = $http->request($method, $url);
     $response = $http->request($method, $url, \%options);
 
-Executes an HTTP request of the given method type ('GET', 'HEAD', 'PUT', etc.)
-on the given URL.  The URL must have unsafe characters escaped and
+Executes an HTTP request of the given method type ('GET', 'HEAD', 'POST',
+'PUT', etc.) on the given URL.  The URL must have unsafe characters escaped and
 international domain names encoded.  A hashref of options may be appended to
 modify the request.
 
