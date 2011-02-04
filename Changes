@@ -2,6 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  [BUG FIXES]
+
+  - Fixed test errors on VMS (RT#65430) [Craig Berry]
+
 0.009     2011-01-17 16:29:22 EST5EDT
 
   - Added workaround for IO::Socket::SSL certificate verification bug
