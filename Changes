@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+0.011     2011-03-19 20:48:39 America/New_York
+
   [BUG FIXES]
 
   - Made t/000_load.t less verbose under harness (RT#65507) [Dave Mitchell]
