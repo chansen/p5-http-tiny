@@ -2,6 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  [BUG FIXES]
+
+  - mirror() now uses binmode during output (RT #67118) [Serguei Trouchelle]
+
 0.011     2011-03-19 20:48:39 America/New_York
 
   [BUG FIXES]

@@ -106,6 +106,7 @@ sub mirror {
     my $tempfile = $file . int(rand(2**31));
     open my $fh, ">", $tempfile
         or Carp::croak(qq/Error: Could not open temporary file $tempfile for downloading: $!/);
+    binmode $fh;
     $args->{data_callback} = sub { print {$fh} $_[0] };
     my $response = $self->request('GET', $url, $args);
     close $fh
