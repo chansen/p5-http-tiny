@@ -6,6 +6,11 @@ Release notes for HTTP-Tiny
 
   - mirror() now uses binmode during output (RT #67118) [Serguei Trouchelle]
 
+  [DOCUMENTATION]
+
+  - noted that SSL certificates are not verified against CA's
+    (RT #66907)
+
 0.011     2011-03-19 20:48:39 America/New_York
 
   [BUG FIXES]

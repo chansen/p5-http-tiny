@@ -929,6 +929,8 @@ always be set to C<close>.
 
 Direct C<https> connections are supported only if L<IO::Socket::SSL> is
 installed.  There is no support for C<https> connections via proxy.
+Any SSL certificate that matches the host is accepted -- SSL certificates
+are not verified against certificate authorities.
 
 =item *
 
