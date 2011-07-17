@@ -51,6 +51,17 @@ sub new {
     for my $key ( @attributes ) {
         $self->{$key} = $args{$key} if exists $args{$key}
     }
+
+    # Never override proxy argument as this breaks backwards compat.
+    if (!exists $self->{proxy} && (my $http_proxy = $ENV{http_proxy})) {
+        if ($http_proxy =~ m{\Ahttp://[^/?#:@]+:\d+/?\z}) {
+            $self->{proxy} = $http_proxy;
+        }
+        else {
+            Carp::croak(qq{Environment 'http_proxy' must be in format http://<host>:<port>/});
+        }
+    }
+
     return bless $self, $class;
 }
 
@@ -940,7 +951,8 @@ inappropriately re-transmitted.
 
 =item *
 
-Proxy environment variables are not supported.
+Only C<http_proxy> environment is supported in the format C<http://E<lt>hostE<gt>:E<lt>portE<gt>/>. 
+If C<proxy> is passed (undef or any value) to C<new> then C<http_proxy> is ignored. 
 
 =item *
 
