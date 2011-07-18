@@ -2,7 +2,7 @@
 package HTTP::Tiny;
 use strict;
 use warnings;
-# ABSTRACT: A small, simple, correct HTTP/1.1 client
+# VERSION
 
 use Carp ();
 
@@ -853,6 +853,8 @@ sub can_write {
 }
 
 1;
+
+# ABSTRACT: A small, simple, correct HTTP/1.1 client
 
 =for Pod::Coverage
 agent
