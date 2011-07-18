@@ -58,7 +58,7 @@ sub new {
             $self->{proxy} = $http_proxy;
         }
         else {
-            Carp::croak(qq{Environment 'http_proxy' must be in format http://<host>:<port>/});
+            Carp::croak(qq{Environment 'http_proxy' must be in format http://<host>:<port>/\n});
         }
     }
 
@@ -80,7 +80,7 @@ options and a description of the response.
 sub get {
     my ($self, $url, $args) = @_;
     @_ == 2 || (@_ == 3 && ref $args eq 'HASH')
-      or Carp::croak(q/Usage: $http->get(URL, [HASHREF])/);
+      or Carp::croak(q/Usage: $http->get(URL, [HASHREF])/ . "\n");
     return $self->request('GET', $url, $args || {});
 }
 
@@ -110,21 +110,21 @@ be updated accordingly.
 sub mirror {
     my ($self, $url, $file, $args) = @_;
     @_ == 3 || (@_ == 4 && ref $args eq 'HASH')
-      or Carp::croak(q/Usage: $http->mirror(URL, FILE, [HASHREF])/);
+      or Carp::croak(q/Usage: $http->mirror(URL, FILE, [HASHREF])/ . "\n");
     if ( -e $file and my $mtime = (stat($file))[9] ) {
         $args->{headers}{'if-modified-since'} ||= $self->_http_date($mtime);
     }
     my $tempfile = $file . int(rand(2**31));
     open my $fh, ">", $tempfile
-        or Carp::croak(qq/Error: Could not open temporary file $tempfile for downloading: $!/);
+        or Carp::croak(qq/Error: Could not open temporary file $tempfile for downloading: $!\n/);
     binmode $fh;
     $args->{data_callback} = sub { print {$fh} $_[0] };
     my $response = $self->request('GET', $url, $args);
     close $fh
-        or Carp::croak(qq/Error: Could not close temporary file $tempfile: $!/);
+        or Carp::croak(qq/Error: Could not close temporary file $tempfile: $!\n/);
     if ( $response->{success} ) {
         rename $tempfile, $file
-            or Carp::croak "Error replacing $file with $tempfile: $!\n";
+            or Carp::croak(qq/Error replacing $file with $tempfile: $!\n/);
         my $lm = $response->{headers}{'last-modified'};
         if ( $lm and my $mtime = $self->_parse_http_date($lm) ) {
             utime $mtime, $mtime, $file;
@@ -202,7 +202,7 @@ my %idempotent = map { $_ => 1 } qw/GET HEAD PUT DELETE OPTIONS TRACE/;
 sub request {
     my ($self, $method, $url, $args) = @_;
     @_ == 3 || (@_ == 4 && ref $args eq 'HASH')
-      or Carp::croak(q/Usage: $http->request(METHOD, URL, [HASHREF])/);
+      or Carp::croak(q/Usage: $http->request(METHOD, URL, [HASHREF])/ . "\n");
     $args ||= {}; # we keep some state in this during _request
 
     # RFC 2616 Section 8.1.4 mandates a single retry on broken socket
@@ -250,7 +250,7 @@ sub _request {
 
     if ($self->{proxy}) {
         $request->{uri} = "$scheme://$request->{host_port}$path_query";
-        croak(qq/HTTPS via proxy is not supported/)
+        die(qq/HTTPS via proxy is not supported\n/)
             if $request->{scheme} eq 'https';
         $handle->connect(($self->_split_url($self->{proxy}))[0..2]);
     }
@@ -308,7 +308,7 @@ sub _prepare_headers_and_cb {
             my $content = $args->{content};
             if ( $] ge '5.008' ) {
                 utf8::downgrade($content, 1)
-                    or Carp::croak(q/Wide character in request message body/);
+                    or die(qq/Wide character in request message body\n/);
             }
             $request->{headers}{'content-length'} = length $content
               unless $request->{headers}{'content-length'}
@@ -362,7 +362,7 @@ sub _split_url {
 
     # URI regex adapted from the URI module
     my ($scheme, $authority, $path_query) = $url =~ m<\A([^:/?#]+)://([^/?#]*)([^#]*)>
-      or Carp::croak(qq/Cannot parse URL: '$url'/);
+      or die(qq/Cannot parse URL: '$url'\n/);
 
     $scheme     = lc $scheme;
     $path_query = "/$path_query" unless $path_query =~ m<\A/>;
@@ -414,7 +414,6 @@ package
 use strict;
 use warnings;
 
-use Carp       qw[croak];
 use Errno      qw[EINTR EPIPE];
 use IO::Socket qw[SOCK_STREAM];
 
@@ -449,17 +448,17 @@ my $ssl_verify_args = {
 };
 
 sub connect {
-    @_ == 4 || croak(q/Usage: $handle->connect(scheme, host, port)/);
+    @_ == 4 || die(q/Usage: $handle->connect(scheme, host, port)/ . "\n");
     my ($self, $scheme, $host, $port) = @_;
 
     if ( $scheme eq 'https' ) {
         eval "require IO::Socket::SSL"
             unless exists $INC{'IO/Socket/SSL.pm'};
-        croak(qq/IO::Socket::SSL must be installed for https support\n/)
+        die(qq/IO::Socket::SSL must be installed for https support\n/)
             unless $INC{'IO/Socket/SSL.pm'};
     }
     elsif ( $scheme ne 'http' ) {
-      croak(qq/Unsupported URL scheme '$scheme'/);
+      die(qq/Unsupported URL scheme '$scheme'\n/);
     }
 
     $self->{fh} = 'IO::Socket::INET'->new(
@@ -468,10 +467,10 @@ sub connect {
         Proto     => 'tcp',
         Type      => SOCK_STREAM,
         Timeout   => $self->{timeout}
-    ) or croak(qq/Could not connect to '$host:$port': $@/);
+    ) or die(qq/Could not connect to '$host:$port': $@\n/);
 
     binmode($self->{fh})
-      or croak(qq/Could not binmode() socket: '$!'/);
+      or die(qq/Could not binmode() socket: '$!'\n/);
 
     if ( $scheme eq 'https') {
         IO::Socket::SSL->start_SSL($self->{fh});
@@ -488,19 +487,19 @@ sub connect {
 }
 
 sub close {
-    @_ == 1 || croak(q/Usage: $handle->close()/);
+    @_ == 1 || die(q/Usage: $handle->close()/ . "\n");
     my ($self) = @_;
     CORE::close($self->{fh})
-      or croak(qq/Could not close socket: '$!'/);
+      or die(qq/Could not close socket: '$!'\n/);
 }
 
 sub write {
-    @_ == 2 || croak(q/Usage: $handle->write(buf)/);
+    @_ == 2 || die(q/Usage: $handle->write(buf)/ . "\n");
     my ($self, $buf) = @_;
 
     if ( $] ge '5.008' ) {
         utf8::downgrade($buf, 1)
-            or croak(q/Wide character in write()/);
+            or die(qq/Wide character in write()\n/);
     }
 
     my $len = length $buf;
@@ -510,7 +509,7 @@ sub write {
 
     while () {
         $self->can_write
-          or croak(q/Timed out while waiting for socket to become ready for writing/);
+          or die(qq/Timed out while waiting for socket to become ready for writing\n/);
         my $r = syswrite($self->{fh}, $buf, $len, $off);
         if (defined $r) {
             $len -= $r;
@@ -518,17 +517,17 @@ sub write {
             last unless $len > 0;
         }
         elsif ($! == EPIPE) {
-            croak(qq/Socket closed by remote server: $!/);
+            die(qq/Socket closed by remote server: $!\n/);
         }
         elsif ($! != EINTR) {
-            croak(qq/Could not write to socket: '$!'/);
+            die(qq/Could not write to socket: '$!'\n/);
         }
     }
     return $off;
 }
 
 sub read {
-    @_ == 2 || @_ == 3 || croak(q/Usage: $handle->read(len [, allow_partial])/);
+    @_ == 2 || @_ == 3 || die(q/Usage: $handle->read(len [, allow_partial])/ . "\n");
     my ($self, $len, $allow_partial) = @_;
 
     my $buf  = '';
@@ -542,24 +541,24 @@ sub read {
 
     while ($len > 0) {
         $self->can_read
-          or croak(q/Timed out while waiting for socket to become ready for reading/);
+          or die(q/Timed out while waiting for socket to become ready for reading/ . "\n");
         my $r = sysread($self->{fh}, $buf, $len, length $buf);
         if (defined $r) {
             last unless $r;
             $len -= $r;
         }
         elsif ($! != EINTR) {
-            croak(qq/Could not read from socket: '$!'/);
+            die(qq/Could not read from socket: '$!'\n/);
         }
     }
     if ($len && !$allow_partial) {
-        croak(q/Unexpected end of stream/);
+        die(qq/Unexpected end of stream\n/);
     }
     return $buf;
 }
 
 sub readline {
-    @_ == 1 || croak(q/Usage: $handle->readline()/);
+    @_ == 1 || die(q/Usage: $handle->readline()/ . "\n");
     my ($self) = @_;
 
     while () {
@@ -567,23 +566,23 @@ sub readline {
             return $1;
         }
         if (length $self->{rbuf} >= $self->{max_line_size}) {
-            croak(qq/Line size exceeds the maximum allowed size of $self->{max_line_size}/);
+            die(qq/Line size exceeds the maximum allowed size of $self->{max_line_size}\n/);
         }
         $self->can_read
-          or croak(q/Timed out while waiting for socket to become ready for reading/);
+          or die(qq/Timed out while waiting for socket to become ready for reading\n/);
         my $r = sysread($self->{fh}, $self->{rbuf}, BUFSIZE, length $self->{rbuf});
         if (defined $r) {
             last unless $r;
         }
         elsif ($! != EINTR) {
-            croak(qq/Could not read from socket: '$!'/);
+            die(qq/Could not read from socket: '$!'\n/);
         }
     }
-    croak(q/Unexpected end of stream while looking for line/);
+    die(qq/Unexpected end of stream while looking for line\n/);
 }
 
 sub read_header_lines {
-    @_ == 1 || @_ == 2 || croak(q/Usage: $handle->read_header_lines([headers])/);
+    @_ == 1 || @_ == 2 || die(q/Usage: $handle->read_header_lines([headers])/ . "\n");
     my ($self, $headers) = @_;
     $headers ||= {};
     my $lines   = 0;
@@ -593,7 +592,7 @@ sub read_header_lines {
          my $line = $self->readline;
 
          if (++$lines >= $self->{max_header_lines}) {
-             croak(qq/Header lines exceeds maximum number allowed of $self->{max_header_lines}/);
+             die(qq/Header lines exceeds maximum number allowed of $self->{max_header_lines}\n/);
          }
          elsif ($line =~ /\A ([^\x00-\x1F\x7F:]+) : [\x09\x20]* ([^\x0D\x0A]*)/x) {
              my ($field_name) = lc $1;
@@ -610,7 +609,7 @@ sub read_header_lines {
          }
          elsif ($line =~ /\A [\x09\x20]+ ([^\x0D\x0A]*)/x) {
              $val
-               or croak(q/Unexpected header continuation line/);
+               or die(qq/Unexpected header continuation line\n/);
              next unless length $1;
              $$val .= ' ' if length $$val;
              $$val .= $1;
@@ -619,14 +618,14 @@ sub read_header_lines {
             last;
          }
          else {
-            croak(q/Malformed header line: / . $Printable->($line));
+            die(q/Malformed header line: / . $Printable->($line) . "\n");
          }
     }
     return $headers;
 }
 
 sub write_request {
-    @_ == 2 || croak(q/Usage: $handle->write_request(request)/);
+    @_ == 2 || die(q/Usage: $handle->write_request(request)/ . "\n");
     my($self, $request) = @_;
     $self->write_request_header(@{$request}{qw/method uri headers/});
     $self->write_body($request) if $request->{cb};
@@ -642,7 +641,7 @@ my %HeaderCase = (
 );
 
 sub write_header_lines {
-    (@_ == 2 && ref $_[1] eq 'HASH') || croak(q/Usage: $handle->write_header_lines(headers)/);
+    (@_ == 2 && ref $_[1] eq 'HASH') || die(q/Usage: $handle->write_header_lines(headers)/ . "\n");
     my($self, $headers) = @_;
 
     my $buf = '';
@@ -653,13 +652,13 @@ sub write_header_lines {
         }
         else {
             $field_name =~ /\A $Token+ \z/xo
-              or croak(q/Invalid HTTP header field name: / . $Printable->($field_name));
+              or die(q/Invalid HTTP header field name: / . $Printable->($field_name) . "\n");
             $field_name =~ s/\b(\w)/\u$1/g;
             $HeaderCase{lc $field_name} = $field_name;
         }
         for (ref $v eq 'ARRAY' ? @$v : $v) {
             /[^\x0D\x0A]/
-              or croak(qq/Invalid HTTP header field value ($field_name): / . $Printable->($_));
+              or die(qq/Invalid HTTP header field value ($field_name): / . $Printable->($_). "\n");
             $buf .= "$field_name: $_\x0D\x0A";
         }
     }
@@ -668,7 +667,7 @@ sub write_header_lines {
 }
 
 sub read_body {
-    @_ == 3 || croak(q/Usage: $handle->read_body(callback, response)/);
+    @_ == 3 || die(q/Usage: $handle->read_body(callback, response)/ . "\n");
     my ($self, $cb, $response) = @_;
     my $te = $response->{headers}{'transfer-encoding'} || '';
     if ( grep { /chunked/i } ( ref $te eq 'ARRAY' ? @$te : $te ) ) {
@@ -681,7 +680,7 @@ sub read_body {
 }
 
 sub write_body {
-    @_ == 2 || croak(q/Usage: $handle->write_body(request)/);
+    @_ == 2 || die(q/Usage: $handle->write_body(request)/ . "\n");
     my ($self, $request) = @_;
     if ($request->{headers}{'content-length'}) {
         return $self->write_content_body($request);
@@ -692,7 +691,7 @@ sub write_body {
 }
 
 sub read_content_body {
-    @_ == 3 || @_ == 4 || croak(q/Usage: $handle->read_content_body(callback, response, [read_length])/);
+    @_ == 3 || @_ == 4 || die(q/Usage: $handle->read_content_body(callback, response, [read_length])/ . "\n");
     my ($self, $cb, $response, $content_length) = @_;
     $content_length ||= $response->{headers}{'content-length'};
 
@@ -713,7 +712,7 @@ sub read_content_body {
 }
 
 sub write_content_body {
-    @_ == 2 || croak(q/Usage: $handle->write_content_body(request)/);
+    @_ == 2 || die(q/Usage: $handle->write_content_body(request)/ . "\n");
     my ($self, $request) = @_;
 
     my ($len, $content_length) = (0, $request->{headers}{'content-length'});
@@ -725,27 +724,27 @@ sub write_content_body {
 
         if ( $] ge '5.008' ) {
             utf8::downgrade($data, 1)
-                or croak(q/Wide character in write_content()/);
+                or die(qq/Wide character in write_content()\n/);
         }
 
         $len += $self->write($data);
     }
 
     $len == $content_length
-      or croak(qq/Content-Length missmatch (got: $len expected: $content_length)/);
+      or die(qq/Content-Length missmatch (got: $len expected: $content_length)\n/);
 
     return $len;
 }
 
 sub read_chunked_body {
-    @_ == 3 || croak(q/Usage: $handle->read_chunked_body(callback, $response)/);
+    @_ == 3 || die(q/Usage: $handle->read_chunked_body(callback, $response)/ . "\n");
     my ($self, $cb, $response) = @_;
 
     while () {
         my $head = $self->readline;
 
         $head =~ /\A ([A-Fa-f0-9]+)/x
-          or croak(q/Malformed chunk head: / . $Printable->($head));
+          or die(q/Malformed chunk head: / . $Printable->($head) . "\n");
 
         my $len = hex($1)
           or last;
@@ -753,14 +752,14 @@ sub read_chunked_body {
         $self->read_content_body($cb, $response, $len);
 
         $self->read(2) eq "\x0D\x0A"
-          or croak(q/Malformed chunk: missing CRLF after chunk data/);
+          or die(qq/Malformed chunk: missing CRLF after chunk data\n/);
     }
     $self->read_header_lines($response->{headers});
     return;
 }
 
 sub write_chunked_body {
-    @_ == 2 || croak(q/Usage: $handle->write_chunked_body(request)/);
+    @_ == 2 || die(q/Usage: $handle->write_chunked_body(request)/ . "\n");
     my ($self, $request) = @_;
 
     my $len = 0;
@@ -772,7 +771,7 @@ sub write_chunked_body {
 
         if ( $] ge '5.008' ) {
             utf8::downgrade($data, 1)
-                or croak(q/Wide character in write_chunked_body()/);
+                or die(qq/Wide character in write_chunked_body()\n/);
         }
 
         $len += length $data;
@@ -791,17 +790,17 @@ sub write_chunked_body {
 }
 
 sub read_response_header {
-    @_ == 1 || croak(q/Usage: $handle->read_response_header()/);
+    @_ == 1 || die(q/Usage: $handle->read_response_header()/ . "\n");
     my ($self) = @_;
 
     my $line = $self->readline;
 
     $line =~ /\A (HTTP\/(0*\d+\.0*\d+)) [\x09\x20]+ ([0-9]{3}) [\x09\x20]+ ([^\x0D\x0A]*) \x0D?\x0A/x
-      or croak(q/Malformed Status-Line: / . $Printable->($line));
+      or die(q/Malformed Status-Line: / . $Printable->($line). "\n");
 
     my ($protocol, $version, $status, $reason) = ($1, $2, $3, $4);
 
-    croak (qq/Unsupported HTTP protocol: $protocol/)
+    die (qq/Unsupported HTTP protocol: $protocol\n/)
         unless $version =~ /0*1\.0*[01]/;
 
     return {
@@ -813,7 +812,7 @@ sub read_response_header {
 }
 
 sub write_request_header {
-    @_ == 4 || croak(q/Usage: $handle->write_request_header(method, request_uri, headers)/);
+    @_ == 4 || die(q/Usage: $handle->write_request_header(method, request_uri, headers)/ . "\n");
     my ($self, $method, $request_uri, $headers) = @_;
 
     return $self->write("$method $request_uri HTTP/1.1\x0D\x0A")
@@ -827,7 +826,7 @@ sub _do_timeout {
 
     my $fd = fileno $self->{fh};
     defined $fd && $fd >= 0
-      or croak(q/select(2): 'Bad file descriptor'/);
+      or die(qq/select(2): 'Bad file descriptor'\n/);
 
     my $initial = time;
     my $pending = $timeout;
@@ -841,7 +840,7 @@ sub _do_timeout {
             : select(undef, $fdset, undef, $pending) ;
         if ($nfound == -1) {
             $! == EINTR
-              or croak(qq/select(2): '$!'/);
+              or die(qq/select(2): '$!'\n/);
             redo if !$timeout || ($pending = $timeout - (time - $initial)) > 0;
             $nfound = 0;
         }
@@ -852,13 +851,13 @@ sub _do_timeout {
 }
 
 sub can_read {
-    @_ == 1 || @_ == 2 || croak(q/Usage: $handle->can_read([timeout])/);
+    @_ == 1 || @_ == 2 || die(q/Usage: $handle->can_read([timeout])/ . "\n");
     my $self = shift;
     return $self->_do_timeout('read', @_)
 }
 
 sub can_write {
-    @_ == 1 || @_ == 2 || croak(q/Usage: $handle->can_write([timeout])/);
+    @_ == 1 || @_ == 2 || die(q/Usage: $handle->can_write([timeout])/ . "\n");
     my $self = shift;
     return $self->_do_timeout('write', @_)
 }

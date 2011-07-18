@@ -6,6 +6,11 @@ Release notes for HTTP-Tiny
 
   - $ENV{http_proxy} support added [Claes Jakobsson]
 
+  [OTHER]
+
+  - Internal/private errors converted from "croak" to "die" as internal
+    errors are caught by "eval"
+
 0.012     2011-03-31 15:48:02 America/New_York
 
   [BUG FIXES]
