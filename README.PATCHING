@@ -1,0 +1,42 @@
+README.PATCHING
+
+Thank you for considering contributing to this distribution.  This file
+contains instructions that will help you work with the source code.
+
+The distribution is managed with Dist::Zilla.  This means than many of the
+usual files you might expect are not in the repository, but are generated
+at release time (e.g. Makefile.PL).
+
+However, you can run tests directly using the 'prove' tool:
+
+  $ prove -l
+  $ prove -lv t/some_test_file.t
+
+For most distributions, 'prove' is entirely sufficent for you to test any
+patches you have.
+
+Likewise, much of the documentation Pod is generated at release time.
+Depending on the distribution, some documentation may be written in a Pod
+dialect called WikiDoc. (See Pod::WikiDoc on CPAN.) If you would like to
+submit a documentation edit, please limit yourself to the documentation you
+see.
+
+If you see typos or documentation issues in the generated docs, please
+email or open a bug ticket instead of patching.
+
+Dist::Zilla is a very powerful authoring tool, but requires a number of
+author-specific plugins.  If you would like to use it for contributing,
+install it from CPAN, then run one of the following commands, depending on
+your CPAN client:
+
+  $ cpan `dzil authordeps`
+  $ dzil authordeps | cpanm
+
+Once installed, here are some dzil commands you might try:
+
+  $ dzil build
+  $ dzil test
+  $ dzil xtest
+ 
+You can learn more about Dist::Zilla at http://dzil.org/
+
