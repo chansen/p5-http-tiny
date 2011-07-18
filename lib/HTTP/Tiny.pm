@@ -23,7 +23,7 @@ Maximum number of redirects allowed (defaults to 5)
 Maximum response size (only when not using a data callback).  If defined,
 responses larger than this will die with an error message
 * proxy
-URL of a proxy server to use.
+URL of a proxy server to use (default is C<$ENV{http_proxy}> if set)
 * timeout
 Request timeout in seconds (default is 60)
 
@@ -953,8 +953,9 @@ inappropriately re-transmitted.
 
 =item *
 
-Only C<http_proxy> environment is supported in the format C<http://E<lt>hostE<gt>:E<lt>portE<gt>/>. 
-If C<proxy> is passed (undef or any value) to C<new> then C<http_proxy> is ignored. 
+Only the C<http_proxy> environment variable is supported in the format
+C<http://HOST:PORT/>.  If a C<proxy> argument is passed to C<new> (including
+undef), then the C<http_proxy> environment variable is ignored.
 
 =item *
 

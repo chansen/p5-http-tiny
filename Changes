@@ -2,6 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  [NEW FEATURES]
+
+  - $ENV{http_proxy} support added [Claes Jakobsson]
+
 0.012     2011-03-31 15:48:02 America/New_York
 
   [BUG FIXES]
