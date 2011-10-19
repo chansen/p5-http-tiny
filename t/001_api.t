@@ -7,7 +7,7 @@ use Test::More tests => 2;
 use HTTP::Tiny;
 
 my @accessors = qw(agent default_headers max_redirect max_size proxy timeout);
-my @methods   = qw(new get request mirror);
+my @methods   = qw(new get head put post delete request mirror);
 
 my %api;
 @api{@accessors} = (1) x @accessors;

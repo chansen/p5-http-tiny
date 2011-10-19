@@ -65,23 +65,29 @@ sub new {
     return bless $self, $class;
 }
 
-=method get
+=method get|head|put|post|delete
 
     $response = $http->get($url);
     $response = $http->get($url, \%options);
+    $response = $http->head($url);
 
-Executes a C<GET> request for the given URL.  The URL must have unsafe
-characters escaped and international domain names encoded.  Internally, it just
-calls C<request()> with 'GET' as the method.  See C<request()> for valid
-options and a description of the response.
+These methods are shorthand for calling C<request()> for the given method.  The
+URL must have unsafe characters escaped and international domain names encoded.
+See C<request()> for valid options and a description of the response.
 
 =cut
 
-sub get {
-    my ($self, $url, $args) = @_;
-    @_ == 2 || (@_ == 3 && ref $args eq 'HASH')
-      or Carp::croak(q/Usage: $http->get(URL, [HASHREF])/ . "\n");
-    return $self->request('GET', $url, $args || {});
+for my $sub_name ( qw/get head put post delete/ ) {
+    my $req_method = uc $sub_name;
+    no strict 'refs';
+    eval <<"HERE";
+    sub $sub_name {
+        my (\$self, \$url, \$args) = \@_;
+        \@_ == 2 || (\@_ == 3 && ref \$args eq 'HASH')
+        or Carp::croak(q/Usage: \$http->$sub_name(URL, [HASHREF])/ . "\n");
+        return \$self->request('$req_method', \$url, \$args || {});
+    }
+HERE
 }
 
 =method mirror
