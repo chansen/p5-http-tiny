@@ -11,7 +11,7 @@ my @methods   = qw(new get request mirror);
 
 my %api;
 @api{@accessors} = (1) x @accessors;
-@api{@methods} = (1) x @accessors;
+@api{@methods} = (1) x @methods;
 
 can_ok('HTTP::Tiny', @methods, @accessors);
 
