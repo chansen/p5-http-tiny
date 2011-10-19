@@ -90,6 +90,48 @@ for my $sub_name ( qw/get head put post delete/ ) {
 HERE
 }
 
+=method post_form
+
+    $response = $http->post_form($url, \%form_data);
+    $response = $http->post_form($url, \%form_data, \%options);
+
+This method executes a C<POST> request and sends the key/value pairs in the
+form data hash reference to the given URL with a C<content-type> of
+C<application/x-www-form-urlencoded>.  The URL must have unsafe characters
+escaped and international domain names encoded.  See C<request()> for valid
+options and a description of the response.
+
+Any <content-type> header or content in the options hashref will be ignored.
+The keys and values posted to the form will be UTF-8 encoded and escaped
+per RFC 3986.
+
+=cut
+
+sub post_form {
+    my ($self, $url, $data, $args) = @_;
+    (@_ == 3 && ref $data eq 'HASH' )
+        || (@_ == 4 && ref $data eq 'HASH' && ref $args eq 'HASH')
+        or Carp::croak(q/Usage: $http->post_form(URL, HASHREF, [HASHREF])/ . "\n");
+
+    my @params;
+    while( my @pair = each %$data ) {
+        push @params, join("=", map { $self->_uri_escape_utf8($_) } @pair);
+    }
+
+    $args ||= {};
+    my $headers = delete($args->{headers}) || {};
+
+    return $self->request('POST', $url, {
+            %$args,
+            content => join("&", @params),
+            headers => {
+                %$headers,
+                'content-type' => 'application/x-www-form-urlencoded'
+            },
+        }
+    );
+}
+
 =method mirror
 
     $response = $http->mirror($url, $file, \%options)
@@ -413,6 +455,18 @@ sub _parse_http_date {
         my $t = @tl_parts ? Time::Local::timegm(@tl_parts) : -1;
         $t < 0 ? undef : $t;
     };
+}
+
+# URI escaping adapted from URI::Escape
+
+my %escapes = map { chr($_) => sprintf("%%%02X", $_) } 0..255;
+my $unsafe_char = qr/[^A-Za-z0-9\-\._~]/;
+
+sub _uri_escape_utf8 {
+    my ($self, $str) = @_;
+    utf8::encode($str);
+    $str =~ s/($unsafe_char)/$escapes{$1}/ge;
+    return $str;
 }
 
 package
