@@ -92,30 +92,42 @@ HERE
 
 =method post_form
 
-    $response = $http->post_form($url, \%form_data);
-    $response = $http->post_form($url, \%form_data, \%options);
+    $response = $http->post_form($url, $form_data);
+    $response = $http->post_form($url, $form_data, \%options);
 
-This method executes a C<POST> request and sends the key/value pairs in the
-form data hash reference to the given URL with a C<content-type> of
-C<application/x-www-form-urlencoded>.  The URL must have unsafe characters
-escaped and international domain names encoded.  See C<request()> for valid
-options and a description of the response.
+This method executes a C<POST> request and sends the key/value pairs from a
+form data hash or array reference to the given URL with a C<content-type> of
+C<application/x-www-form-urlencoded>.  The keys and values posted to the form
+will be UTF-8 encoded and escaped per RFC 3986.  If a value is an array
+reference, the key will be repeated with each of the values of the array
+reference.  
 
+The URL must have unsafe characters escaped and international domain names
+encoded.  See C<request()> for valid options and a description of the response.
 Any <content-type> header or content in the options hashref will be ignored.
-The keys and values posted to the form will be UTF-8 encoded and escaped
-per RFC 3986.
 
 =cut
 
 sub post_form {
     my ($self, $url, $data, $args) = @_;
-    (@_ == 3 && ref $data eq 'HASH' )
-        || (@_ == 4 && ref $data eq 'HASH' && ref $args eq 'HASH')
-        or Carp::croak(q/Usage: $http->post_form(URL, HASHREF, [HASHREF])/ . "\n");
+    (@_ == 3 || @_ == 4 && ref $args eq 'HASH')
+        or Carp::croak(q/Usage: $http->post_form(URL, DATAREF, [HASHREF])/ . "\n");
+    ref $data eq 'HASH' || ref $data eq 'ARRAY'
+        or Carp::croak("post_form() data reference must be hashref or arrayref\n");
 
-    my @params;
-    while( my @pair = each %$data ) {
-        push @params, join("=", map { $self->_uri_escape_utf8($_) } @pair);
+    my @params = ref $data eq 'HASH' ? %$data : @$data;
+    @params % 2 == 0
+        or Carp::croak("post_form() data arrayref must have an even number of terms\n");
+
+    my @terms;
+    while( @params ) {
+        my ($key, $value) = splice(@params, 0, 2);
+        if ( ref $value eq 'ARRAY' ) {
+            unshift @params, map { $key => $_ } @$value;
+        }
+        else {
+            push @terms, join("=", map { $self->_uri_escape($_) } $key, $value);
+        }
     }
 
     $args ||= {};
@@ -123,7 +135,7 @@ sub post_form {
 
     return $self->request('POST', $url, {
             %$args,
-            content => join("&", @params),
+            content => join("&", @terms),
             headers => {
                 %$headers,
                 'content-type' => 'application/x-www-form-urlencoded'
@@ -463,7 +475,7 @@ my %escapes = map { chr($_) => sprintf("%%%02X", $_) } 0..255;
 $escapes{' '}="+";
 my $unsafe_char = qr/[^A-Za-z0-9\-\._~]/;
 
-sub _uri_escape_utf8 {
+sub _uri_escape {
     my ($self, $str) = @_;
     utf8::encode($str);
     $str =~ s/($unsafe_char)/$escapes{$1}/ge;
