@@ -130,12 +130,15 @@ sub post_form {
         }
     }
 
-    $args ||= {};
-    my $headers = delete($args->{headers}) || {};
+    my $headers;
+    while ( my ($key, $value) = each %{$args->{headers} || {}} ) {
+        $headers->{lc $key} = $value;
+    }
+    delete $args->{headers};
 
     return $self->request('POST', $url, {
             %$args,
-            content => join("&", @terms),
+            content => join("&", sort @terms),
             headers => {
                 %$headers,
                 'content-type' => 'application/x-www-form-urlencoded'
