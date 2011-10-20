@@ -92,6 +92,22 @@ These methods are shorthand for calling C<request()> for the given method.  The
 URL must have unsafe characters escaped and international domain names encoded.
 See C<request()> for valid options and a description of the response.
 
+=head2 post_form
+
+    $response = $http->post_form($url, $form_data);
+    $response = $http->post_form($url, $form_data, \%options);
+
+This method executes a C<POST> request and sends the key/value pairs from a
+form data hash or array reference to the given URL with a C<content-type> of
+C<application/x-www-form-urlencoded>.  The keys and values posted to the form
+will be UTF-8 encoded and escaped per RFC 3986.  If a value is an array
+reference, the key will be repeated with each of the values of the array
+reference.
+
+The URL must have unsafe characters escaped and international domain names
+encoded.  See C<request()> for valid options and a description of the response.
+Any <content-type> header or content in the options hashref will be ignored.
+
 =head2 mirror
 
     $response = $http->mirror($url, $file, \%options)
