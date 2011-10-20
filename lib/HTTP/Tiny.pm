@@ -100,7 +100,7 @@ form data hash or array reference to the given URL with a C<content-type> of
 C<application/x-www-form-urlencoded>.  The keys and values posted to the form
 will be UTF-8 encoded and escaped per RFC 3986.  If a value is an array
 reference, the key will be repeated with each of the values of the array
-reference.  
+reference.
 
 The URL must have unsafe characters escaped and international domain names
 encoded.  See C<request()> for valid options and a description of the response.
