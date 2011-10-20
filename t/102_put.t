@@ -51,7 +51,7 @@ for my $file ( dir_list("t/cases", qr/^put/ ) ) {
   (my $url_basename = $url) =~ s{.*/}{};
 
   my @call_args = %options ? ($url, \%options) : ($url);
-  my $response  = $http->request('PUT',@call_args);
+  my $response  = $http->put(@call_args);
 
   my $got_req = slurp($req_fh);
 
