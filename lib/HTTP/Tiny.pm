@@ -130,7 +130,7 @@ sub post_form {
         }
     }
 
-    my $headers;
+    my $headers = {};
     while ( my ($key, $value) = each %{$args->{headers} || {}} ) {
         $headers->{lc $key} = $value;
     }
