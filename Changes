@@ -10,6 +10,8 @@ Release notes for HTTP-Tiny
   - post_form() method for POST-ing x-www-form-urlencoded data
     [David Golden]
 
+  - www_form_urlencode() utility method [David Golden]
+
 0.013     2011-07-17 23:14:22 America/New_York
 
   [NEW FEATURES]

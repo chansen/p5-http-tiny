@@ -2,6 +2,7 @@
 package HTTP::Tiny;
 use strict;
 use warnings;
+# ABSTRACT: A small, simple, correct HTTP/1.1 client
 # VERSION
 
 use Carp ();
@@ -97,14 +98,12 @@ HERE
 
 This method executes a C<POST> request and sends the key/value pairs from a
 form data hash or array reference to the given URL with a C<content-type> of
-C<application/x-www-form-urlencoded>.  The keys and values posted to the form
-will be UTF-8 encoded and escaped per RFC 3986.  If a value is an array
-reference, the key will be repeated with each of the values of the array
-reference.
+C<application/x-www-form-urlencoded>.  See documentation for the
+C<www_form_urlencode> method for details on the encoding.
 
 The URL must have unsafe characters escaped and international domain names
 encoded.  See C<request()> for valid options and a description of the response.
-Any <content-type> header or content in the options hashref will be ignored.
+Any C<content-type> header or content in the options hashref will be ignored.
 
 =cut
 
@@ -112,23 +111,6 @@ sub post_form {
     my ($self, $url, $data, $args) = @_;
     (@_ == 3 || @_ == 4 && ref $args eq 'HASH')
         or Carp::croak(q/Usage: $http->post_form(URL, DATAREF, [HASHREF])/ . "\n");
-    ref $data eq 'HASH' || ref $data eq 'ARRAY'
-        or Carp::croak("post_form() data reference must be hashref or arrayref\n");
-
-    my @params = ref $data eq 'HASH' ? %$data : @$data;
-    @params % 2 == 0
-        or Carp::croak("post_form() data arrayref must have an even number of terms\n");
-
-    my @terms;
-    while( @params ) {
-        my ($key, $value) = splice(@params, 0, 2);
-        if ( ref $value eq 'ARRAY' ) {
-            unshift @params, map { $key => $_ } @$value;
-        }
-        else {
-            push @terms, join("=", map { $self->_uri_escape($_) } $key, $value);
-        }
-    }
 
     my $headers = {};
     while ( my ($key, $value) = each %{$args->{headers} || {}} ) {
@@ -138,7 +120,7 @@ sub post_form {
 
     return $self->request('POST', $url, {
             %$args,
-            content => join("&", sort @terms),
+            content => $self->www_form_urlencode($data),
             headers => {
                 %$headers,
                 'content-type' => 'application/x-www-form-urlencoded'
@@ -290,6 +272,49 @@ sub request {
     }
     return $response;
 }
+
+=method www_form_urlencode
+
+    $params = $http->www_form_urlencode( $data );
+    $response = $http->get("http://example.com/query?$params");
+
+This method converts the key/value pairs from a data hash or array reference
+into a C<x-www-form-urlencoded> string.  The keys and values from the data
+reference will be UTF-8 encoded and escaped per RFC 3986.  If a value is an
+array reference, the key will be repeated with each of the values of the array
+reference.  The key/value pairs in the resulting string will be sorted by key
+and value.
+
+=cut
+
+sub www_form_urlencode {
+    my ($self, $data) = @_;
+    (@_ == 2 && ref $data)
+        or Carp::croak(q/Usage: $http->www_form_urlencode(DATAREF)/ . "\n");
+    (ref $data eq 'HASH' || ref $data eq 'ARRAY')
+        or Carp::croak("form data must be a hash or array reference");
+
+    my @params = ref $data eq 'HASH' ? %$data : @$data;
+    @params % 2 == 0
+        or Carp::croak("form data reference must have an even number of terms\n");
+
+    my @terms;
+    while( @params ) {
+        my ($key, $value) = splice(@params, 0, 2);
+        if ( ref $value eq 'ARRAY' ) {
+            unshift @params, map { $key => $_ } @$value;
+        }
+        else {
+            push @terms, join("=", map { $self->_uri_escape($_) } $key, $value);
+        }
+    }
+
+    return join("&", sort @terms);
+}
+
+#--------------------------------------------------------------------------#
+# private methods
+#--------------------------------------------------------------------------#
 
 my %DefaultPort = (
     http => 80,
@@ -940,8 +965,6 @@ sub can_write {
 
 1;
 
-# ABSTRACT: A small, simple, correct HTTP/1.1 client
-
 =for Pod::Coverage
 agent
 default_headers
@@ -970,7 +993,7 @@ timeout
 
 =head1 DESCRIPTION
 
-This is a very simple HTTP/1.1 client, designed primarily for doing simple GET
+This is a very simple HTTP/1.1 client, designed for doing simple GET
 requests without the overhead of a large framework like L<LWP::UserAgent>.
 
 It is more correct and more complete than L<HTTP::Lite>.  It supports
