@@ -458,8 +458,9 @@ sub _parse_http_date {
 }
 
 # URI escaping adapted from URI::Escape
-
+# c.f. http://www.w3.org/TR/html4/interact/forms.html#h-17.13.4.1
 my %escapes = map { chr($_) => sprintf("%%%02X", $_) } 0..255;
+$escapes{' '}="+";
 my $unsafe_char = qr/[^A-Za-z0-9\-\._~]/;
 
 sub _uri_escape_utf8 {
