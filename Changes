@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+0.014     2011-10-20 13:54:13 America/New_York
+
   [NEW FEATURES]
 
   - Adds additional shorthand methods for all common HTTP verbs
