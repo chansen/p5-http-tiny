@@ -1033,7 +1033,7 @@ mandated by the specification.  There is no automatic support for status 305
 
 =item *
 
-Persistant connections are not supported.  The C<Connection> header will
+Persistent connections are not supported.  The C<Connection> header will
 always be set to C<close>.
 
 =item *
