@@ -52,18 +52,19 @@
             "IO::Dir" : 0,
             "IO::File" : 0,
             "IO::Socket::INET" : 0,
-            "Test::More" : "0.88"
+            "Test::More" : "0.88",
+            "open" : 0
          }
       }
    },
    "provides" : {
       "HTTP::Tiny" : {
          "file" : "lib/HTTP/Tiny.pm",
-         "version" : "0.014"
+         "version" : "0.015"
       },
       "HTTP::Tiny::Handle" : {
          "file" : "lib/HTTP/Tiny.pm",
-         "version" : "0.014"
+         "version" : "0.015"
       }
    },
    "release_status" : "stable",
@@ -79,6 +80,6 @@
          "web" : "https://github.com/dagolden/p5-http-tiny"
       }
    },
-   "version" : "0.014"
+   "version" : "0.015"
 }
 
