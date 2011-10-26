@@ -2,6 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  [BUG FIXES]
+
+  - Make sure PERL_UNICODE doesn't affect PUT test data [Tony Cook]
+
   [DOCUMENTATION]
 
   - Fixed typo
