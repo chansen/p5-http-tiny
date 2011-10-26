@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+0.015     2011-10-26 16:42:26 America/New_York
+
   [BUG FIXES]
 
   - Make sure PERL_UNICODE doesn't affect PUT test data [Tony Cook]
