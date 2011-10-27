@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+0.016     2011-10-26 23:05:50 America/New_York
+
   [BUG FIXES]
 
   - Fixed Perl 5.6 compatibility by emulating utf8::encode [David Golden]
