@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+0.017     2012-02-22 21:57:37 EST5EDT
+
   [DOCUMENTATION]
 
   - Clarified how max_size exceptions work [rt.cpan.org #75142]
