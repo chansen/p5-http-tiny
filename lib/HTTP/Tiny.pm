@@ -80,6 +80,8 @@ These methods are shorthand for calling C<request()> for the given method.  The
 URL must have unsafe characters escaped and international domain names encoded.
 See C<request()> for valid options and a description of the response.
 
+The C<success> field of the response will be true if the status code is 2XX.
+
 =cut
 
 for my $sub_name ( qw/get head put post delete/ ) {
@@ -108,6 +110,8 @@ C<www_form_urlencode> method for details on the encoding.
 The URL must have unsafe characters escaped and international domain names
 encoded.  See C<request()> for valid options and a description of the response.
 Any C<content-type> header or content in the options hashref will be ignored.
+
+The C<success> field of the response will be true if the status code is 2XX.
 
 =cut
 
@@ -148,7 +152,7 @@ may specificy a different C<If-Modified-Since> header yourself in the C<<
 $options->{headers} >> hash.
 
 The C<success> field of the response will be true if the status code is 2XX
-or 304 (unmodified).
+or if the status code is 304 (unmodified).
 
 If the file was modified and the server response includes a properly
 formatted C<Last-Modified> header, the file modification time will
