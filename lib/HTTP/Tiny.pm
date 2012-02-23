@@ -87,7 +87,7 @@ The C<success> field of the response will be true if the status code is 2XX.
 for my $sub_name ( qw/get head put post delete/ ) {
     my $req_method = uc $sub_name;
     no strict 'refs';
-    eval <<"HERE";
+    eval <<"HERE"; ## no critic
     sub $sub_name {
         my (\$self, \$url, \$args) = \@_;
         \@_ == 2 || (\@_ == 3 && ref \$args eq 'HASH')
@@ -148,7 +148,7 @@ Executes a C<GET> request for the URL and saves the response body to the file
 name provided.  The URL must have unsafe characters escaped and international
 domain names encoded.  If the file already exists, the request will includes an
 C<If-Modified-Since> header with the modification timestamp of the file.  You
-may specificy a different C<If-Modified-Since> header yourself in the C<<
+may specify a different C<If-Modified-Since> header yourself in the C<<
 $options->{headers} >> hash.
 
 The C<success> field of the response will be true if the status code is 2XX
@@ -534,7 +534,7 @@ use warnings;
 use Errno      qw[EINTR EPIPE];
 use IO::Socket qw[SOCK_STREAM];
 
-sub BUFSIZE () { 32768 }
+sub BUFSIZE () { 32768 } ## no critic
 
 my $Printable = sub {
     local $_ = shift;

@@ -125,7 +125,7 @@ Executes a C<GET> request for the URL and saves the response body to the file
 name provided.  The URL must have unsafe characters escaped and international
 domain names encoded.  If the file already exists, the request will includes an
 C<If-Modified-Since> header with the modification timestamp of the file.  You
-may specificy a different C<If-Modified-Since> header yourself in the C<<
+may specify a different C<If-Modified-Since> header yourself in the C<<
 $options->{headers} >> hash.
 
 The C<success> field of the response will be true if the status code is 2XX
