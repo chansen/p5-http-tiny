@@ -2,6 +2,13 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  [DOCUMENTATION]
+
+  - Clarified how max_size exceptions work [rt.cpan.org #75142]
+
+  - Clarify that 2XX is success for most methods (except mirror
+    where 304 is also success) [rt.cpan.org #75141]
+
 0.016     2011-10-26 23:05:50 America/New_York
 
   [BUG FIXES]
