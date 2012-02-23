@@ -14,19 +14,23 @@ use Carp ();
 This constructor returns a new HTTP::Tiny object.  Valid attributes include:
 
 =for :list
-* agent
+* C<agent>
 A user-agent string (defaults to 'HTTP::Tiny/$VERSION')
-* default_headers
+* C<default_headers>
 A hashref of default headers to apply to requests
-* max_redirect
+* C<max_redirect>
 Maximum number of redirects allowed (defaults to 5)
-* max_size
+* C<max_size>
 Maximum response size (only when not using a data callback).  If defined,
-responses larger than this will die with an error message
-* proxy
+responses larger than this will return an exception.
+* C<proxy>
 URL of a proxy server to use (default is C<$ENV{http_proxy}> if set)
-* timeout
+* C<timeout>
 Request timeout in seconds (default is 60)
+
+Exceptions from C<max_size>, C<timeout> or other errors will result in a
+pseudo-HTTP status code of 599 and a reason of "Internal Exception". The
+content field in the response will contain the text of the exception.
 
 =cut
 
