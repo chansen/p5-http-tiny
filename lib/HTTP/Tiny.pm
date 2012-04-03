@@ -207,7 +207,7 @@ a header is an array reference, the header will be output multiple times with
 each value in the array.  These headers over-write any default headers.
 * content
 A scalar to include as the body of the request OR a code reference
-that will be called iteratively to produce the body of the response
+that will be called iteratively to produce the body of the request
 * trailer_callback
 A code reference that will be called if it exists to provide a hashref
 of trailing headers (only used with chunked transfer-encoding)
