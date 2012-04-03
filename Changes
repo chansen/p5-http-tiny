@@ -1,6 +1,8 @@
 Release notes for HTTP-Tiny
 
 {{$NEXT}}
+  - expose ssl_verify_args to control IO::Socket::SSL's cert
+    verification scheme (GH #6) [Mike Doherty]
 
 0.017     2012-02-22 21:57:37 EST5EDT
 

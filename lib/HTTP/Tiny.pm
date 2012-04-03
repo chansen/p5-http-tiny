@@ -27,6 +27,8 @@ responses larger than this will return an exception.
 URL of a proxy server to use (default is C<$ENV{http_proxy}> if set)
 * C<timeout>
 Request timeout in seconds (default is 60)
+* SSL_opts
+A hashref of the C<SSL_*> options to pass to L<IO::Socket::SSL>.
 
 Exceptions from C<max_size>, C<timeout> or other errors will result in a
 pseudo-HTTP status code of 599 and a reason of "Internal Exception". The
@@ -36,7 +38,7 @@ content field in the response will contain the text of the exception.
 
 my @attributes;
 BEGIN {
-    @attributes = qw(agent default_headers max_redirect max_size proxy timeout);
+    @attributes = qw(agent default_headers max_redirect max_size proxy timeout SSL_opts);
     no strict 'refs';
     for my $accessor ( @attributes ) {
         *{$accessor} = sub {
@@ -52,6 +54,7 @@ sub new {
         agent        => $agent . "/" . ($class->VERSION || 0),
         max_redirect => 5,
         timeout      => 60,
+        SSL_opts     => { SSL_verifycn_scheme => 'http' },
     };
     for my $key ( @attributes ) {
         $self->{$key} = $args{$key} if exists $args{$key}
@@ -342,7 +345,10 @@ sub _request {
         headers   => {},
     };
 
-    my $handle  = HTTP::Tiny::Handle->new(timeout => $self->{timeout});
+    my $handle  = HTTP::Tiny::Handle->new(
+        timeout  => $self->{timeout},
+        SSL_opts => $self->{SSL_opts}
+    );
 
     if ($self->{proxy}) {
         $request->{uri} = "$scheme://$request->{host_port}$path_query";
@@ -558,12 +564,6 @@ sub new {
     }, $class;
 }
 
-my $ssl_verify_args = {
-    check_cn => "when_only",
-    wildcards_in_alt => "anywhere",
-    wildcards_in_cn => "anywhere"
-};
-
 sub connect {
     @_ == 4 || die(q/Usage: $handle->connect(scheme, host, port)/ . "\n");
     my ($self, $scheme, $host, $port) = @_;
@@ -590,11 +590,19 @@ sub connect {
       or die(qq/Could not binmode() socket: '$!'\n/);
 
     if ( $scheme eq 'https') {
-        IO::Socket::SSL->start_SSL($self->{fh});
+        my %ssl_args = map {
+            $_ =~ m/^SSL_/  # only include SSL_*
+                ? ( $_ => $self->{SSL_opts}->{$_} )
+                : ()
+            } keys %{ $self->{SSL_opts} };
+        $ssl_args{SSL_verifycn_name} = $host; # always check against the actual host
+        # use Data::Dumper; warn Dumper \%ssl_args;
+
+        IO::Socket::SSL->start_SSL($self->{fh},
+            %ssl_args,
+        );
         ref($self->{fh}) eq 'IO::Socket::SSL'
             or die(qq/SSL connection failed for $host\n/);
-        $self->{fh}->verify_hostname( $host, $ssl_verify_args )
-            or die(qq/SSL certificate not valid for $host\n/);
     }
 
     $self->{host} = $host;
