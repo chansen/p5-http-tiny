@@ -164,6 +164,8 @@ sub sort_headers {
             $self->{fh} = shift @res_fh;
         };
         *HTTP::Tiny::Handle::close = sub { 1 }; # don't close our temps
+        
+        delete $ENV{http_proxy}; # don't try to proxy in mock-mode
     }
 }
 

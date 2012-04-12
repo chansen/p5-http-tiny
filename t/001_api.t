@@ -6,12 +6,14 @@ use warnings;
 use Test::More tests => 2;
 use HTTP::Tiny;
 
-my @accessors = qw(agent default_headers max_redirect max_size proxy timeout);
-my @methods   = qw(new get request mirror);
+my @accessors = qw(agent default_headers max_redirect max_size proxy timeout SSL_opts);
+my @methods   = qw(
+  new get head put post delete post_form request mirror www_form_urlencode
+);
 
 my %api;
 @api{@accessors} = (1) x @accessors;
-@api{@methods} = (1) x @accessors;
+@api{@methods} = (1) x @methods;
 
 can_ok('HTTP::Tiny', @methods, @accessors);
 
@@ -23,4 +25,3 @@ my @extra =
 
 ok( ! scalar @extra, "No unexpected subroutines defined" )
   or diag "Found: @extra";
-

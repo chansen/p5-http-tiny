@@ -1,6 +1,56 @@
 Release notes for HTTP-Tiny
 
 {{$NEXT}}
+  - expose ssl_verify_args to control IO::Socket::SSL's cert
+    verification scheme (GH #6) [Mike Doherty]
+
+0.017     2012-02-22 21:57:37 EST5EDT
+
+  [DOCUMENTATION]
+
+  - Clarified how max_size exceptions work [rt.cpan.org #75142]
+
+  - Clarify that 2XX is success for most methods (except mirror
+    where 304 is also success) [rt.cpan.org #75141]
+
+0.016     2011-10-26 23:05:50 America/New_York
+
+  [BUG FIXES]
+
+  - Fixed Perl 5.6 compatibility by emulating utf8::encode [David Golden]
+
+0.015     2011-10-26 16:42:26 America/New_York
+
+  [BUG FIXES]
+
+  - Make sure PERL_UNICODE doesn't affect PUT test data [Tony Cook]
+
+  [DOCUMENTATION]
+
+  - Fixed typo
+
+0.014     2011-10-20 13:54:13 America/New_York
+
+  [NEW FEATURES]
+
+  - Adds additional shorthand methods for all common HTTP verbs
+    (HEAD, PUT, POST, DELETE) [David Golden]
+
+  - post_form() method for POST-ing x-www-form-urlencoded data
+    [David Golden]
+
+  - www_form_urlencode() utility method [David Golden]
+
+0.013     2011-07-17 23:14:22 America/New_York
+
+  [NEW FEATURES]
+
+  - $ENV{http_proxy} support added [Claes Jakobsson]
+
+  [OTHER]
+
+  - Internal/private errors converted from "croak" to "die" as internal
+    errors are caught by "eval"
 
 0.012     2011-03-31 15:48:02 America/New_York
 
