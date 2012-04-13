@@ -5,7 +5,7 @@
       "David Golden <dagolden@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 4.300009, CPAN::Meta::Converter version 2.120351",
+   "generated_by" : "Dist::Zilla version 4.300009, CPAN::Meta::Converter version 2.120630",
    "license" : [
       "perl_5"
    ],
@@ -61,7 +61,7 @@
    "provides" : {
       "HTTP::Tiny" : {
          "file" : "lib/HTTP/Tiny.pm",
-         "version" : "0.017"
+         "version" : "0.018"
       }
    },
    "release_status" : "stable",
@@ -77,6 +77,6 @@
          "web" : "https://github.com/dagolden/p5-http-tiny"
       }
    },
-   "version" : "0.017"
+   "version" : "0.018"
 }
 
