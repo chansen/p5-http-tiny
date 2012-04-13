@@ -201,17 +201,17 @@ modify the request.
 Valid options are:
 
 =for :list
-* headers
+* C<headers>
 A hashref containing headers to include with the request.  If the value for
 a header is an array reference, the header will be output multiple times with
 each value in the array.  These headers over-write any default headers.
-* content
+* C<content>
 A scalar to include as the body of the request OR a code reference
 that will be called iteratively to produce the body of the request
-* trailer_callback
+* C<trailer_callback>
 A code reference that will be called if it exists to provide a hashref
 of trailing headers (only used with chunked transfer-encoding)
-* data_callback
+* C<data_callback>
 A code reference that will be called for each chunks of the response
 body received.
 
@@ -230,21 +230,21 @@ The C<request> method returns a hashref containing the response.  The hashref
 will have the following keys:
 
 =for :list
-* success
+* C<success>
 Boolean indicating whether the operation returned a 2XX status code
-* url
+* C<url>
 URL that provided the response. This is the URL of the request unless
 there were redirections, in which case it is the last URL queried
 in a redirection chain
-* status
+* C<status>
 The HTTP status code of the response
-* reason
+* C<reason>
 The response phrase returned by the server
-* content
+* C<content>
 The body of the response.  If the response does not have any content
 or if a data callback is provided to consume the response body,
 this will be the empty string
-* headers
+* C<headers>
 A hashref of header fields.  All header field names will be normalized
 to be lower case. If a header is repeated, the value will be an arrayref;
 it will otherwise be a scalar string containing the value
