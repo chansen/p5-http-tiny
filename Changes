@@ -2,6 +2,11 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  [ADDED]
+
+  - Reponse hashref includes final URL (including any redirections)
+    [Lukas Eklund]
+
 0.017     2012-02-22 21:57:37 EST5EDT
 
   [DOCUMENTATION]
