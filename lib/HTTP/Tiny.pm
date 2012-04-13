@@ -232,6 +232,10 @@ will have the following keys:
 =for :list
 * success
 Boolean indicating whether the operation returned a 2XX status code
+* url
+URL that provided the response. This is the URL of the request unless
+there were redirections, in which case it is the last URL queried
+in a redirection chain
 * status
 The HTTP status code of the response
 * reason
