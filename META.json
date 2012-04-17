@@ -41,6 +41,10 @@
             "perl" : "5.006",
             "strict" : "0",
             "warnings" : "0"
+         },
+         "suggests" : {
+            "IO::Socket::SSL" : "0",
+            "Mozilla::CA" : "0"
          }
       },
       "test" : {
