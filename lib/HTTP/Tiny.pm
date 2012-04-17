@@ -28,7 +28,13 @@ URL of a proxy server to use (default is C<$ENV{http_proxy}> if set)
 * C<timeout>
 Request timeout in seconds (default is 60)
 * SSL_opts
-A hashref of the C<SSL_*> options to pass to L<IO::Socket::SSL>.
+A hashref of the C<SSL_*> options to pass to L<IO::Socket::SSL>. This permits,
+for example, disabling all validation (useful for testing, highly discouraged
+for real-world use) with C<< SSL_opts => { SSL_verify_mode => 0, SSL_verifycn_scheme => 'none' } >>.
+By default, the SSL certificate is checked to verify that it was issued for
+the domain we expect to be talking to. This is a minimal check - for additional
+security, check that the certificate was issued by a trusted Certificate Authority.
+See L<IO::Socket::SSL> for full documentation on these options.
 
 Exceptions from C<max_size>, C<timeout> or other errors will result in a
 pseudo-HTTP status code of 599 and a reason of "Internal Exception". The
