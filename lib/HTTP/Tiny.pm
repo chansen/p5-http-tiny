@@ -601,7 +601,9 @@ sub connect {
                 ? ( $_ => $self->{SSL_opts}->{$_} )
                 : ()
             } keys %{ $self->{SSL_opts} };
-        $ssl_args{SSL_verifycn_name} = $host; # always check against the actual host
+        # for cert CN validation (domain name on cert matches domain name we're talking to)
+        $ssl_args{SSL_verifycn_name} ||= $host;
+        $ssl_args{SSL_hostname}      ||= $host; # for SNI
         # use Data::Dumper; warn Dumper \%ssl_args;
 
         IO::Socket::SSL->start_SSL($self->{fh},
