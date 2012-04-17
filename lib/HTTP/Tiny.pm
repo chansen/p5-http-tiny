@@ -581,10 +581,8 @@ sub connect {
     my ($self, $scheme, $host, $port) = @_;
 
     if ( $scheme eq 'https' ) {
-        eval "require IO::Socket::SSL"
-            unless exists $INC{'IO/Socket/SSL.pm'};
         die(qq/IO::Socket::SSL must be installed for https support\n/)
-            unless $INC{'IO/Socket/SSL.pm'};
+            unless eval { require IO::Socket::SSL };
     }
     elsif ( $scheme ne 'http' ) {
       die(qq/Unsupported URL scheme '$scheme'\n/);
