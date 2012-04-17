@@ -6,7 +6,9 @@ use warnings;
 use Test::More tests => 2;
 use HTTP::Tiny;
 
-my @accessors = qw(agent default_headers max_redirect max_size proxy timeout SSL_opts);
+my @accessors = qw(
+  agent default_headers max_redirect max_size proxy timeout SSL_opts verify_SSL
+);
 my @methods   = qw(
   new get head put post delete post_form request mirror www_form_urlencode
 );

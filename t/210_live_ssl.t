@@ -7,46 +7,49 @@ use Test::More 0.88;
 use IO::Socket::INET;
 BEGIN {
     eval 'use IO::Socket::SSL; 1';
-    plan skip_all => "IO::Socket::SSL required for SSL tests" if $@;
+    plan skip_all => 'IO::Socket::SSL required for SSL tests' if $@;
     # $IO::Socket::SSL::DEBUG = 3;
+
+    eval 'use Mozilla::CA; 1';
+    plan skip_all => 'Mozilla::CA required for SSL tests' if $@;
 }
 use HTTP::Tiny;
 
-plan skip_all => "Only run for \$ENV{AUTOMATED_TESTING}"
+plan skip_all => 'Only run for $ENV{AUTOMATED_TESTING}'
   unless $ENV{AUTOMATED_TESTING};
 
 my $data = {
     'https://www.google.ca/' => {
         host => 'www.google.ca',
-        pass => { SSL_verifycn_scheme => 'http', SSL_verifycn_name => 'www.google.ca' },
+        pass => { SSL_verifycn_scheme => 'http', SSL_verifycn_name => 'www.google.ca', SSL_verify_mode => 0x01, SSL_ca_file => Mozilla::CA::SSL_ca_file() },
         fail => { SSL_verify_callback => sub { 0 }, SSL_verify_mode => 0x01 },
         default_should_yield => '1',
     },
     'https://twitter.com/' => {
         host => 'twitter.com',
-        pass => { SSL_verifycn_scheme => 'http', SSL_verifycn_name => 'twitter.com' },
+        pass => { SSL_verifycn_scheme => 'http', SSL_verifycn_name => 'twitter.com', SSL_verify_mode => 0x01, SSL_ca_file => Mozilla::CA::SSL_ca_file() },
         fail => { SSL_verify_callback => sub { 0 }, SSL_verify_mode => 0x01 },
         default_should_yield => '1',
     },
     'https://github.com/' => {
         host => 'github.com',
-        pass => { SSL_verifycn_scheme => 'http', SSL_verifycn_name => 'github.com' },
+        pass => { SSL_verifycn_scheme => 'http', SSL_verifycn_name => 'github.com', SSL_verify_mode => 0x01, SSL_ca_file => Mozilla::CA::SSL_ca_file() },
         fail => { SSL_verify_callback => sub { 0 }, SSL_verify_mode => 0x01 },
         default_should_yield => '1',
     },
-    # 'https://spinrite.com/' => {
-        # host => 'spinrite.com',
-        # pass => { SSL_verifycn_scheme => 'none', SSL_verifycn_name => 'spinrite.com' },
-        # fail => { SSL_verifycn_scheme => 'http', SSL_verifycn_name => 'spinrite.com', SSL_verify_mode => 0x01 },
-        # default_should_yield => '',
-    # }
+    'https://spinrite.com/' => {
+        host => 'spinrite.com',
+        pass => { SSL_verifycn_scheme => 'none', SSL_verifycn_name => 'spinrite.com', SSL_verify_mode => 0x00 },
+        fail => { SSL_verifycn_scheme => 'http', SSL_verifycn_name => 'spinrite.com', SSL_verify_mode => 0x01, SSL_ca_file => Mozilla::CA::SSL_ca_file() },
+        default_should_yield => '',
+    }
 };
 plan tests => scalar keys %$data;
 
 
 while (my ($url, $data) = each %$data) {
     subtest $url => sub {
-        plan 'skip_all' => "Internet connection timed out"
+        plan 'skip_all' => 'Internet connection timed out'
             unless IO::Socket::INET->new(
                 PeerHost  => $data->{host},
                 PeerPort  => 443,
@@ -55,7 +58,7 @@ while (my ($url, $data) = each %$data) {
         );
 
         # the default verification
-        my $response = HTTP::Tiny->new->get($url);
+        my $response = HTTP::Tiny->new(verify_ssl => 1)->get($url);
         is $response->{success}, $data->{default_should_yield}, "Request to $url passed/failed using default as expected"
             or do { delete $response->{content}; diag explain [IO::Socket::SSL::errstr(), $response] };
 

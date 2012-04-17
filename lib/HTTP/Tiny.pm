@@ -27,16 +27,23 @@ responses larger than this will return an exception.
 URL of a proxy server to use (default is C<$ENV{http_proxy}> if set)
 * C<timeout>
 Request timeout in seconds (default is 60)
-* SSL_opts
-A hashref of the C<SSL_*> options to pass to L<IO::Socket::SSL>. This permits,
-for example, disabling all validation (useful for testing, highly discouraged
-for real-world use) with C<< SSL_opts => { SSL_verify_mode => 0, SSL_verifycn_scheme => 'none' } >>.
-By default, the SSL certificate is checked to verify that it was issued for
-the domain we expect to be talking to. This is a minimal check - for additional
-security, check that the certificate was issued by a trusted Certificate Authority.
-If L<Mozilla::CA> is installed, such a check is added by default. See L<IO::Socket::SSL>
-for full documentation on these options. If you specify C<SSL_opts>, then B<only>
-those are passed to C<IO::Socket::SSL>.
+* C<verify_SSL>
+This controls whether to attempt to validate the security of the SSL connection.
+By default, no validation whatsoever is done. The connection will be SSL-encrypted,
+but you will have no security against a man-in-the-middle attack. It is recommended
+to turn this on if you can. When turned on, it will verify that the SSL certificate
+was issued to the domain you asked to connect to. Additionally, it will attempt to
+find a CA bundle to verify that the certificate was issued by a trusted Certificate
+Authority. It is recommended to install L<Mozilla::CA>, which provides Mozilla's CA
+bundle. If that module is not available, then various system-specific default locations
+will be searched. An exception will be raised if none can be found. If you desire
+more control over SSL verification, use C<SSL_opts>.
+* C<SSL_opts>
+A hashref of the C<SSL_*> options to pass to L<IO::Socket::SSL> instead of whatever
+C<verify_SSL> might have provided. This permits, for example, disabling all validation
+(useful for testing, highly discouraged for real-world use) with
+C<< SSL_opts => { SSL_verify_mode => 0, SSL_verifycn_scheme => 'none' } >>.
+See L<IO::Socket::SSL> for full documentation on these options.
 
 Exceptions from C<max_size>, C<timeout> or other errors will result in a
 pseudo-HTTP status code of 599 and a reason of "Internal Exception". The
@@ -46,7 +53,7 @@ content field in the response will contain the text of the exception.
 
 my @attributes;
 BEGIN {
-    @attributes = qw(agent default_headers max_redirect max_size proxy timeout SSL_opts);
+    @attributes = qw(agent default_headers max_redirect max_size proxy timeout SSL_opts verify_SSL);
     no strict 'refs';
     for my $accessor ( @attributes ) {
         *{$accessor} = sub {
@@ -62,6 +69,7 @@ sub new {
         agent        => $agent . "/" . ($class->VERSION || 0),
         max_redirect => 5,
         timeout      => 60,
+        verify_SSL   => $args{verify_SSL} || $args{verify_ssl} || 0, # no verification by default
     };
     for my $key ( @attributes ) {
         $self->{$key} = $args{$key} if exists $args{$key}
@@ -358,8 +366,9 @@ sub _request {
     };
 
     my $handle  = HTTP::Tiny::Handle->new(
-        timeout  => $self->{timeout},
-        SSL_opts => $self->{SSL_opts}
+        timeout     => $self->{timeout},
+        SSL_opts    => $self->{SSL_opts},
+        verify_SSL  => $self->{verify_SSL},
     );
 
     if ($self->{proxy}) {
@@ -611,21 +620,38 @@ sub connect {
                     : ()
                 } keys %{ $self->{SSL_opts} };
         }
-        else {
+        elsif ($self->{verify_SSL}) { # Try to be secure-ish
             %ssl_args = (
                 SSL_verifycn_name   => $host,  # CN validation
                 SSL_verifycn_scheme => 'http', # CN validation
                 SSL_hostname        => $host   # SNI
             );
 
-            # If Mozilla::CA is available, use the CA bundle
-            # to validate the server's SSL cert.
+            # Try to find a CA bundle to validate the SSL cert,
+            # beginning with Mozilla::CA
             eval 'require Mozilla::CA; 1'
                 unless $INC{'Mozilla/CA.pm'};
-            if ( $INC{'Mozilla/CA.pm'} and !$@ ) {
-                $ssl_args{SSL_ca_file}     ||= Mozilla::CA::SSL_ca_file();
-                $ssl_args{SSL_verify_mode} ||= 0x01;
+            $ssl_args{SSL_ca_file} ||= Mozilla::CA::SSL_ca_file()
+                if $INC{'Mozilla/CA.pm'} and !$@;
+
+            unless ($ssl_args{SSL_ca_file}) {
+                # try to find a system CA bundle
+                BUNDLE: foreach my $ca_bundle (qw{
+                    /etc/ssl/certs/ca-certificates.crt
+                    /etc/pki/tls/certs/ca-bundle.crt
+                    /etc/ssl/ca-bundle.pem
+                }) {
+                    if (-e $ca_bundle) {
+                        $ssl_args{SSL_ca_file} = $ca_bundle;
+                        last BUNDLE;
+                    }
+                }
             }
+            die "Couldn't find a CA bundle with which to verify the SSL certificate"
+                unless $ssl_args{SSL_ca_file};
+
+            # Use the CA bundle to verify the cert
+            $ssl_args{SSL_verify_mode} = 0x01;
         }
 
         # use Data::Dumper; warn Dumper \%ssl_args;
