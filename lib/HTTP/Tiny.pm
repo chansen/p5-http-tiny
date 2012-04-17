@@ -615,30 +615,8 @@ sub connect {
                 SSL_hostname        => $host   # SNI
             );
 
-            # Try to find a CA bundle to validate the SSL cert,
-            # beginning with Mozilla::CA
-            eval 'require Mozilla::CA; 1'
-                unless $INC{'Mozilla/CA.pm'};
-            $ssl_args{SSL_ca_file} ||= Mozilla::CA::SSL_ca_file()
-                if $INC{'Mozilla/CA.pm'} and !$@;
-
-            unless ($ssl_args{SSL_ca_file}) {
-                # try to find a system CA bundle
-                BUNDLE: foreach my $ca_bundle (qw{
-                    /etc/ssl/certs/ca-certificates.crt
-                    /etc/pki/tls/certs/ca-bundle.crt
-                    /etc/ssl/ca-bundle.pem
-                }) {
-                    if (-e $ca_bundle) {
-                        $ssl_args{SSL_ca_file} = $ca_bundle;
-                        last BUNDLE;
-                    }
-                }
-            }
-            die "Couldn't find a CA bundle with which to verify the SSL certificate"
-                unless $ssl_args{SSL_ca_file};
-
-            # Use the CA bundle to verify the cert
+            # Use a CA bundle to verify the cert
+            $ssl_args{SSL_ca_file} = $self->_find_CA_file;
             $ssl_args{SSL_verify_mode} = 0x01;
         }
 
@@ -1030,6 +1008,25 @@ sub can_write {
     @_ == 1 || @_ == 2 || die(q/Usage: $handle->can_write([timeout])/ . "\n");
     my $self = shift;
     return $self->_do_timeout('write', @_)
+}
+
+# Try to find a CA bundle to validate the SSL cert,
+# prefer Mozilla::CA or fallback to a system file
+sub _find_CA_file {
+    return Mozilla::CA::SSL_ca_file()
+        if eval { require Mozilla::CA };
+
+    foreach my $ca_bundle (qw{
+        /etc/ssl/certs/ca-certificates.crt
+        /etc/pki/tls/certs/ca-bundle.crt
+        /etc/ssl/ca-bundle.pem
+        }
+    ) {
+        return $ca_bundle if -e $ca_bundle;
+    }
+
+    die "Couldn't find a CA bundle with which to verify the SSL certificate.\n"
+        . "Try installing Mozilla::CA from CPAN\n";
 }
 
 1;
