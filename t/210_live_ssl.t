@@ -18,26 +18,26 @@ plan skip_all => "Only run for \$ENV{AUTOMATED_TESTING}"
 my $data = {
     'https://www.google.ca/' => {
         host => 'www.google.ca',
-        pass => { SSL_verifycn_scheme => 'http' },
+        pass => { SSL_verifycn_scheme => 'http', SSL_verifycn_name => 'www.google.ca' },
         fail => { SSL_verify_callback => sub { 0 }, SSL_verify_mode => 0x01 },
         default_should_yield => '1',
     },
     'https://twitter.com/' => {
         host => 'twitter.com',
-        pass => { SSL_verifycn_scheme => 'http' },
+        pass => { SSL_verifycn_scheme => 'http', SSL_verifycn_name => 'twitter.com' },
         fail => { SSL_verify_callback => sub { 0 }, SSL_verify_mode => 0x01 },
         default_should_yield => '1',
     },
     'https://github.com/' => {
         host => 'github.com',
-        pass => { SSL_verifycn_scheme => 'http' },
+        pass => { SSL_verifycn_scheme => 'http', SSL_verifycn_name => 'github.com' },
         fail => { SSL_verify_callback => sub { 0 }, SSL_verify_mode => 0x01 },
         default_should_yield => '1',
     },
     # 'https://spinrite.com/' => {
         # host => 'spinrite.com',
-        # pass => { SSL_verifycn_scheme => 'none' },
-        # fail => { SSL_verifycn_scheme => 'http' }, # why/how does this pass?
+        # pass => { SSL_verifycn_scheme => 'none', SSL_verifycn_name => 'spinrite.com' },
+        # fail => { SSL_verifycn_scheme => 'http', SSL_verifycn_name => 'spinrite.com', SSL_verify_mode => 0x01 },
         # default_should_yield => '',
     # }
 };

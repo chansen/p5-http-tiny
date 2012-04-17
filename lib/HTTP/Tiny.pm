@@ -34,7 +34,9 @@ for real-world use) with C<< SSL_opts => { SSL_verify_mode => 0, SSL_verifycn_sc
 By default, the SSL certificate is checked to verify that it was issued for
 the domain we expect to be talking to. This is a minimal check - for additional
 security, check that the certificate was issued by a trusted Certificate Authority.
-See L<IO::Socket::SSL> for full documentation on these options.
+If L<Mozilla::CA> is installed, such a check is added by default. See L<IO::Socket::SSL>
+for full documentation on these options. If you specify C<SSL_opts>, then B<only>
+those are passed to C<IO::Socket::SSL>.
 
 Exceptions from C<max_size>, C<timeout> or other errors will result in a
 pseudo-HTTP status code of 599 and a reason of "Internal Exception". The
@@ -60,7 +62,6 @@ sub new {
         agent        => $agent . "/" . ($class->VERSION || 0),
         max_redirect => 5,
         timeout      => 60,
-        SSL_opts     => { SSL_verifycn_scheme => 'http' },
     };
     for my $key ( @attributes ) {
         $self->{$key} = $args{$key} if exists $args{$key}
@@ -602,16 +603,32 @@ sub connect {
       or die(qq/Could not binmode() socket: '$!'\n/);
 
     if ( $scheme eq 'https') {
-        my %ssl_args = map {
-            $_ =~ m/^SSL_/  # only include SSL_*
-                ? ( $_ => $self->{SSL_opts}->{$_} )
-                : ()
-            } keys %{ $self->{SSL_opts} };
-        # for cert CN validation (domain name on cert matches domain name we're talking to)
-        $ssl_args{SSL_verifycn_name} ||= $host;
-        $ssl_args{SSL_hostname}      ||= $host; # for SNI
-        # use Data::Dumper; warn Dumper \%ssl_args;
+        my %ssl_args;
+        if ($self->{SSL_opts}) {
+            %ssl_args = map {
+                $_ =~ m/^SSL_/  # only include SSL_*
+                    ? ( $_ => $self->{SSL_opts}->{$_} )
+                    : ()
+                } keys %{ $self->{SSL_opts} };
+        }
+        else {
+            %ssl_args = (
+                SSL_verifycn_name   => $host,  # CN validation
+                SSL_verifycn_scheme => 'http', # CN validation
+                SSL_hostname        => $host   # SNI
+            );
 
+            # If Mozilla::CA is available, use the CA bundle
+            # to validate the server's SSL cert.
+            eval 'require Mozilla::CA; 1'
+                unless $INC{'Mozilla/CA.pm'};
+            if ( $INC{'Mozilla/CA.pm'} and !$@ ) {
+                $ssl_args{SSL_ca_file}     ||= Mozilla::CA::SSL_ca_file();
+                $ssl_args{SSL_verify_mode} ||= 0x01;
+            }
+        }
+
+        # use Data::Dumper; warn Dumper \%ssl_args;
         IO::Socket::SSL->start_SSL($self->{fh},
             %ssl_args,
         );
