@@ -30,20 +30,20 @@ Request timeout in seconds (default is 60)
 * C<verify_SSL>
 A boolean that indicates whether to validate the SSL certificate of an C<https>
 connection (default is false)
-* C<SSL_opts>
+* C<SSL_options>
 A hashref of C<SSL_*> options to pass through to L<IO::Socket::SSL>
 
 Exceptions from C<max_size>, C<timeout> or other errors will result in a
 pseudo-HTTP status code of 599 and a reason of "Internal Exception". The
 content field in the response will contain the text of the exception.
 
-See L</SSL SUPPORT> for more on the C<verify_SSL> and C<SSL_opts> attributes.
+See L</SSL SUPPORT> for more on the C<verify_SSL> and C<SSL_options> attributes.
 
 =cut
 
 my @attributes;
 BEGIN {
-    @attributes = qw(agent default_headers max_redirect max_size proxy timeout SSL_opts verify_SSL);
+    @attributes = qw(agent default_headers max_redirect max_size proxy timeout SSL_options verify_SSL);
     no strict 'refs';
     for my $accessor ( @attributes ) {
         *{$accessor} = sub {
@@ -357,7 +357,7 @@ sub _request {
 
     my $handle  = HTTP::Tiny::Handle->new(
         timeout     => $self->{timeout},
-        SSL_opts    => $self->{SSL_opts},
+        SSL_options => $self->{SSL_options},
         verify_SSL  => $self->{verify_SSL},
     );
 
@@ -603,12 +603,12 @@ sub connect {
 
     if ( $scheme eq 'https') {
         my %ssl_args;
-        if ($self->{SSL_opts}) {
+        if ($self->{SSL_options}) {
             %ssl_args = map {
                 $_ =~ m/^SSL_/  # only include SSL_*
-                    ? ( $_ => $self->{SSL_opts}->{$_} )
+                    ? ( $_ => $self->{SSL_options}->{$_} )
                     : ()
-                } keys %{ $self->{SSL_opts} };
+                } keys %{ $self->{SSL_options} };
         }
         elsif ($self->{verify_SSL}) { # Try to be secure-ish
             %ssl_args = (
@@ -1044,7 +1044,7 @@ max_size
 proxy
 timeout
 verify_SSL
-SSL_opts
+SSL_options
 
 =head1 SYNOPSIS
 
@@ -1122,16 +1122,16 @@ system-specific default locations for a CA certificate file:
 An exception will be raised if C<verify_SSL> is true and no CA certificate file
 is available.
 
-If you desire complete control over SSL connections, the C<SSL_opts> attribute
+If you desire complete control over SSL connections, the C<SSL_options> attribute
 lets you provide a hash reference that will be passed through to
 C<IO::Socket::SSL::start_SSL()>, overriding any options set by HTTP::Tiny. For
 example, to provide your own trusted CA file:
 
-    SSL_opts => {
+    SSL_options => {
         SSL_ca_file => $file_path,
     }
 
-The C<SSL_opts> attribute could also be used for such things as providing a
+The C<SSL_options> attribute could also be used for such things as providing a
 client certificate for authentication to a server or controlling the choice of
 cipher used for the SSL connection. See L<IO::Socket::SSL> documentation for
 details.

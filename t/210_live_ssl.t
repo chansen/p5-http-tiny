@@ -63,13 +63,13 @@ while (my ($url, $data) = each %$data) {
             or do { delete $response->{content}; diag explain [IO::Socket::SSL::errstr(), $response] };
 
         # force validation to succeed
-        my $pass = HTTP::Tiny->new( SSL_opts => $data->{pass} )->get($url);
+        my $pass = HTTP::Tiny->new( SSL_options => $data->{pass} )->get($url);
         isnt $pass->{status}, '599', "Request to $url completed (forced pass)"
             or do { delete $pass->{content}; diag explain $pass };
         ok $pass->{content}, 'Got some content';
 
         # force validation to fail
-        my $fail = HTTP::Tiny->new( SSL_opts => $data->{fail} )->get($url);
+        my $fail = HTTP::Tiny->new( SSL_options => $data->{fail} )->get($url);
         is $fail->{status}, '599', "Request to $url failed (forced fail)"
             or do { delete $fail->{content}; diag explain [IO::Socket::SSL::errstr(), $fail] };
         ok $fail->{content}, 'Got some content';
