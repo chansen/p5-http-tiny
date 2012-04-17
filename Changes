@@ -1,8 +1,11 @@
 Release notes for HTTP-Tiny
 
 {{$NEXT}}
-  - expose ssl_verify_args to control IO::Socket::SSL's cert
-    verification scheme (GH #6) [Mike Doherty]
+  - Add verify_SSL option to do more secure SSL operations, incl.
+    attempting to validate against a CA bundle (Mozilla::CA
+    recommended, but will attempt to find some OS bundles). Also
+    add SSL_opts, which passes through IO::Socket::SSL's SSL_*
+    options to control SSL verification. (GH #6, #9) [Mike Doherty]
 
   [ADDED]
 
