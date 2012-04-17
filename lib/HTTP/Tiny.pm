@@ -600,30 +600,8 @@ sub connect {
       or die(qq/Could not binmode() socket: '$!'\n/);
 
     if ( $scheme eq 'https') {
-        my %ssl_args;
-        if ($self->{SSL_options}) {
-            %ssl_args = map {
-                $_ =~ m/^SSL_/  # only include SSL_*
-                    ? ( $_ => $self->{SSL_options}->{$_} )
-                    : ()
-                } keys %{ $self->{SSL_options} };
-        }
-        elsif ($self->{verify_SSL}) { # Try to be secure-ish
-            %ssl_args = (
-                SSL_verifycn_name   => $host,  # CN validation
-                SSL_verifycn_scheme => 'http', # CN validation
-                SSL_hostname        => $host   # SNI
-            );
-
-            # Use a CA bundle to verify the cert
-            $ssl_args{SSL_ca_file} = $self->_find_CA_file;
-            $ssl_args{SSL_verify_mode} = 0x01;
-        }
-
-        # use Data::Dumper; warn Dumper \%ssl_args;
-        IO::Socket::SSL->start_SSL($self->{fh},
-            %ssl_args,
-        );
+        my $ssl_args = $self->_ssl_args($host);
+        IO::Socket::SSL->start_SSL($self->{fh}, %$ssl_args);
         ref($self->{fh}) eq 'IO::Socket::SSL'
             or die(qq/SSL connection failed for $host\n/);
     }
@@ -1027,6 +1005,30 @@ sub _find_CA_file {
 
     die "Couldn't find a CA bundle with which to verify the SSL certificate.\n"
         . "Try installing Mozilla::CA from CPAN\n";
+}
+
+sub _ssl_args {
+    my ($self, $host) = @_;
+    my %ssl_args;
+    if ($self->{SSL_options}) {
+        %ssl_args = map {
+        $_ =~ m/^SSL_/  # only include SSL_*
+        ? ( $_ => $self->{SSL_options}->{$_} )
+        : ()
+        } keys %{ $self->{SSL_options} };
+    }
+    elsif ($self->{verify_SSL}) { # Try to be secure-ish
+        %ssl_args = (
+            SSL_verifycn_name   => $host,  # CN validation
+            SSL_verifycn_scheme => 'http', # CN validation
+            SSL_hostname        => $host   # SNI
+        );
+
+        # Use a CA bundle to verify the cert
+        $ssl_args{SSL_ca_file} = $self->_find_CA_file;
+        $ssl_args{SSL_verify_mode} = 0x01;
+    }
+    return \%ssl_args;
 }
 
 1;
