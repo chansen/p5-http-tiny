@@ -1053,6 +1053,8 @@ max_redirect
 max_size
 proxy
 timeout
+verify_SSL
+SSL_opts
 
 =head1 SYNOPSIS
 
