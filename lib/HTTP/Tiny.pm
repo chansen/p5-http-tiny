@@ -604,8 +604,10 @@ sub connect {
     if ( $scheme eq 'https') {
         my $ssl_args = $self->_ssl_args($host);
         IO::Socket::SSL->start_SSL($self->{fh}, %$ssl_args);
-        ref($self->{fh}) eq 'IO::Socket::SSL'
-            or die(qq/SSL connection failed for $host\n/);
+        unless ( ref($self->{fh}) eq 'IO::Socket::SSL' ) {
+            my $ssl_err = IO::Socket::SSL->errstr;
+            die(qq/SSL connection failed for $host: $ssl_err\n/);
+        }
     }
 
     $self->{host} = $host;
