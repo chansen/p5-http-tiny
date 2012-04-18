@@ -1007,8 +1007,8 @@ sub _find_CA_file {
         return $ca_bundle if -e $ca_bundle;
     }
 
-    die "Couldn't find a CA bundle with which to verify the SSL certificate.\n"
-        . "Try installing Mozilla::CA from CPAN\n";
+    die qq/Couldn't find a CA bundle with which to verify the SSL certificate.\n/
+      . qq/Try installing Mozilla::CA from CPAN\n/;
 }
 
 sub _ssl_args {
