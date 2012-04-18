@@ -572,6 +572,8 @@ sub new {
         timeout          => 60,
         max_line_size    => 16384,
         max_header_lines => 64,
+        verify_SSL       => 0,
+        SSL_options      => {},
         %args
     }, $class;
 }
@@ -1009,25 +1011,27 @@ sub _find_CA_file {
 
 sub _ssl_args {
     my ($self, $host) = @_;
-    my %ssl_args;
-    if ($self->{SSL_options}) {
-        %ssl_args = map {
-        $_ =~ m/^SSL_/  # only include SSL_*
-        ? ( $_ => $self->{SSL_options}->{$_} )
-        : ()
-        } keys %{ $self->{SSL_options} };
-    }
-    elsif ($self->{verify_SSL}) { # Try to be secure-ish
-        %ssl_args = (
-            SSL_verifycn_name   => $host,  # CN validation
-            SSL_verifycn_scheme => 'http', # CN validation
-            SSL_hostname        => $host   # SNI
-        );
 
-        # Use a CA bundle to verify the cert
-        $ssl_args{SSL_ca_file} = $self->_find_CA_file;
-        $ssl_args{SSL_verify_mode} = 0x01;
+    my %ssl_args = (
+        SSL_hostname        => $host,  # SNI
+    );
+
+    if ($self->{verify_SSL}) {
+        $ssl_args{SSL_verifycn_scheme}  = 'http'; # enable CN validation
+        $ssl_args{SSL_verifycn_name}    = $host;  # set validation hostname
+        $ssl_args{SSL_verify_mode}      = 0x01;   # enable cert validation
+        $ssl_args{SSL_ca_file}          = $self->_find_CA_file;
     }
+    else {
+        $ssl_args{SSL_verifycn_scheme}  = 'none'; # disable CN validation
+        $ssl_args{SSL_verify_mode}      = 0x00;   # disable cert validation
+    }
+
+    # user options override settings from verify_SSL
+    for my $k ( keys %{$self->{SSL_options}} ) {
+        $ssl_args{$k} = $self->{SSL_options}{$k} if $k =~ m/^SSL_/;
+    }
+
     return \%ssl_args;
 }
 
