@@ -43,7 +43,7 @@
             "warnings" : "0"
          },
          "suggests" : {
-            "IO::Socket::SSL" : "0",
+            "IO::Socket::SSL" : "1.56",
             "Mozilla::CA" : "0"
          }
       },
