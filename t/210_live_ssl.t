@@ -60,18 +60,28 @@ while (my ($url, $data) = each %$data) {
         # the default verification
         my $response = HTTP::Tiny->new(verify_ssl => 1)->get($url);
         is $response->{success}, $data->{default_should_yield}, "Request to $url passed/failed using default as expected"
-            or do { delete $response->{content}; diag explain [IO::Socket::SSL::errstr(), $response] };
+            or do {
+                # $response->{content} = substr $response->{content}, 0, 50;
+                $response->{content} =~ s{\n.*}{}s;
+                diag explain [IO::Socket::SSL::errstr(), $response]
+            };
 
         # force validation to succeed
         my $pass = HTTP::Tiny->new( SSL_options => $data->{pass} )->get($url);
         isnt $pass->{status}, '599', "Request to $url completed (forced pass)"
-            or do { delete $pass->{content}; diag explain $pass };
+            or do {
+                $pass->{content} =~ s{\n.*}{}s;
+                diag explain $pass
+            };
         ok $pass->{content}, 'Got some content';
 
         # force validation to fail
         my $fail = HTTP::Tiny->new( SSL_options => $data->{fail} )->get($url);
         is $fail->{status}, '599', "Request to $url failed (forced fail)"
-            or do { delete $fail->{content}; diag explain [IO::Socket::SSL::errstr(), $fail] };
+            or do {
+                $fail->{content} =~ s{\n.*}{}s;
+                diag explain [IO::Socket::SSL::errstr(), $fail]
+            };
         ok $fail->{content}, 'Got some content';
     };
 }
