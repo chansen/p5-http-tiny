@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+0.019     2012-05-14 07:14:00 America/New_York
+
   [ADDED]
 
   - Require IO::Socket::SSL 1.56 (which added SSL_hostname support) when
