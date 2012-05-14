@@ -2,6 +2,11 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  [TESTING]
+
+  - Capture prerequisite versions under AUTOMATED_TESTING to help
+    chase down some failures from CPAN Testers
+
 0.019     2012-05-14 07:14:00 America/New_York
 
   [ADDED]
