@@ -13,13 +13,15 @@ Release notes for HTTP-Tiny
     Doherty]
 
 0.018     2012-04-18 09:39:50 America/New_York
+
+  [ADDED]
+
   - Add verify_SSL option to do more secure SSL operations, incl.
     attempting to validate against a CA bundle (Mozilla::CA
     recommended, but will attempt to find some OS bundles). Also
     add SSL_opts, which passes through IO::Socket::SSL's SSL_*
     options to control SSL verification. (GH #6, #9) [Mike Doherty]
 
-  [ADDED]
 
   - Reponse hashref includes final URL (including any redirections)
     [Lukas Eklund]
