@@ -2,6 +2,11 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  [ADDED]
+
+  - Require IO::Socket::SSL 1.56 (which added SSL_hostname support) when
+    doing HTTPS.  [Mike Doherty]
+
 0.018     2012-04-18 09:39:50 America/New_York
   - Add verify_SSL option to do more secure SSL operations, incl.
     attempting to validate against a CA bundle (Mozilla::CA

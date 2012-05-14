@@ -583,8 +583,8 @@ sub connect {
     my ($self, $scheme, $host, $port) = @_;
 
     if ( $scheme eq 'https' ) {
-        die(qq/IO::Socket::SSL must be installed for https support\n/)
-            unless eval { require IO::Socket::SSL };
+        die(qq/IO::Socket::SSL 1.56 must be installed for https support\n/)
+            unless eval {require IO::Socket::SSL; IO::Socket::SSL->VERSION(1.56)};
     }
     elsif ( $scheme ne 'http' ) {
       die(qq/Unsupported URL scheme '$scheme'\n/);
@@ -1078,10 +1078,10 @@ also correctly resumes after EINTR.
 
 =head1 SSL SUPPORT
 
-Direct C<https> connections are supported only if L<IO::Socket::SSL> is
-installed. An exception will be thrown if IO::Socket::SSL is not installed or
-if the SSL encryption fails. There is no support for C<https> connections via
-proxy.
+Direct C<https> connections are supported only if L<IO::Socket::SSL> 1.56 or
+greater is installed. An exception will be thrown if a new enough
+IO::Socket::SSL is not installed or if the SSL encryption fails. There is no
+support for C<https> connections via proxy.
 
 SSL provides two distinct capabilities:
 
