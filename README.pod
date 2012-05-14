@@ -4,7 +4,7 @@ HTTP::Tiny - A small, simple, correct HTTP/1.1 client
 
 =head1 VERSION
 
-version 0.018
+version 0.019
 
 =head1 SYNOPSIS
 
@@ -281,10 +281,10 @@ SSL_options
 
 =head1 SSL SUPPORT
 
-Direct C<https> connections are supported only if L<IO::Socket::SSL> is
-installed. An exception will be thrown if IO::Socket::SSL is not installed or
-if the SSL encryption fails. There is no support for C<https> connections via
-proxy.
+Direct C<https> connections are supported only if L<IO::Socket::SSL> 1.56 or
+greater is installed. An exception will be thrown if a new enough
+IO::Socket::SSL is not installed or if the SSL encryption fails. There is no
+support for C<https> connections via proxy.
 
 SSL provides two distinct capabilities:
 
