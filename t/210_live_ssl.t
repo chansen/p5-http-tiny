@@ -18,6 +18,9 @@ use HTTP::Tiny;
 plan skip_all => 'Only run for $ENV{AUTOMATED_TESTING}'
   unless $ENV{AUTOMATED_TESTING};
 
+plan skip_all => "Can't test SSL with http_proxy set"
+  if $ENV{http_proxy};
+
 my $data = {
     'https://www.google.ca/' => {
         host => 'www.google.ca',

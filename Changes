@@ -2,6 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  [TESTING]
+
+  - Skip live SSL testing if $ENV{http_proxy} is set
+
 0.020     2012-05-14 15:24:37 America/New_York
 
   [TESTING]

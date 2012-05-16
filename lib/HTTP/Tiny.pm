@@ -1081,7 +1081,7 @@ also correctly resumes after EINTR.
 Direct C<https> connections are supported only if L<IO::Socket::SSL> 1.56 or
 greater is installed. An exception will be thrown if a new enough
 IO::Socket::SSL is not installed or if the SSL encryption fails. There is no
-support for C<https> connections via proxy.
+support for C<https> connections via proxy (i.e. RFC 2817).
 
 SSL provides two distinct capabilities:
 
