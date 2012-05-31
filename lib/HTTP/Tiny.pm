@@ -1200,6 +1200,10 @@ Only 'chunked' C<Transfer-Encoding> is supported.
 
 There is no support for a Request-URI of '*' for the 'OPTIONS' request.
 
+=item *
+
+There is no support for IPv6 of any kind.
+
 =back
 
 =head1 SEE ALSO
