@@ -18,6 +18,8 @@ This constructor returns a new HTTP::Tiny object.  Valid attributes include:
 A user-agent string (defaults to 'HTTP::Tiny/$VERSION')
 * C<default_headers>
 A hashref of default headers to apply to requests
+* C<local_address>
+The local IP address to bind to
 * C<max_redirect>
 Maximum number of redirects allowed (defaults to 5)
 * C<max_size>
@@ -43,7 +45,7 @@ See L</SSL SUPPORT> for more on the C<verify_SSL> and C<SSL_options> attributes.
 
 my @attributes;
 BEGIN {
-    @attributes = qw(agent default_headers max_redirect max_size proxy timeout SSL_options verify_SSL);
+    @attributes = qw(agent default_headers local_address max_redirect max_size proxy timeout SSL_options verify_SSL);
     no strict 'refs';
     for my $accessor ( @attributes ) {
         *{$accessor} = sub {
@@ -356,9 +358,10 @@ sub _request {
     };
 
     my $handle  = HTTP::Tiny::Handle->new(
-        timeout     => $self->{timeout},
-        SSL_options => $self->{SSL_options},
-        verify_SSL  => $self->{verify_SSL},
+        timeout         => $self->{timeout},
+        SSL_options     => $self->{SSL_options},
+        verify_SSL      => $self->{verify_SSL},
+        local_address   => $self->{local_address},
     );
 
     if ($self->{proxy}) {
@@ -589,10 +592,11 @@ sub connect {
     elsif ( $scheme ne 'http' ) {
       die(qq/Unsupported URL scheme '$scheme'\n/);
     }
-
     $self->{fh} = 'IO::Socket::INET'->new(
         PeerHost  => $host,
         PeerPort  => $port,
+        $self->{local_address} ? 
+            ( LocalAddr => $self->{local_address} ) : (),
         Proto     => 'tcp',
         Type      => SOCK_STREAM,
         Timeout   => $self->{timeout}
@@ -1042,6 +1046,7 @@ sub _ssl_args {
 =for Pod::Coverage
 agent
 default_headers
+local_address
 max_redirect
 max_size
 proxy

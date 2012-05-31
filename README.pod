@@ -57,6 +57,12 @@ A hashref of default headers to apply to requests
 
 =item *
 
+C<local_address>
+
+The local IP address to bind to
+
+=item *
+
 C<max_redirect>
 
 Maximum number of redirects allowed (defaults to 5)
@@ -272,6 +278,7 @@ and value.
 
 =for Pod::Coverage agent
 default_headers
+local_address
 max_redirect
 max_size
 proxy
