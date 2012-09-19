@@ -36,9 +36,6 @@
          "requires" : {
             "Carp" : "0",
             "IO::Socket" : "0",
-            "IO::Socket::SSL" : "1.56",
-            "Mozilla::CA" : "0",
-            "Net::SSLeay" : "0",
             "Time::Local" : "0",
             "bytes" : "0",
             "perl" : "5.006",
@@ -74,10 +71,10 @@
    "provides" : {
       "HTTP::Tiny" : {
          "file" : "lib/HTTP/Tiny.pm",
-         "version" : "0.023"
+         "version" : "0.024"
       }
    },
-   "release_status" : "testing",
+   "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
          "mailto" : "bug-HTTP-Tiny@rt.cpan.org",
@@ -90,6 +87,6 @@
          "web" : "https://github.com/dagolden/http-tiny"
       }
    },
-   "version" : "0.023"
+   "version" : "0.024"
 }
 
