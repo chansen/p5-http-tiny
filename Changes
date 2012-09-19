@@ -2,6 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  [TESTING]
+
+  - Skip live SSL testing unless IO::Socket::SSL 1.56+ installed
+
 0.022     2012-06-01 23:31:40 America/New_York
 
   [ADDED]

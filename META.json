@@ -6,7 +6,7 @@
       "Mike Doherty <doherty@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 4.300017, CPAN::Meta::Converter version 2.120921",
+   "generated_by" : "Dist::Zilla version 4.300023, CPAN::Meta::Converter version 2.120921",
    "license" : [
       "perl_5"
    ],
@@ -69,22 +69,22 @@
    "provides" : {
       "HTTP::Tiny" : {
          "file" : "lib/HTTP/Tiny.pm",
-         "version" : "0.022"
+         "version" : "0.023"
       }
    },
    "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
-         "mailto" : "bug-http-tiny at rt.cpan.org",
-         "web" : "http://rt.cpan.org/Public/Dist/Display.html?Name=HTTP-Tiny"
+         "mailto" : "bug-HTTP-Tiny@rt.cpan.org",
+         "web" : "https://rt.cpan.org/Public/Dist/Display.html?Name=HTTP-Tiny"
       },
-      "homepage" : "https://github.com/dagolden/p5-http-tiny",
+      "homepage" : "https://metacpan.org/release/HTTP-Tiny",
       "repository" : {
          "type" : "git",
-         "url" : "https://github.com/dagolden/p5-http-tiny.git",
-         "web" : "https://github.com/dagolden/p5-http-tiny"
+         "url" : "git://github.com/dagolden/http-tiny.git",
+         "web" : "https://github.com/dagolden/http-tiny"
       }
    },
-   "version" : "0.022"
+   "version" : "0.023"
 }
 
