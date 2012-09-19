@@ -6,13 +6,11 @@ use warnings;
 use Test::More 0.88;
 use IO::Socket::INET;
 BEGIN {
-    eval 'use IO::Socket::SSL; 1';
-    plan skip_all => 'IO::Socket::SSL required for SSL tests' if $@;
+    eval { require IO::Socket::SSL; IO::Socket::SSL->VERSION(1.56); 1 };
+    plan skip_all => 'IO::Socket::SSL 1.56 required for SSL tests' if $@;
     # $IO::Socket::SSL::DEBUG = 3;
 
-    plan skip_all => 'IO::Socket::SSL 1.56 required for SSL tests' unless $IO::Socket::VERSION >= 1.56;
-
-    eval 'use Mozilla::CA; 1';
+    eval { require Mozilla::CA; 1 };
     plan skip_all => 'Mozilla::CA required for SSL tests' if $@;
 }
 use HTTP::Tiny;
