@@ -36,6 +36,9 @@
          "requires" : {
             "Carp" : "0",
             "IO::Socket" : "0",
+            "IO::Socket::SSL" : "1.56",
+            "Mozilla::CA" : "0",
+            "Net::SSLeay" : "0",
             "Time::Local" : "0",
             "bytes" : "0",
             "perl" : "5.006",
@@ -44,7 +47,8 @@
          },
          "suggests" : {
             "IO::Socket::SSL" : "1.56",
-            "Mozilla::CA" : "0"
+            "Mozilla::CA" : "20120823",
+            "Net::SSLeay" : "1.48"
          }
       },
       "test" : {
@@ -60,6 +64,7 @@
             "IO::Dir" : "0",
             "IO::File" : "0",
             "IO::Socket::INET" : "0",
+            "IPC::Cmd" : "0",
             "List::Util" : "0",
             "Test::More" : "0.88",
             "open" : "0"
@@ -72,7 +77,7 @@
          "version" : "0.023"
       }
    },
-   "release_status" : "stable",
+   "release_status" : "testing",
    "resources" : {
       "bugtracker" : {
          "mailto" : "bug-HTTP-Tiny@rt.cpan.org",

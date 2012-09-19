@@ -2,6 +2,11 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  [PREREQS]
+
+  - IO::Socket::SSL and related prereqs changed to 'required' for dev
+    release to get better failure diagnostics from CPAN Testers
+
   [TESTING]
 
   - Skip live SSL testing unless IO::Socket::SSL 1.56+ installed
