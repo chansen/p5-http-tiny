@@ -2,6 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  [PREREQS]
+
+  - Downgraded IO::Socket::SSL and related prereqs to 'suggests' again
+
 0.023     2012-09-19 09:55:46 America/New_York
 
   [PREREQS]
