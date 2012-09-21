@@ -1018,6 +1018,11 @@ sub can_write {
 # Try to find a CA bundle to validate the SSL cert,
 # prefer Mozilla::CA or fallback to a system file
 sub _find_CA_file {
+    my $self = shift();
+
+    return $self->{SSL_options}->{SSL_ca_file}
+        if $self->{SSL_options}->{SSL_ca_file} and -e $self->{SSL_options}->{SSL_ca_file};
+
     return Mozilla::CA::SSL_ca_file()
         if eval { require Mozilla::CA };
 
