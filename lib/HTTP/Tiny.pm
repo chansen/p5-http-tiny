@@ -595,7 +595,7 @@ sub connect {
     $self->{fh} = 'IO::Socket::INET'->new(
         PeerHost  => $host,
         PeerPort  => $port,
-        $self->{local_address} ? 
+        $self->{local_address} ?
             ( LocalAddr => $self->{local_address} ) : (),
         Proto     => 'tcp',
         Type      => SOCK_STREAM,
@@ -654,7 +654,14 @@ sub write {
             die(qq/Socket closed by remote server: $!\n/);
         }
         elsif ($! != EINTR) {
-            die(qq/Could not write to socket: '$!'\n/);
+            if ($self->{fh}->can('errstr')){
+                my $err = $self->{fh}->errstr();
+                die (qq/Could not write to SSL socket: '$err'\n /);
+            }
+            else {
+                die(qq/Could not write to socket: '$!'\n/);
+            }
+
         }
     }
     return $off;
@@ -682,7 +689,13 @@ sub read {
             $len -= $r;
         }
         elsif ($! != EINTR) {
-            die(qq/Could not read from socket: '$!'\n/);
+            if ($self->{fh}->can('errstr')){
+                my $err = $self->{fh}->errstr();
+                die (qq/Could not read from SSL socket: '$err'\n /);
+            }
+            else {
+                die(qq/Could not read from socket: '$!'\n/);
+            }
         }
     }
     if ($len && !$allow_partial) {
@@ -709,7 +722,13 @@ sub readline {
             last unless $r;
         }
         elsif ($! != EINTR) {
-            die(qq/Could not read from socket: '$!'\n/);
+            if ($self->{fh}->can('errstr')){
+                my $err = $self->{fh}->errstr();
+                die (qq/Could not read from SSL socket: '$err'\n /);
+            }
+            else {
+                die(qq/Could not read from socket: '$!'\n/);
+            }
         }
     }
     die(qq/Unexpected end of stream while looking for line\n/);
@@ -1219,4 +1238,3 @@ There is no support for IPv6 of any kind.
 * L<Mozilla::CA>
 
 =cut
-
