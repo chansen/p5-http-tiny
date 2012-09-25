@@ -10,6 +10,9 @@ BEGIN {
     plan skip_all => 'IO::Socket::SSL 1.56 required for SSL tests' if $@;
     # $IO::Socket::SSL::DEBUG = 3;
 
+    eval { require Net::SSLeay; Net::SSLeay->VERSION(1.49); 1};
+    plan skip_all => 'Net::SSLeay 1.49 required for SSL tests' if $@;
+
     eval { require Mozilla::CA; 1 };
     plan skip_all => 'Mozilla::CA required for SSL tests' if $@;
 }

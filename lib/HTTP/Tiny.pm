@@ -588,6 +588,8 @@ sub connect {
     if ( $scheme eq 'https' ) {
         die(qq/IO::Socket::SSL 1.56 must be installed for https support\n/)
             unless eval {require IO::Socket::SSL; IO::Socket::SSL->VERSION(1.56)};
+        die(qq/Net::SSLeay 1.49 must be installed for https support\n/)
+            unless eval {require Net::SSLeay; Net::SSLeay->VERSION(1.49)};
     }
     elsif ( $scheme ne 'http' ) {
       die(qq/Unsupported URL scheme '$scheme'\n/);
