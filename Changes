@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+0.024     2012-10-09 20:44:53 America/New_York
+
   [ADDED]
 
   - SSL connections now auto-retry I/O after SSL renegotiation [Alan
