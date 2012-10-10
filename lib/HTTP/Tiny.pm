@@ -1118,9 +1118,10 @@ also correctly resumes after EINTR.
 =head1 SSL SUPPORT
 
 Direct C<https> connections are supported only if L<IO::Socket::SSL> 1.56 or
-greater is installed. An exception will be thrown if a new enough
-IO::Socket::SSL is not installed or if the SSL encryption fails. There is no
-support for C<https> connections via proxy (i.e. RFC 2817).
+greater and L<Net::SSLeay> 1.49 or greater are installed. An exception will be
+thrown if a new enough versions of these modules not installed or if the SSL
+encryption fails. There is no support for C<https> connections via proxy (i.e.
+RFC 2817).
 
 SSL provides two distinct capabilities:
 
@@ -1251,5 +1252,6 @@ There is no support for IPv6 of any kind.
 * L<LWP::UserAgent>
 * L<IO::Socket::SSL>
 * L<Mozilla::CA>
+* L<Net::SSLeay>
 
 =cut
