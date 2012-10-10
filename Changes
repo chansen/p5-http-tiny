@@ -2,7 +2,20 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  [ADDED]
+
+  - SSL connections now auto-retry I/O after SSL renegotiation [Alan
+    Gardner]
+
+  [FIXED]
+
+  - User-specified CA bundles take precedence over Mozilla::CA [Alan
+    Gardner]
+
   [PREREQS]
+
+  - SSL support now requires Net::SSLeay 1.49 or greater to support
+    auto-retry [Mike Doherty]
 
   - Downgraded IO::Socket::SSL and related prereqs to 'suggests' again
 

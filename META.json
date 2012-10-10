@@ -6,7 +6,7 @@
       "Mike Doherty <doherty@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 4.300023, CPAN::Meta::Converter version 2.120921",
+   "generated_by" : "Dist::Zilla version 4.300024, CPAN::Meta::Converter version 2.120921",
    "license" : [
       "perl_5"
    ],
@@ -45,7 +45,7 @@
          "suggests" : {
             "IO::Socket::SSL" : "1.56",
             "Mozilla::CA" : "20120823",
-            "Net::SSLeay" : "1.48"
+            "Net::SSLeay" : "1.49"
          }
       },
       "test" : {
