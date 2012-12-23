@@ -15,7 +15,12 @@ This constructor returns a new HTTP::Tiny object.  Valid attributes include:
 
 =for :list
 * C<agent>
-A user-agent string (defaults to 'HTTP::Tiny/$VERSION')
+A user-agent string (defaults to 'HTTP::Tiny/$VERSION').
+We behave like C<LWP::UserAgent>'s agent() in that if new is passed a custom
+agent string that ends with a space, our default user agent will be appended
+to it.  That is, a supplied agent of 'woo! ' will cause
+the agent string to be set to 'woo! HTTP::Tiny/$VERSION', while 'woo!' will
+cause the agent string to be just 'woo!'.
 * C<default_headers>
 A hashref of default headers to apply to requests
 * C<local_address>
@@ -54,11 +59,24 @@ BEGIN {
     }
 }
 
+sub _default_agent {
+    my ($thing) = @_;
+
+    my $class = ref $thing || $thing;
+    (my $agent = $class) =~ s/::/-/g;
+
+    return $agent . "/" . ($class->VERSION || 0);
+}
+
 sub new {
     my($class, %args) = @_;
+
+    $args{agent} .= $class->_default_agent
+        if defined $args{agent} && $args{agent} =~ / $/;
+
     (my $agent = $class) =~ s{::}{-}g;
     my $self = {
-        agent        => $agent . "/" . ($class->VERSION || 0),
+        agent        => $class->_default_agent,
         max_redirect => 5,
         timeout      => 60,
         verify_SSL   => $args{verify_SSL} || $args{verify_ssl} || 0, # no verification by default
