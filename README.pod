@@ -6,7 +6,7 @@ HTTP::Tiny - A small, simple, correct HTTP/1.1 client
 
 =head1 VERSION
 
-version 0.024
+version 0.025
 
 =head1 SYNOPSIS
 
@@ -49,7 +49,7 @@ This constructor returns a new HTTP::Tiny object.  Valid attributes include:
 
 C<agent>
 
-A user-agent string (defaults to 'HTTP::Tiny/$VERSION')
+A user-agent string (defaults to 'HTTP-Tiny/$VERSION'). If C<agent> ends in a space character, the default user-agent string is appended.
 
 =item *
 
