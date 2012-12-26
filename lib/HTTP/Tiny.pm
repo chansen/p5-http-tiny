@@ -59,28 +59,22 @@ BEGIN {
     }
 }
 
-sub _default_agent {
-    my ($thing) = @_;
-
-    my $class = ref $thing || $thing;
-    (my $agent = $class) =~ s/::/-/g;
-
-    return $agent . "/" . ($class->VERSION || 0);
-}
-
 sub new {
     my($class, %args) = @_;
 
-    $args{agent} .= $class->_default_agent
-        if defined $args{agent} && $args{agent} =~ / $/;
+    (my $default_agent = $class) =~ s{::}{-}g;
+    $default_agent .= "/" . ($class->VERSION || 0);
 
-    (my $agent = $class) =~ s{::}{-}g;
     my $self = {
-        agent        => $class->_default_agent,
+        agent        => $default_agent,
         max_redirect => 5,
         timeout      => 60,
         verify_SSL   => $args{verify_SSL} || $args{verify_ssl} || 0, # no verification by default
     };
+
+    $args{agent} .= $default_agent
+        if defined $args{agent} && $args{agent} =~ / $/;
+
     for my $key ( @attributes ) {
         $self->{$key} = $args{$key} if exists $args{$key}
     }
