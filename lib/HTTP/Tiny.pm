@@ -15,12 +15,7 @@ This constructor returns a new HTTP::Tiny object.  Valid attributes include:
 
 =for :list
 * C<agent>
-A user-agent string (defaults to 'HTTP::Tiny/$VERSION').
-We behave like C<LWP::UserAgent>'s agent() in that if new is passed a custom
-agent string that ends with a space, our default user agent will be appended
-to it.  That is, a supplied agent of 'woo! ' will cause
-the agent string to be set to 'woo! HTTP::Tiny/$VERSION', while 'woo!' will
-cause the agent string to be just 'woo!'.
+A user-agent string (defaults to 'HTTP-Tiny/$VERSION'). If C<agent> ends in a space character, the default user-agent string is appended.
 * C<default_headers>
 A hashref of default headers to apply to requests
 * C<local_address>
