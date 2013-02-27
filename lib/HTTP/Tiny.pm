@@ -16,6 +16,8 @@ This constructor returns a new HTTP::Tiny object.  Valid attributes include:
 =for :list
 * C<agent>
 A user-agent string (defaults to 'HTTP-Tiny/$VERSION'). If C<agent> ends in a space character, the default user-agent string is appended.
+* C<cookie_jar>
+An instance of HTTP::CookieJar or equivalent class that supports the C<add> and C<cookie_header> methods
 * C<default_headers>
 A hashref of default headers to apply to requests
 * C<local_address>
@@ -69,6 +71,10 @@ sub new {
 
     $args{agent} .= $default_agent
         if defined $args{agent} && $args{agent} =~ / $/;
+
+    if( exists $args{cookie_jar} ) {
+        $class->_validate_cookie_jar( $args{cookie_jar} );
+    }
 
     for my $key ( @attributes ) {
         $self->{$key} = $args{$key} if exists $args{$key}
@@ -388,6 +394,11 @@ sub _request {
     do { $response = $handle->read_response_header }
         until (substr($response->{status},0,1) ne '1');
 
+    ### Update the cookie jar if there is one
+    if( defined $self->cookie_jar() ) {
+        $self->_update_cookie_jar( $url, $response );
+    }
+
     if ( my @redir_args = $self->_maybe_redirect($request, $response, $args) ) {
         $handle->close;
         return $self->_request(@redir_args, $args);
@@ -442,6 +453,16 @@ sub _prepare_headers_and_cb {
         $request->{trailer_cb} = $args->{trailer_callback}
             if ref $args->{trailer_callback} eq 'CODE';
     }
+
+    ### If we have a cookie jar
+    if (defined $self->cookie_jar()) {
+        ### Then create cookie headers
+        my %hdrs = $self->_prepare_cookie_headers( $request );
+
+        ### Add the cookie headers (if any) to the request)
+        @{$request->{headers}}{keys %hdrs} = values %hdrs;
+    }
+
     return;
 }
 
@@ -463,6 +484,52 @@ sub _prepare_data_cb {
         }
     }
     return $data_cb;
+}
+
+sub _prepare_cookie_headers {
+    my ($self, $request) = @_;
+
+    ### Get any cookies for this URL
+    my %headers = ();
+    my $url = sprintf('%s://%s%s', @{$request}{qw (scheme host_port uri)});
+    my $cookies = $self->cookie_jar->cookie_header( $url );
+
+    if( defined $cookies && $cookies ne '' ) {
+	### Create the cookies header
+	$headers{'cookies'} = $cookies;
+    }
+
+    return %headers;
+}
+
+sub _update_cookie_jar {
+    my ($self, $url, $response) = @_;
+
+    ### If there are cookies
+    return unless exists $response->{headers}->{'set-cookie'};
+
+    my $cookies = $response->{headers}->{'set-cookie'};
+    return unless defined $cookies && $cookies ne '';
+
+    ### Then add them to the cookie jar
+    $self->cookie_jar->add( $url, $cookies );
+
+    return;
+}
+
+sub _validate_cookie_jar {
+    my ($proto, $jar) = @_;
+
+    ### If a jar was supplied
+    if( defined $jar ) {
+        ### Ensure it adheres to the HTTP::CookieJar signature
+        UNIVERSAL::can( $jar, 'add' )
+            or die(qq/Supplied cookie jar does not support the add method\n/);
+        UNIVERSAL::can( $jar, 'cookie_header' )
+            or die(qq/Supplied cookie jar does not support the cookie_header method\n/);
+    }
+
+    return;
 }
 
 sub _maybe_redirect {
