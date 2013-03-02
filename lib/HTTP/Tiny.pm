@@ -45,7 +45,7 @@ See L</SSL SUPPORT> for more on the C<verify_SSL> and C<SSL_options> attributes.
 
 my @attributes;
 BEGIN {
-    @attributes = qw(agent default_headers local_address max_redirect max_size proxy timeout SSL_options verify_SSL);
+    @attributes = qw(agent cookie_jar default_headers local_address max_redirect max_size proxy timeout SSL_options verify_SSL);
     no strict 'refs';
     for my $accessor ( @attributes ) {
         *{$accessor} = sub {
