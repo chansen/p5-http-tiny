@@ -72,9 +72,7 @@ sub new {
     $args{agent} .= $default_agent
         if defined $args{agent} && $args{agent} =~ / $/;
 
-    if( exists $args{cookie_jar} ) {
-        $class->_validate_cookie_jar( $args{cookie_jar} );
-    }
+    $class->_validate_cookie_jar( $args{cookie_jar} ) if $args{cookie_jar};
 
     for my $key ( @attributes ) {
         $self->{$key} = $args{$key} if exists $args{$key}
@@ -494,15 +492,12 @@ sub _update_cookie_jar {
 }
 
 sub _validate_cookie_jar {
-    my ($proto, $jar) = @_;
+    my ($class, $jar) = @_;
 
-    ### If a jar was supplied
-    if( defined $jar ) {
-        ### Ensure it adheres to the HTTP::CookieJar signature
-        UNIVERSAL::can( $jar, 'add' )
-            or die(qq/Supplied cookie jar does not support the add method\n/);
-        UNIVERSAL::can( $jar, 'cookie_header' )
-            or die(qq/Supplied cookie jar does not support the cookie_header method\n/);
+    # duck typing
+    for my $method ( qw/add cookie_header/ ) {
+        Carp::croak(qq/Cookie jar must provide the '$method' method/)
+            unless ref($jar) && ref($jar)->can($method);
     }
 
     return;
