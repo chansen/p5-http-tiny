@@ -495,8 +495,8 @@ sub _prepare_cookie_headers {
     my $cookies = $self->cookie_jar->cookie_header( $url );
 
     if( defined $cookies && $cookies ne '' ) {
-	### Create the cookies header
-	$headers{'cookies'} = $cookies;
+        ### Create the cookies header
+        $headers{'cookies'} = $cookies;
     }
 
     return %headers;
