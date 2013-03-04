@@ -509,10 +509,12 @@ sub _update_cookie_jar {
     return unless exists $response->{headers}->{'set-cookie'};
 
     my $cookies = $response->{headers}->{'set-cookie'};
-    return unless defined $cookies && $cookies ne '';
+    return unless defined $cookies;
+
+    my @cookies = ref $cookies ? @$cookies : $cookies;
 
     ### Then add them to the cookie jar
-    $self->cookie_jar->add( $url, $cookies );
+    $self->cookie_jar->add( $url, $_ ) for @cookies;
 
     return;
 }
