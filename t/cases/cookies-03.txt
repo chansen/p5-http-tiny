@@ -22,7 +22,7 @@ GET /index.html HTTP/1.1
 Host: example.com
 Connection: close
 User-Agent: HTTP-Tiny/VERSION
-Cookies: cname=cvalue01
+Cookie: cname=cvalue01
 
 ----------
 HTTP/1.1 200 OK
@@ -57,7 +57,7 @@ GET /index.html HTTP/1.1
 Host: example.com
 Connection: close
 User-Agent: HTTP-Tiny/VERSION
-Cookies: cname=cvalue02
+Cookie: cname=cvalue02
 
 ----------
 HTTP/1.1 200 OK
@@ -75,7 +75,7 @@ GET /index02.html HTTP/1.1
 Host: example.com
 Connection: close
 User-Agent: HTTP-Tiny/VERSION
-Cookies: cname=cvalue03
+Cookie: cname=cvalue03
 
 ----------
 HTTP/1.1 200 OK

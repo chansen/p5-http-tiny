@@ -387,17 +387,14 @@ sub _request {
         $handle->connect($scheme, $host, $port);
     }
 
-    $self->_prepare_headers_and_cb($request, $args);
+    $self->_prepare_headers_and_cb($request, $args, $url);
     $handle->write_request($request);
 
     my $response;
     do { $response = $handle->read_response_header }
         until (substr($response->{status},0,1) ne '1');
 
-    ### Update the cookie jar if there is one
-    if( defined $self->cookie_jar() ) {
-        $self->_update_cookie_jar( $url, $response );
-    }
+    $self->_update_cookie_jar( $url, $response ) if $self->{cookie_jar};
 
     if ( my @redir_args = $self->_maybe_redirect($request, $response, $args) ) {
         $handle->close;
@@ -419,7 +416,7 @@ sub _request {
 }
 
 sub _prepare_headers_and_cb {
-    my ($self, $request, $args) = @_;
+    my ($self, $request, $args, $url) = @_;
 
     for ($self->{default_headers}, $args->{headers}) {
         next unless defined;
@@ -454,13 +451,10 @@ sub _prepare_headers_and_cb {
             if ref $args->{trailer_callback} eq 'CODE';
     }
 
-    ### If we have a cookie jar
-    if (defined $self->cookie_jar()) {
-        ### Then create cookie headers
-        my %hdrs = $self->_prepare_cookie_headers( $request );
-
-        ### Add the cookie headers (if any) to the request)
-        @{$request->{headers}}{keys %hdrs} = values %hdrs;
+    ### If we have a cookie jar, then maybe add relevant cookies
+    if ( $self->{cookie_jar} ) {
+        my $cookies = $self->cookie_jar->cookie_header( $url );
+        $request->{headers}{cookie} = $cookies if length $cookies;
     }
 
     return;
@@ -486,34 +480,14 @@ sub _prepare_data_cb {
     return $data_cb;
 }
 
-sub _prepare_cookie_headers {
-    my ($self, $request) = @_;
-
-    ### Get any cookies for this URL
-    my %headers = ();
-    my $url = sprintf('%s://%s%s', @{$request}{qw (scheme host_port uri)});
-    my $cookies = $self->cookie_jar->cookie_header( $url );
-
-    if( defined $cookies && $cookies ne '' ) {
-        ### Create the cookies header
-        $headers{'cookies'} = $cookies;
-    }
-
-    return %headers;
-}
-
 sub _update_cookie_jar {
     my ($self, $url, $response) = @_;
-
-    ### If there are cookies
-    return unless exists $response->{headers}->{'set-cookie'};
 
     my $cookies = $response->{headers}->{'set-cookie'};
     return unless defined $cookies;
 
     my @cookies = ref $cookies ? @$cookies : $cookies;
 
-    ### Then add them to the cookie jar
     $self->cookie_jar->add( $url, $_ ) for @cookies;
 
     return;

@@ -30,8 +30,8 @@ for my $file ( dir_list("t/cases", qr/^cookies/ ) ) {
     my %headers = hashify( $case->{headers} );
     my %new_args = hashify( $case->{new_args} );
 
-    if( exists $headers{Cookies} ) {
-      my $cookies = delete $headers{Cookies};
+    if( exists $headers{Cookie} ) {
+      my $cookies = delete $headers{Cookie};
       $jar->add( $url, $cookies );
     }
 

@@ -22,7 +22,7 @@ GET /index.html HTTP/1.1
 Host: example.com
 Connection: close
 User-Agent: HTTP-Tiny/VERSION
-Cookies: cname=cvalue
+Cookie: cname=cvalue
 
 ----------
 HTTP/1.1 200 OK
