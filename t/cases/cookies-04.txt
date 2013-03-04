@@ -7,7 +7,7 @@ GET /index.html HTTP/1.1
 Host: example.com
 Connection: close
 User-Agent: HTTP-Tiny/VERSION
-Cookies: cname=cvalue05; domain=example.com; path=/
+Cookies: cname=cvalue05
 
 ----------
 HTTP/1.1 200 OK
@@ -25,7 +25,7 @@ GET /index.html HTTP/1.1
 Host: example.com
 Connection: close
 User-Agent: HTTP-Tiny/VERSION
-Cookies: cname=cvalue06; domain=example.com; path=/
+Cookies: cname=cvalue06
 
 ----------
 HTTP/1.1 200 OK

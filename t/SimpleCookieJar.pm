@@ -9,15 +9,21 @@ sub new {
 }
 
 sub add {
-    my ($self, $url, $cookies) = @_;
+    my ($self, $url, $cookie) = @_;
     
-    $self->{$url} = $cookies;
+    my ($kv) = split qr/;/, $cookie;
+    my ($k, $v) = split qr/\s*=\s*/, $kv, 2;
+
+    $self->{$url}{$k} = $v;
 }
 
 sub cookie_header {
     my ($self, $url) = @_;
 
-    return $self->{$url};
+    my $cookies = $self->{$url}
+        or return '';
+
+    return join( "; ", map{ "$_=$cookies->{$_}" } sort keys %$cookies );
 }
 
 1;
