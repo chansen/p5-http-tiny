@@ -6,7 +6,7 @@ HTTP::Tiny - A small, simple, correct HTTP/1.1 client
 
 =head1 VERSION
 
-version 0.026
+version 0.027
 
 =head1 SYNOPSIS
 
@@ -55,7 +55,7 @@ A user-agent string (defaults to 'HTTP-Tiny/$VERSION'). If C<agent> ends in a sp
 
 C<cookie_jar>
 
-An instance of HTTP::CookieJar or equivalent class that supports the C<add> and C<cookie_header> methods
+An instance of L<HTTP::CookieJar> or equivalent class that supports the C<add> and C<cookie_header> methods
 
 =item *
 
@@ -472,7 +472,7 @@ L<Net::SSLeay>
 =head2 Bugs / Feature Requests
 
 Please report any bugs or feature requests through the issue tracker
-at L<https://rt.cpan.org/Public/Dist/Display.html?Name=HTTP-Tiny>.
+at L<https://github.com/dagolden/http-tiny/issues>.
 You will be notified automatically of any progress on your issue.
 
 =head2 Source Code
