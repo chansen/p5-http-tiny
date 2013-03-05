@@ -17,7 +17,7 @@ This constructor returns a new HTTP::Tiny object.  Valid attributes include:
 * C<agent>
 A user-agent string (defaults to 'HTTP-Tiny/$VERSION'). If C<agent> ends in a space character, the default user-agent string is appended.
 * C<cookie_jar>
-An instance of HTTP::CookieJar or equivalent class that supports the C<add> and C<cookie_header> methods
+An instance of L<HTTP::CookieJar> or equivalent class that supports the C<add> and C<cookie_header> methods
 * C<default_headers>
 A hashref of default headers to apply to requests
 * C<local_address>
