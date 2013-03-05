@@ -2,6 +2,15 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  [SUPPORT]
+
+  - Changed metadata to point to the chansen github repository
+    for code and issues
+
+  [DOCUMENTATION]
+
+  - Added hyperlink for HTTP::CookieJar
+
 0.026     2013-03-04 22:53:39 America/New_York
 
   [ADDED]

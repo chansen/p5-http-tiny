@@ -85,13 +85,13 @@
    "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
-         "web" : "https://github.com/dagolden/http-tiny/issues"
+         "web" : "https://github.com/chansen/http-tiny/issues"
       },
       "homepage" : "https://metacpan.org/release/HTTP-Tiny",
       "repository" : {
          "type" : "git",
-         "url" : "git://github.com/dagolden/http-tiny.git",
-         "web" : "https://github.com/dagolden/http-tiny"
+         "url" : "git://github.com/chansen/http-tiny.git",
+         "web" : "https://github.com/chansen/http-tiny"
       }
    },
    "version" : "0.027",
