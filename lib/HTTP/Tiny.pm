@@ -326,7 +326,7 @@ sub www_form_urlencode {
     (@_ == 2 && ref $data)
         or Carp::croak(q/Usage: $http->www_form_urlencode(DATAREF)/ . "\n");
     (ref $data eq 'HASH' || ref $data eq 'ARRAY')
-        or Carp::croak("form data must be a hash or array reference");
+        or Carp::croak("form data must be a hash or array reference\n");
 
     my @params = ref $data eq 'HASH' ? %$data : @$data;
     @params % 2 == 0
@@ -496,7 +496,7 @@ sub _validate_cookie_jar {
 
     # duck typing
     for my $method ( qw/add cookie_header/ ) {
-        Carp::croak(qq/Cookie jar must provide the '$method' method/)
+        Carp::croak(qq/Cookie jar must provide the '$method' method\n/)
             unless ref($jar) && ref($jar)->can($method);
     }
 
