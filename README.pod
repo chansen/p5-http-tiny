@@ -6,7 +6,7 @@ HTTP::Tiny - A small, simple, correct HTTP/1.1 client
 
 =head1 VERSION
 
-version 0.025
+version 0.026
 
 =head1 SYNOPSIS
 
@@ -50,6 +50,12 @@ This constructor returns a new HTTP::Tiny object.  Valid attributes include:
 C<agent>
 
 A user-agent string (defaults to 'HTTP-Tiny/$VERSION'). If C<agent> ends in a space character, the default user-agent string is appended.
+
+=item *
+
+C<cookie_jar>
+
+An instance of HTTP::CookieJar or equivalent class that supports the C<add> and C<cookie_header> methods
 
 =item *
 
@@ -409,9 +415,7 @@ always be set to C<close>.
 
 =item *
 
-Cookies are not directly supported.  Users that set a C<Cookie> header
-should also set C<max_redirect> to zero to ensure cookies are not
-inappropriately re-transmitted.
+Cookie support requires L<HTTP::CookieJar> or an equivalent class.
 
 =item *
 
@@ -491,15 +495,69 @@ Christian Hansen <chansen@cpan.org>
 
 David Golden <dagolden@cpan.org>
 
+=back
+
+=head1 CONTRIBUTORS
+
+=over 4
+
+=item *
+
+Alan Gardner <gardner@pythian.com>
+
 =item *
 
 Mike Doherty <doherty@cpan.org>
+
+=item *
+
+Serguei Trouchelle <stro@cpan.org>
+
+=item *
+
+Tony Cook <tony@develop-help.com>
+
+=item *
+
+Alessandro Ghedini <al3xbio@gmail.com>
+
+=item *
+
+Chris Nehren <apeiron@cpan.org>
+
+=item *
+
+Chris Weyl <cweyl@alumni.drew.edu>
+
+=item *
+
+Claes Jakobsson <claes@surfar.nu>
+
+=item *
+
+Craig Berry <cberry@cpan.org>
+
+=item *
+
+David Mitchell <davem@iabyn.com>
+
+=item *
+
+Edward Zborowski <ed@rubensteintech.com>
+
+=item *
+
+Jess Robinson <castaway@desert-island.me.uk>
+
+=item *
+
+Lukas Eklund <leklund@gmail.com>
 
 =back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Christian Hansen.
+This software is copyright (c) 2013 by Christian Hansen.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

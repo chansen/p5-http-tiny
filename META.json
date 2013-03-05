@@ -2,11 +2,10 @@
    "abstract" : "A small, simple, correct HTTP/1.1 client",
    "author" : [
       "Christian Hansen <chansen@cpan.org>",
-      "David Golden <dagolden@cpan.org>",
-      "Mike Doherty <doherty@cpan.org>"
+      "David Golden <dagolden@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 4.300028, CPAN::Meta::Converter version 2.120921",
+   "generated_by" : "Dist::Zilla version 4.300030, CPAN::Meta::Converter version 2.120921",
    "license" : [
       "perl_5"
    ],
@@ -51,6 +50,7 @@
             "warnings" : "0"
          },
          "suggests" : {
+            "HTTP::CookieJar" : "0.001",
             "IO::Socket::SSL" : "1.56",
             "Mozilla::CA" : "20120823",
             "Net::SSLeay" : "1.49"
@@ -71,7 +71,7 @@
             "IO::Socket::INET" : "0",
             "IPC::Cmd" : "0",
             "List::Util" : "0",
-            "Test::More" : "0.88",
+            "Test::More" : "0.96",
             "open" : "0"
          }
       }
@@ -79,7 +79,7 @@
    "provides" : {
       "HTTP::Tiny" : {
          "file" : "lib/HTTP/Tiny.pm",
-         "version" : "0.025"
+         "version" : "0.026"
       }
    },
    "release_status" : "stable",
@@ -95,6 +95,21 @@
          "web" : "https://github.com/dagolden/http-tiny"
       }
    },
-   "version" : "0.025"
+   "version" : "0.026",
+   "x_contributors" : [
+      "Alan Gardner <gardner@pythian.com>",
+      "Alessandro Ghedini <al3xbio@gmail.com>",
+      "Chris Nehren <apeiron@cpan.org>",
+      "Chris Weyl <cweyl@alumni.drew.edu>",
+      "Claes Jakobsson <claes@surfar.nu>",
+      "Craig Berry <cberry@cpan.org>",
+      "David Mitchell <davem@iabyn.com>",
+      "Edward Zborowski <ed@rubensteintech.com>",
+      "Jess Robinson <castaway@desert-island.me.uk>",
+      "Lukas Eklund <leklund@gmail.com>",
+      "Mike Doherty <doherty@cpan.org>",
+      "Serguei Trouchelle <stro@cpan.org>",
+      "Tony Cook <tony@develop-help.com>"
+   ]
 }
 
