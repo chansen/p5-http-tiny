@@ -285,6 +285,7 @@ reference.  The key/value pairs in the resulting string will be sorted by key
 and value.
 
 =for Pod::Coverage agent
+cookie_jar
 default_headers
 local_address
 max_redirect

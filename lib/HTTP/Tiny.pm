@@ -1124,6 +1124,7 @@ sub _ssl_args {
 
 =for Pod::Coverage
 agent
+cookie_jar
 default_headers
 local_address
 max_redirect
