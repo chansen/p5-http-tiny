@@ -2,6 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  [SUPPORT]
+
+  - Fix repository/issue links to reflect proper repo name
+
 0.027     2013-03-05 12:02:58 America/New_York
 
   [SUPPORT]
