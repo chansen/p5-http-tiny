@@ -1262,9 +1262,7 @@ always be set to C<close>.
 
 =item *
 
-Cookies are not directly supported.  Users that set a C<Cookie> header
-should also set C<max_redirect> to zero to ensure cookies are not
-inappropriately re-transmitted.
+Cookie support requires L<HTTP::CookieJar> or an equivalent class.
 
 =item *
 
