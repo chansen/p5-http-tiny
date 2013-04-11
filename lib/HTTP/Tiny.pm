@@ -167,7 +167,7 @@ sub post_form {
 
 Executes a C<GET> request for the URL and saves the response body to the file
 name provided.  The URL must have unsafe characters escaped and international
-domain names encoded.  If the file already exists, the request will includes an
+domain names encoded.  If the file already exists, the request will include an
 C<If-Modified-Since> header with the modification timestamp of the file.  You
 may specify a different C<If-Modified-Since> header yourself in the C<<
 $options->{headers} >> hash.
