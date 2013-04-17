@@ -631,8 +631,10 @@ sub connect {
     my ($self, $scheme, $host, $port) = @_;
 
     if ( $scheme eq 'https' ) {
-        die(qq/IO::Socket::SSL 1.56 must be installed for https support\n/)
-            unless eval {require IO::Socket::SSL; IO::Socket::SSL->VERSION(1.56)};
+        # Need IO::Socket::SSL 1.42 for SSL_create_ctx_callback
+        die(qq/IO::Socket::SSL 1.42 must be installed for https support\n/)
+            unless eval {require IO::Socket::SSL; IO::Socket::SSL->VERSION(1.42)};
+        # Need Net::SSLeay 1.49 for MODE_AUTO_RETRY
         die(qq/Net::SSLeay 1.49 must be installed for https support\n/)
             unless eval {require Net::SSLeay; Net::SSLeay->VERSION(1.49)};
     }
@@ -1097,9 +1099,13 @@ sub _find_CA_file {
 sub _ssl_args {
     my ($self, $host) = @_;
 
-    my %ssl_args = (
-        SSL_hostname        => $host,  # SNI
-    );
+    my %ssl_args;
+    
+    # This test reimplements IO::Socket::SSL::can_client_sni(), which wasn't
+    # added until IO::Socket::SSL 1.84
+    if ( Net::SSLeay::OPENSSL_VERSION_NUMBER() >= 0x01000000 ) {
+        $ssl_args{SSL_hostname} = $host,          # Sane SNI support
+    }
 
     if ($self->{verify_SSL}) {
         $ssl_args{SSL_verifycn_scheme}  = 'http'; # enable CN validation

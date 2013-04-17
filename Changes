@@ -2,6 +2,11 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  [FIXED]
+
+  - Checks for new enough OpenSSL library before using SNI (otherwise
+    IO::Socket::SSL throws warnings)
+
 0.028     2013-03-05 14:11:57 America/New_York
 
   [SUPPORT]

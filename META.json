@@ -5,7 +5,7 @@
       "David Golden <dagolden@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 4.300030, CPAN::Meta::Converter version 2.120921",
+   "generated_by" : "Dist::Zilla version 4.300034, CPAN::Meta::Converter version 2.130880",
    "license" : [
       "perl_5"
    ],
@@ -40,6 +40,12 @@
          }
       },
       "runtime" : {
+         "recommends" : {
+            "HTTP::CookieJar" : "0.001",
+            "IO::Socket::SSL" : "1.42",
+            "Mozilla::CA" : "20120823",
+            "Net::SSLeay" : "1.49"
+         },
          "requires" : {
             "Carp" : "0",
             "IO::Socket" : "0",
@@ -50,10 +56,7 @@
             "warnings" : "0"
          },
          "suggests" : {
-            "HTTP::CookieJar" : "0.001",
-            "IO::Socket::SSL" : "1.56",
-            "Mozilla::CA" : "20120823",
-            "Net::SSLeay" : "1.49"
+            "IO::Socket::SSL" : "1.56"
          }
       },
       "test" : {
@@ -79,7 +82,7 @@
    "provides" : {
       "HTTP::Tiny" : {
          "file" : "lib/HTTP/Tiny.pm",
-         "version" : "0.028"
+         "version" : "0.029"
       }
    },
    "release_status" : "stable",
@@ -94,7 +97,7 @@
          "web" : "https://github.com/chansen/p5-http-tiny"
       }
    },
-   "version" : "0.028",
+   "version" : "0.029",
    "x_contributors" : [
       "Alan Gardner <gardner@pythian.com>",
       "Alessandro Ghedini <al3xbio@gmail.com>",

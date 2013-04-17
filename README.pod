@@ -1,12 +1,14 @@
 =pod
 
+=encoding utf-8
+
 =head1 NAME
 
 HTTP::Tiny - A small, simple, correct HTTP/1.1 client
 
 =head1 VERSION
 
-version 0.028
+version 0.029
 
 =head1 SYNOPSIS
 
@@ -508,18 +510,6 @@ Alan Gardner <gardner@pythian.com>
 
 =item *
 
-Mike Doherty <doherty@cpan.org>
-
-=item *
-
-Serguei Trouchelle <stro@cpan.org>
-
-=item *
-
-Tony Cook <tony@develop-help.com>
-
-=item *
-
 Alessandro Ghedini <al3xbio@gmail.com>
 
 =item *
@@ -553,6 +543,18 @@ Jess Robinson <castaway@desert-island.me.uk>
 =item *
 
 Lukas Eklund <leklund@gmail.com>
+
+=item *
+
+Mike Doherty <doherty@cpan.org>
+
+=item *
+
+Serguei Trouchelle <stro@cpan.org>
+
+=item *
+
+Tony Cook <tony@develop-help.com>
 
 =back
 
