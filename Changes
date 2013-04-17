@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+0.029     2013-04-17 13:49:07 America/New_York
+
   [FIXED]
 
   - Checks for new enough OpenSSL library before using SNI (otherwise
