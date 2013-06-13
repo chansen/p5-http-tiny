@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+0.030     2013-06-13 11:46:15 America/New_York
+
   [FIXED]
 
   - Requests with the empty string as body content no longer generate
