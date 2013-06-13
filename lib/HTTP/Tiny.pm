@@ -240,6 +240,9 @@ If the C<content> option is a code reference, it will be called iteratively
 to provide the content body of the request.  It should return the empty
 string or undef when the iterator is exhausted.
 
+If the C<content> option is the empty string, no C<content-type> or
+C<content-length> headers will be generated.
+
 If the C<data_callback> option is provided, it will be called iteratively until
 the entire response body is received.  The first argument will be a string
 containing a chunk of the response body, the second argument will be the
@@ -426,26 +429,21 @@ sub _prepare_headers_and_cb {
     $request->{headers}{'connection'}   = "close";
     $request->{headers}{'user-agent'} ||= $self->{agent};
 
-    # GET, HEAD and DELETE have no defined semantics for a request body and
-    # some servers see even a zero content-length header as an error so
-    # we disallow content bodies for those methods; TRACE must not have a body
-    if (
-        defined $args->{content}
-        && ! ( $request->{method} =~ /^(?:GET|HEAD|DELETE|TRACE)$/)
-    ) {
-        $request->{headers}{'content-type'} ||= "application/octet-stream";
+    if ( defined $args->{content} ) {
         if (ref $args->{content} eq 'CODE') {
+            $request->{headers}{'content-type'} ||= "application/octet-stream";
             $request->{headers}{'transfer-encoding'} = 'chunked'
               unless $request->{headers}{'content-length'}
                   || $request->{headers}{'transfer-encoding'};
             $request->{cb} = $args->{content};
         }
-        else {
+        elsif ( length $args->{content} ) {
             my $content = $args->{content};
             if ( $] ge '5.008' ) {
                 utf8::downgrade($content, 1)
                     or die(qq/Wide character in request message body\n/);
             }
+            $request->{headers}{'content-type'} ||= "application/octet-stream";
             $request->{headers}{'content-length'} = length $content
               unless $request->{headers}{'content-length'}
                   || $request->{headers}{'transfer-encoding'};
@@ -1295,11 +1293,6 @@ Only 'chunked' C<Transfer-Encoding> is supported.
 =item *
 
 There is no support for a Request-URI of '*' for the 'OPTIONS' request.
-
-=item *
-
-Request bodies are never included with GET, HEAD and DELETE methods as
-the semantics are undefined and servers may treat it as an error
 
 =item *
 

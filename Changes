@@ -4,9 +4,8 @@ Release notes for HTTP-Tiny
 
   [FIXED]
 
-  - Request bodies are never sent for GET, HEAD, DELETE and TRACE
-    methods; this fixes a bug where even an empty content body was
-    treated as an error by some servers
+  - Requests with the empty string as body content no longer generate
+    'content-type' and 'content-length' headers.
 
 0.029     2013-04-17 13:49:07 America/New_York
 
