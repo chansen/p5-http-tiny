@@ -5,7 +5,7 @@
       "David Golden <dagolden@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 4.300034, CPAN::Meta::Converter version 2.130880",
+   "generated_by" : "Dist::Zilla version 4.300034, CPAN::Meta::Converter version 2.131560",
    "license" : [
       "perl_5"
    ],
@@ -82,7 +82,7 @@
    "provides" : {
       "HTTP::Tiny" : {
          "file" : "lib/HTTP/Tiny.pm",
-         "version" : "0.029"
+         "version" : "0.030"
       }
    },
    "release_status" : "stable",
@@ -97,7 +97,7 @@
          "web" : "https://github.com/chansen/p5-http-tiny"
       }
    },
-   "version" : "0.029",
+   "version" : "0.030",
    "x_contributors" : [
       "Alan Gardner <gardner@pythian.com>",
       "Alessandro Ghedini <al3xbio@gmail.com>",
@@ -109,6 +109,7 @@
       "Edward Zborowski <ed@rubensteintech.com>",
       "Jess Robinson <castaway@desert-island.me.uk>",
       "Lukas Eklund <leklund@gmail.com>",
+      "Martin-Louis Bright <mlbright@gmail.com>",
       "Mike Doherty <doherty@cpan.org>",
       "Serguei Trouchelle <stro@cpan.org>",
       "Tony Cook <tony@develop-help.com>"
