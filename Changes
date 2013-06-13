@@ -2,6 +2,12 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  [FIXED]
+
+  - Request bodies are never sent for GET, HEAD, DELETE and TRACE
+    methods; this fixes a bug where even an empty content body was
+    treated as an error by some servers
+
 0.029     2013-04-17 13:49:07 America/New_York
 
   [FIXED]

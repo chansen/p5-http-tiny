@@ -426,7 +426,13 @@ sub _prepare_headers_and_cb {
     $request->{headers}{'connection'}   = "close";
     $request->{headers}{'user-agent'} ||= $self->{agent};
 
-    if (defined $args->{content}) {
+    # GET, HEAD and DELETE have no defined semantics for a request body and
+    # some servers see even a zero content-length header as an error so
+    # we disallow content bodies for those methods; TRACE must not have a body
+    if (
+        defined $args->{content}
+        && ! ( $request->{method} =~ /^(?:GET|HEAD|DELETE|TRACE)$/)
+    ) {
         $request->{headers}{'content-type'} ||= "application/octet-stream";
         if (ref $args->{content} eq 'CODE') {
             $request->{headers}{'transfer-encoding'} = 'chunked'
@@ -1289,6 +1295,11 @@ Only 'chunked' C<Transfer-Encoding> is supported.
 =item *
 
 There is no support for a Request-URI of '*' for the 'OPTIONS' request.
+
+=item *
+
+Request bodies are never included with GET, HEAD and DELETE methods as
+the semantics are undefined and servers may treat it as an error
 
 =item *
 
