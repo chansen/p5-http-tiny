@@ -82,7 +82,7 @@
    "provides" : {
       "HTTP::Tiny" : {
          "file" : "lib/HTTP/Tiny.pm",
-         "version" : "0.030"
+         "version" : "0.031"
       }
    },
    "release_status" : "stable",
@@ -97,7 +97,7 @@
          "web" : "https://github.com/chansen/p5-http-tiny"
       }
    },
-   "version" : "0.030",
+   "version" : "0.031",
    "x_contributors" : [
       "Alan Gardner <gardner@pythian.com>",
       "Alessandro Ghedini <al3xbio@gmail.com>",
