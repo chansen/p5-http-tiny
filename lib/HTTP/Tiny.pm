@@ -909,7 +909,7 @@ sub read_content_body {
     my ($self, $cb, $response, $content_length) = @_;
     $content_length ||= $response->{headers}{'content-length'};
 
-    if ( $content_length ) {
+    if ( defined $content_length ) {
         my $len = $content_length;
         while ($len > 0) {
             my $read = ($len > BUFSIZE) ? BUFSIZE : $len;

@@ -2,6 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  [FIXED]
+
+  - Fixed bug receiving 0-length content bodies
+
 0.030     2013-06-13 11:46:15 America/New_York
 
   [FIXED]
