@@ -8,7 +8,7 @@ HTTP::Tiny - A small, simple, correct HTTP/1.1 client
 
 =head1 VERSION
 
-version 0.031
+version 0.032
 
 =head1 SYNOPSIS
 
@@ -454,19 +454,27 @@ There is no support for IPv6 of any kind.
 
 =item *
 
-L<LWP::UserAgent>
+L<HTTP::Thin> - HTTP::Tiny wrapper with L<HTTP::Request>/L<HTTP::Response> compatibility
 
 =item *
 
-L<IO::Socket::SSL>
+L<HTTP::Tiny::Mech> - Wrap L<WWW::Mechanize> instance in HTTP::Tiny compatible interface
 
 =item *
 
-L<Mozilla::CA>
+L<IO::Socket::SSL> - Required for SSL support
 
 =item *
 
-L<Net::SSLeay>
+L<LWP::UserAgent> - If HTTP::Tiny isn't enough for you, this is the "standard" way to do things
+
+=item *
+
+L<Mozilla::CA> - Required if you want to validate SSL certificates
+
+=item *
+
+L<Net::SSLeay> - Required for SSL support
 
 =back
 

@@ -1303,9 +1303,11 @@ There is no support for IPv6 of any kind.
 =head1 SEE ALSO
 
 =for :list
-* L<LWP::UserAgent>
-* L<IO::Socket::SSL>
-* L<Mozilla::CA>
-* L<Net::SSLeay>
+* L<HTTP::Thin> - HTTP::Tiny wrapper with L<HTTP::Request>/L<HTTP::Response> compatibility
+* L<HTTP::Tiny::Mech> - Wrap L<WWW::Mechanize> instance in HTTP::Tiny compatible interface
+* L<IO::Socket::SSL> - Required for SSL support
+* L<LWP::UserAgent> - If HTTP::Tiny isn't enough for you, this is the "standard" way to do things
+* L<Mozilla::CA> - Required if you want to validate SSL certificates
+* L<Net::SSLeay> - Required for SSL support
 
 =cut
