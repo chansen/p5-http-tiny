@@ -29,6 +29,8 @@ Maximum response size (only when not using a data callback).  If defined,
 responses larger than this will return an exception.
 * C<proxy>
 URL of a proxy server to use (default is C<$ENV{http_proxy}> if set)
+* C<no_proxy>
+List of domains to avoid using proxy(default is C<$ENV{no_proxy}> if set)
 * C<timeout>
 Request timeout in seconds (default is 60)
 * C<verify_SSL>
@@ -47,7 +49,7 @@ See L</SSL SUPPORT> for more on the C<verify_SSL> and C<SSL_options> attributes.
 
 my @attributes;
 BEGIN {
-    @attributes = qw(agent cookie_jar default_headers local_address max_redirect max_size proxy timeout SSL_options verify_SSL);
+    @attributes = qw(agent cookie_jar default_headers local_address max_redirect max_size proxy no_proxy timeout SSL_options verify_SSL);
     no strict 'refs';
     for my $accessor ( @attributes ) {
         *{$accessor} = sub {
@@ -85,6 +87,14 @@ sub new {
         }
         else {
             Carp::croak(qq{Environment 'http_proxy' must be in format http://<host>:<port>/\n});
+        }
+    }
+
+    if (!exists $self->{no_proxy} && (my $no_proxy = $ENV{no_proxy})) {
+        $self->{no_proxy} = [ split /\s*,\s*/, $no_proxy ];
+    } elsif (exists $self->{no_proxy}) {
+        unless (ref $self->{no_proxy} eq 'ARRAY') {
+            Carp::croak(qq{'no_proxy' should be ArrayRef});
         }
     }
 
@@ -358,6 +368,18 @@ my %DefaultPort = (
     https => 443,
 );
 
+sub _match_no_proxy {
+    my ($self, $host) = @_;
+
+    for my $domain (@{$self->{no_proxy}}) {
+        if ($host =~ /\Q$domain\E$/) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 sub _request {
     my ($self, $method, $url, $args) = @_;
 
@@ -378,7 +400,7 @@ sub _request {
         local_address   => $self->{local_address},
     );
 
-    if ($self->{proxy}) {
+    if ($self->{proxy} && !$self->_match_no_proxy($host)) {
         $request->{uri} = "$scheme://$request->{host_port}$path_query";
         die(qq/HTTPS via proxy is not supported\n/)
             if $request->{scheme} eq 'https';
@@ -1140,6 +1162,7 @@ local_address
 max_redirect
 max_size
 proxy
+no_proxy
 timeout
 verify_SSL
 SSL_options
@@ -1280,6 +1303,13 @@ Cookie support requires L<HTTP::CookieJar> or an equivalent class.
 Only the C<http_proxy> environment variable is supported in the format
 C<http://HOST:PORT/>.  If a C<proxy> argument is passed to C<new> (including
 undef), then the C<http_proxy> environment variable is ignored.
+
+=item *
+
+C<no_proxy> environment variable is supported in the format
+comma-separated list of domain extensions proxy should not be used for.
+If a C<no_proxy> argument(ArrayRef of domains) is passed
+to C<new>, then the C<no_proxy> environment variable is ignored.
 
 =item *
 
