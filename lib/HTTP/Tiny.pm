@@ -49,13 +49,26 @@ See L</SSL SUPPORT> for more on the C<verify_SSL> and C<SSL_options> attributes.
 
 my @attributes;
 BEGIN {
-    @attributes = qw(agent cookie_jar default_headers local_address max_redirect max_size proxy no_proxy timeout SSL_options verify_SSL);
+    @attributes = qw(cookie_jar default_headers local_address max_redirect max_size proxy no_proxy timeout SSL_options verify_SSL);
     no strict 'refs';
     for my $accessor ( @attributes ) {
         *{$accessor} = sub {
             @_ > 1 ? $_[0]->{$accessor} = $_[1] : $_[0]->{$accessor};
         };
     }
+
+    push @attributes, 'agent';
+}
+
+sub agent {
+    my($self, $agent) = @_;
+    if( @_ > 1 ){
+        $agent .= $self->_agent
+            if defined $agent && $agent =~ / $/;
+
+        $self->{agent} = $agent;
+    }
+    return $self->{agent};
 }
 
 sub new {
