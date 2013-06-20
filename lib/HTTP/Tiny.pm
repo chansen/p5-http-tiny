@@ -382,7 +382,7 @@ sub _agent {
 sub _request {
     my ($self, $method, $url, $args) = @_;
 
-    my ($scheme, $host, $port, $path_query) = $self->_split_url($url);
+    my ($scheme, $host, $port, $path_query, $auth) = $self->_split_url($url);
 
     my $request = {
         method    => $method,
@@ -554,15 +554,23 @@ sub _split_url {
     $scheme     = lc $scheme;
     $path_query = "/$path_query" unless $path_query =~ m<\A/>;
 
-    my $host = (length($authority)) ? lc $authority : 'localhost';
-       $host =~ s/\A[^@]*@//;   # userinfo
+    my ($auth,$host);
+    $authority = (length($authority)) ? $authority : 'localhost';
+    if ( $authority =~ /@/ ) {
+        ($auth,$host) = $authority =~ m/\A([^@]*)@(.*)\z/;   # user:pass@host
+    }
+    else {
+        $host = $authority;
+        $auth = '';
+    }
+    $host = lc $host;
     my $port = do {
        $host =~ s/:([0-9]*)\z// && length $1
          ? $1
          : ($scheme eq 'http' ? 80 : $scheme eq 'https' ? 443 : undef);
     };
 
-    return ($scheme, $host, $port, $path_query);
+    return ($scheme, $host, $port, $path_query, $auth);
 }
 
 # Date conversions adapted from HTTP::Date
