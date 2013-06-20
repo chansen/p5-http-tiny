@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+0.032     2013-06-20 11:41:24 America/New_York
+
   [ADDED]
 
   - Added 'no_proxy' attribute, defaulting to $ENV{no_proxy}
