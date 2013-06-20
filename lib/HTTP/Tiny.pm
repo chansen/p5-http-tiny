@@ -61,8 +61,7 @@ BEGIN {
 sub new {
     my($class, %args) = @_;
 
-    (my $default_agent = $class) =~ s{::}{-}g;
-    $default_agent .= "/" . ($class->VERSION || 0);
+    my $default_agent = $class->_agent;
 
     my $self = {
         agent        => $default_agent,
@@ -98,6 +97,15 @@ sub new {
     }
 
     return bless $self, $class;
+}
+
+sub _agent {
+    my $class = ref($_[0]) || $_[0];
+
+    (my $default_agent = $class) =~ s{::}{-}g;
+    $default_agent .= "/" . ($class->VERSION || 0);
+
+    return $default_agent;
 }
 
 =method get|head|put|post|delete
