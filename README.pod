@@ -92,6 +92,12 @@ URL of a proxy server to use (default is C<$ENV{http_proxy}> if set)
 
 =item *
 
+C<no_proxy>
+
+List of domain suffixes that should not be proxied.  Must be a comma-separated string or an array reference. (default is C<$ENV{no_proxy}>)
+
+=item *
+
 C<timeout>
 
 Request timeout in seconds (default is 60)
@@ -296,6 +302,7 @@ local_address
 max_redirect
 max_size
 proxy
+no_proxy
 timeout
 verify_SSL
 SSL_options
@@ -428,6 +435,13 @@ Cookie support requires L<HTTP::CookieJar> or an equivalent class.
 Only the C<http_proxy> environment variable is supported in the format
 C<http://HOST:PORT/>.  If a C<proxy> argument is passed to C<new> (including
 undef), then the C<http_proxy> environment variable is ignored.
+
+=item *
+
+C<no_proxy> environment variable is supported in the format comma-separated
+list of domain extensions proxy should not be used for.  If a C<no_proxy>
+argument is passed to C<new>, then the C<no_proxy> environment variable is
+ignored.
 
 =item *
 
@@ -566,6 +580,10 @@ Mike Doherty <doherty@cpan.org>
 =item *
 
 Serguei Trouchelle <stro@cpan.org>
+
+=item *
+
+Syohei YOSHIDA <syohex@gmail.com>
 
 =item *
 
