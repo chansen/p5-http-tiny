@@ -2,6 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  [ADDED]
+
+  - Added 'no_proxy' attribute, defaulting to $ENV{no_proxy}
+
 0.031     2013-06-16 23:18:18 America/New_York
 
   [FIXED]
@@ -290,3 +294,4 @@ Release notes for HTTP-Tiny
 
   - Initial CPAN release
 
+# vim: ts=2 sts=2 sw=2 et:

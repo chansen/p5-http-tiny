@@ -30,7 +30,7 @@ responses larger than this will return an exception.
 * C<proxy>
 URL of a proxy server to use (default is C<$ENV{http_proxy}> if set)
 * C<no_proxy>
-List of domains to avoid using proxy(default is C<$ENV{no_proxy}> if set)
+List of domain suffixes that should not be proxied.  Must be a comma-separated string or an array reference. (default is C<$ENV{no_proxy}>)
 * C<timeout>
 Request timeout in seconds (default is 60)
 * C<verify_SSL>
@@ -69,6 +69,7 @@ sub new {
         max_redirect => 5,
         timeout      => 60,
         verify_SSL   => $args{verify_SSL} || $args{verify_ssl} || 0, # no verification by default
+        no_proxy     => $ENV{no_proxy},
     };
 
     $args{agent} .= $default_agent
@@ -90,12 +91,10 @@ sub new {
         }
     }
 
-    if (!exists $self->{no_proxy} && (my $no_proxy = $ENV{no_proxy})) {
-        $self->{no_proxy} = [ split /\s*,\s*/, $no_proxy ];
-    } elsif (exists $self->{no_proxy}) {
-        unless (ref $self->{no_proxy} eq 'ARRAY') {
-            Carp::croak(qq{'no_proxy' should be ArrayRef});
-        }
+    # Split no_proxy to array reference if not provided as such
+    unless ( ref $self->{no_proxy} eq 'ARRAY' ) {
+        $self->{no_proxy} =
+            (defined $self->{no_proxy}) ? [ split /\s*,\s*/, $self->{no_proxy} ] : [];
     }
 
     return bless $self, $class;
@@ -368,18 +367,6 @@ my %DefaultPort = (
     https => 443,
 );
 
-sub _match_no_proxy {
-    my ($self, $host) = @_;
-
-    for my $domain (@{$self->{no_proxy}}) {
-        if ($host =~ /\Q$domain\E$/) {
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
 sub _request {
     my ($self, $method, $url, $args) = @_;
 
@@ -400,7 +387,7 @@ sub _request {
         local_address   => $self->{local_address},
     );
 
-    if ($self->{proxy} && !$self->_match_no_proxy($host)) {
+    if ($self->{proxy} && ! grep { $host =~ /\Q$_\E$/ } @{$self->{no_proxy}}) {
         $request->{uri} = "$scheme://$request->{host_port}$path_query";
         die(qq/HTTPS via proxy is not supported\n/)
             if $request->{scheme} eq 'https';
@@ -1306,10 +1293,10 @@ undef), then the C<http_proxy> environment variable is ignored.
 
 =item *
 
-C<no_proxy> environment variable is supported in the format
-comma-separated list of domain extensions proxy should not be used for.
-If a C<no_proxy> argument(ArrayRef of domains) is passed
-to C<new>, then the C<no_proxy> environment variable is ignored.
+C<no_proxy> environment variable is supported in the format comma-separated
+list of domain extensions proxy should not be used for.  If a C<no_proxy>
+argument is passed to C<new>, then the C<no_proxy> environment variable is
+ignored.
 
 =item *
 
