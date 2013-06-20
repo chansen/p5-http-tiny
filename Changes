@@ -2,6 +2,14 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  [ADDED]
+
+  - Added '_agent' method which generates the default 'agent' string
+
+  [NEW FEATURES]
+
+  - Modifying the 'agent' attribute with the accessor will now behave more like LWP::UserAgent
+
 0.032     2013-06-20 11:41:24 America/New_York
 
   [ADDED]
