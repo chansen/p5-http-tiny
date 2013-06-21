@@ -2,6 +2,11 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  [ADDED]
+
+  - Added support for 'Basic' authorization from
+    user:password parameters in the URL
+
 0.033     2013-06-21 06:26:51 America/New_York
 
   [FIXED]
