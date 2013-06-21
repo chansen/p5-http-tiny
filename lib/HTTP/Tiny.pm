@@ -409,7 +409,7 @@ sub _request {
         $handle->connect($scheme, $host, $port);
     }
 
-    $self->_prepare_headers_and_cb($request, $args, $url);
+    $self->_prepare_headers_and_cb($request, $args, $url, $auth);
     $handle->write_request($request);
 
     my $response;
@@ -438,7 +438,7 @@ sub _request {
 }
 
 sub _prepare_headers_and_cb {
-    my ($self, $request, $args, $url) = @_;
+    my ($self, $request, $args, $url, $auth) = @_;
 
     for ($self->{default_headers}, $args->{headers}) {
         next unless defined;
@@ -478,6 +478,13 @@ sub _prepare_headers_and_cb {
     if ( $self->{cookie_jar} ) {
         my $cookies = $self->cookie_jar->cookie_header( $url );
         $request->{headers}{cookie} = $cookies if length $cookies;
+    }
+
+    # if we have Basic auth parameters, add them
+    if ( length $auth && ! defined $request->{headers}{authentication} ) {
+        require MIME::Base64;
+        $request->{headers}{authorization} =
+            "Basic " . MIME::Base64::encode_base64($auth, "");
     }
 
     return;
