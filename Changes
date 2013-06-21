@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+0.033     2013-06-21 06:26:51 America/New_York
+
   [FIXED]
 
   - Modifying the 'agent' attribute with the accessor will append the
