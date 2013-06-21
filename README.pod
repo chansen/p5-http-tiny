@@ -8,7 +8,7 @@ HTTP::Tiny - A small, simple, correct HTTP/1.1 client
 
 =head1 VERSION
 
-version 0.032
+version 0.033
 
 =head1 SYNOPSIS
 
@@ -536,6 +536,10 @@ Alan Gardner <gardner@pythian.com>
 =item *
 
 Alessandro Ghedini <al3xbio@gmail.com>
+
+=item *
+
+Brad Gilbert <bgills@cpan.org>
 
 =item *
 

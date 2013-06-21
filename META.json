@@ -82,7 +82,7 @@
    "provides" : {
       "HTTP::Tiny" : {
          "file" : "lib/HTTP/Tiny.pm",
-         "version" : "0.032"
+         "version" : "0.033"
       }
    },
    "release_status" : "stable",
@@ -97,10 +97,11 @@
          "web" : "https://github.com/chansen/p5-http-tiny"
       }
    },
-   "version" : "0.032",
+   "version" : "0.033",
    "x_contributors" : [
       "Alan Gardner <gardner@pythian.com>",
       "Alessandro Ghedini <al3xbio@gmail.com>",
+      "Brad Gilbert <bgills@cpan.org>",
       "Chris Nehren <apeiron@cpan.org>",
       "Chris Weyl <cweyl@alumni.drew.edu>",
       "Claes Jakobsson <claes@surfar.nu>",
