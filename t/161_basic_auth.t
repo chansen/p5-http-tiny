@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use File::Basename;
-use Test::More 0.96;
+use Test::More 0.88;
 use t::Util qw[tmpfile rewind slurp monkey_patch dir_list parse_case
   hashify connect_args clear_socket_source set_socket_source sort_headers
   $CRLF $LF];
@@ -12,46 +12,64 @@ use t::Util qw[tmpfile rewind slurp monkey_patch dir_list parse_case
 use HTTP::Tiny;
 BEGIN { monkey_patch() }
 
-for my $file ( dir_list( "t/cases", qr/^auth/ ) ) {
-    my $label = basename($file);
-    my $data  = do { local ( @ARGV, $/ ) = $file; <> };
-    my @cases = split /--+\n/, $data;
+for my $file ( dir_list("t/cases", qr/^auth/ ) ) {
+  my $label = basename($file);
+  my $data = do { local (@ARGV,$/) = $file; <> };
+  my ($params, @case_pairs) = split /--+\n/, $data;
+  my $case = parse_case($params);
 
-    my $http = undef;
-    while (@cases) {
-        my ( $params, $expect_req, $give_res ) = splice( @cases, 0, 3 );
+  my $url = $case->{url}[0];
+  my $method = $case->{method}[0] || 'GET';
+  my %headers = hashify( $case->{headers} );
+  my %new_args = hashify( $case->{new_args} );
 
-        my $case = parse_case($params);
+  my %options;
+  $options{headers} = \%headers if %headers;
+  my $call_args = %options ? [$method, $url, \%options] : [$method, $url];
 
-        my $url      = $case->{url}[0];
-        my $method   = $case->{method}[0] || 'GET';
-        my %headers  = hashify( $case->{headers} );
-        my %new_args = hashify( $case->{new_args} );
+  my $version = HTTP::Tiny->VERSION || 0;
+  my $agent = $new_args{agent} || "HTTP-Tiny/$version";
 
-        my %options;
-        $options{headers} = \%headers if %headers;
+  my (@socket_pairs);
+  while ( @case_pairs ) {
+    my ($expect_req, $give_res) = splice( @case_pairs, 0, 2 );
+    # cleanup source data
+    $expect_req =~ s{HTTP-Tiny/VERSION}{$agent};
+    s{\n}{$CRLF}g for ($expect_req, $give_res);
 
-        my $version = HTTP::Tiny->VERSION || 0;
-        my $agent   = $new_args{agent}    || "HTTP-Tiny/$version";
+    # setup mocking and test
+    my $req_fh = tmpfile();
+    my $res_fh = tmpfile($give_res);
 
-        # cleanup source data
-        $expect_req =~ s{HTTP-Tiny/VERSION}{$agent};
-        s{\n}{$CRLF}g for ( $expect_req, $give_res );
+    push @socket_pairs, [$req_fh, $res_fh, $expect_req];
+  }
 
-        # setup mocking and test
-        my $res_fh = tmpfile($give_res);
-        my $req_fh = tmpfile();
+  clear_socket_source();
+  set_socket_source(@$_) for @socket_pairs;
 
-        $http = HTTP::Tiny->new(%new_args) if !defined $http;
-        clear_socket_source();
-        set_socket_source( $req_fh, $res_fh );
+  my $http = HTTP::Tiny->new(%new_args);
+  my $response  = $http->request(@$call_args);
 
-        my @call_args = %options ? ( $url, \%options ) : ($url);
-        my $response = $http->get(@call_args);
+  my $calls = 0
+    + (defined($new_args{max_redirect}) ? $new_args{max_redirect} : 5);
 
-        my $got_req = slurp($req_fh);
-        is( sort_headers($got_req), sort_headers($expect_req), "$label request data" );
-    }
+  for my $i ( 0 .. $calls ) {
+    last unless @socket_pairs;
+    my ($req_fh, $res_fh, $expect_req) = @{ shift @socket_pairs };
+    my $got_req = slurp($req_fh);
+    is( sort_headers($got_req), sort_headers($expect_req), "$label request ($i)");
+    $i++;
+  }
+
+  my $exp_content = $case->{expected}
+                  ? join("$CRLF", @{$case->{expected}}) : '';
+
+  is ( $response->{content}, $exp_content, "$label content" );
+
+  if ( $case->{expected_url} ) {
+    is ( $response->{url}, $case->{expected_url}[0], "$label response URL" );
+  }
+
 }
 
 done_testing;

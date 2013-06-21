@@ -13,6 +13,6 @@ Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==
 HTTP/1.1 200 OK
 Date: Thu, 03 Feb 1994 00:00:00 GMT
 Content-Type: text/plain
-Content-Length: 44
+Content-Length: 42
 
 abcdefghijklmnopqrstuvwxyz1234567890abcdef
