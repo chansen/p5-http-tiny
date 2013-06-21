@@ -56,17 +56,13 @@ BEGIN {
             @_ > 1 ? $_[0]->{$accessor} = $_[1] : $_[0]->{$accessor};
         };
     }
-
-    push @attributes, 'agent';
 }
 
 sub agent {
     my($self, $agent) = @_;
     if( @_ > 1 ){
-        $agent .= $self->_agent
-            if defined $agent && $agent =~ / $/;
-
-        $self->{agent} = $agent;
+        $self->{agent} =
+            (defined $agent && $agent =~ / $/) ? $agent . $self->_agent : $agent;
     }
     return $self->{agent};
 }
@@ -74,24 +70,22 @@ sub agent {
 sub new {
     my($class, %args) = @_;
 
-    my $default_agent = $class->_agent;
-
     my $self = {
-        agent        => $default_agent,
         max_redirect => 5,
         timeout      => 60,
         verify_SSL   => $args{verify_SSL} || $args{verify_ssl} || 0, # no verification by default
         no_proxy     => $ENV{no_proxy},
     };
 
-    $args{agent} .= $default_agent
-        if defined $args{agent} && $args{agent} =~ / $/;
+    bless $self, $class;
 
     $class->_validate_cookie_jar( $args{cookie_jar} ) if $args{cookie_jar};
 
     for my $key ( @attributes ) {
         $self->{$key} = $args{$key} if exists $args{$key}
     }
+
+    $self->agent( exists $args{agent} ? $args{agent} : $class->_agent );
 
     # Never override proxy argument as this breaks backwards compat.
     if (!exists $self->{proxy} && (my $http_proxy = $ENV{http_proxy})) {
@@ -109,16 +103,7 @@ sub new {
             (defined $self->{no_proxy}) ? [ split /\s*,\s*/, $self->{no_proxy} ] : [];
     }
 
-    return bless $self, $class;
-}
-
-sub _agent {
-    my $class = ref($_[0]) || $_[0];
-
-    (my $default_agent = $class) =~ s{::}{-}g;
-    $default_agent .= "/" . ($class->VERSION || 0);
-
-    return $default_agent;
+    return $self;
 }
 
 =method get|head|put|post|delete
@@ -387,6 +372,12 @@ my %DefaultPort = (
     http => 80,
     https => 443,
 );
+
+sub _agent {
+    my $class = ref($_[0]) || $_[0];
+    (my $default_agent = $class) =~ s{::}{-}g;
+    return $default_agent . "/" . ($class->VERSION || 0);
+}
 
 sub _request {
     my ($self, $method, $url, $args) = @_;
