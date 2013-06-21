@@ -231,8 +231,15 @@ sub mirror {
 
 Executes an HTTP request of the given method type ('GET', 'HEAD', 'POST',
 'PUT', etc.) on the given URL.  The URL must have unsafe characters escaped and
-international domain names encoded.  A hashref of options may be appended to
-modify the request.
+international domain names encoded.
+
+If the URL includes a "user:password" stanza, they will be used for Basic-style
+authorization headers.  (Authorization headers will not be included in a
+redirected request.) For example:
+
+    $http->request('GET', 'http://Aladdin:open sesame@example.com/');
+
+A hashref of options may be appended to modify the request.
 
 Valid options are:
 
