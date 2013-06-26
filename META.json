@@ -5,7 +5,7 @@
       "David Golden <dagolden@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 4.300034, CPAN::Meta::Converter version 2.131560",
+   "generated_by" : "Dist::Zilla version 4.300035, CPAN::Meta::Converter version 2.131560",
    "license" : [
       "perl_5"
    ],
@@ -49,6 +49,7 @@
          "requires" : {
             "Carp" : "0",
             "IO::Socket" : "0",
+            "MIME::Base64" : "0",
             "Time::Local" : "0",
             "bytes" : "0",
             "perl" : "5.006",
@@ -82,7 +83,7 @@
    "provides" : {
       "HTTP::Tiny" : {
          "file" : "lib/HTTP/Tiny.pm",
-         "version" : "0.033"
+         "version" : "0.034"
       }
    },
    "release_status" : "stable",
@@ -97,7 +98,7 @@
          "web" : "https://github.com/chansen/p5-http-tiny"
       }
    },
-   "version" : "0.033",
+   "version" : "0.034",
    "x_contributors" : [
       "Alan Gardner <gardner@pythian.com>",
       "Alessandro Ghedini <al3xbio@gmail.com>",
