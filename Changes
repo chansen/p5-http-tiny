@@ -2,6 +2,12 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+  [CHANGED]
+
+  - Encoded from data from 'post_form' preserves term order if data is
+    provided as an array reference.  (They are still sorted for consistency
+    if provided as a hash reference.)
+
 0.034     2013-06-26 19:02:25 America/New_York
 
   [ADDED]

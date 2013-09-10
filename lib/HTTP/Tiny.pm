@@ -140,7 +140,9 @@ HERE
 
 This method executes a C<POST> request and sends the key/value pairs from a
 form data hash or array reference to the given URL with a C<content-type> of
-C<application/x-www-form-urlencoded>.  See documentation for the
+C<application/x-www-form-urlencoded>.  If data is provided as an array
+reference, the order is preserved; if provided as a hash reference, the terms
+are sorted on key and value for consistency.  See documentation for the
 C<www_form_urlencode> method for details on the encoding.
 
 The URL must have unsafe characters escaped and international domain names
@@ -341,8 +343,11 @@ This method converts the key/value pairs from a data hash or array reference
 into a C<x-www-form-urlencoded> string.  The keys and values from the data
 reference will be UTF-8 encoded and escaped per RFC 3986.  If a value is an
 array reference, the key will be repeated with each of the values of the array
-reference.  The key/value pairs in the resulting string will be sorted by key
-and value.
+reference.  If data is provided as a hash reference, the key/value pairs in the
+resulting string will be sorted by key and value for consistent ordering.
+
+To preserve the order (r
+
 
 =cut
 
@@ -368,7 +373,7 @@ sub www_form_urlencode {
         }
     }
 
-    return join("&", sort @terms);
+    return join("&", (ref $data eq 'ARRAY') ? (@terms) : (sort @terms) );
 }
 
 #--------------------------------------------------------------------------#
