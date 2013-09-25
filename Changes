@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+0.036     2013-09-25 12:10:06 America/New_York
+
     [FIXED]
 
     - Compile test could hang on Windows
