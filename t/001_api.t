@@ -9,21 +9,21 @@ use HTTP::Tiny;
 my @accessors = qw(
   agent default_headers local_address max_redirect max_size proxy no_proxy timeout SSL_options verify_SSL cookie_jar
 );
-my @methods   = qw(
+my @methods = qw(
   new get head put post delete post_form request mirror www_form_urlencode
 );
 
 my %api;
 @api{@accessors} = (1) x @accessors;
-@api{@methods} = (1) x @methods;
+@api{@methods}   = (1) x @methods;
 
-can_ok('HTTP::Tiny', @methods, @accessors);
+can_ok( 'HTTP::Tiny', @methods, @accessors );
 
 my @extra =
-  grep {! $api{$_} }
+  grep { !$api{$_} }
   grep { $_ !~ /\A_/ }
-  grep {; no strict 'refs'; *{"HTTP::Tiny::$_"}{CODE} }
+  grep { ; no strict 'refs'; *{"HTTP::Tiny::$_"}{CODE} }
   sort keys %HTTP::Tiny::;
 
-ok( ! scalar @extra, "No unexpected subroutines defined" )
+ok( !scalar @extra, "No unexpected subroutines defined" )
   or diag "Found: @extra";

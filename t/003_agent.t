@@ -10,8 +10,7 @@ use HTTP::Tiny;
 # agent when specified, and the correct agent when specifified with a space at
 # the end of the string (as LWP::UserAgent does)
 
-
-my $default = 'HTTP-Tiny/' . (HTTP::Tiny->VERSION || 0);
+my $default = 'HTTP-Tiny/' . ( HTTP::Tiny->VERSION || 0 );
 
 {
     my $ua = HTTP::Tiny->new();
@@ -19,17 +18,16 @@ my $default = 'HTTP-Tiny/' . (HTTP::Tiny->VERSION || 0);
 }
 
 {
-    my $ua = HTTP::Tiny->new(agent => 'something else');
+    my $ua = HTTP::Tiny->new( agent => 'something else' );
     is $ua->agent, 'something else', 'agent string is as expected';
 }
 
 {
-    my $ua = HTTP::Tiny->new(agent => 'something else ');
-    is
-        $ua->agent,
-        "something else $default",
-        'agent string is as properly appended to',
-        ;
+    my $ua = HTTP::Tiny->new( agent => 'something else ' );
+    is $ua->agent,
+      "something else $default",
+      'agent string is as properly appended to',
+      ;
 }
 
 {
@@ -45,9 +43,8 @@ my $default = 'HTTP-Tiny/' . (HTTP::Tiny->VERSION || 0);
     is $ua->agent, 'something else', 'agent string is as expected';
 
     $ua->agent('something else ');
-    is
-        $ua->agent,
-        "something else $default",
-        'agent string is as properly appended to',
-        ;
+    is $ua->agent,
+      "something else $default",
+      'agent string is as properly appended to',
+      ;
 }

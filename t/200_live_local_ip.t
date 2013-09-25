@@ -15,23 +15,25 @@ plan 'skip_all' => "Only run for \$ENV{AUTOMATED_TESTING}"
 
 plan 'skip_all' => "Internet connection timed out"
   unless IO::Socket::INET->new(
-    PeerHost  => $test_host,
-    PeerPort  => 80,
-    Proto     => 'tcp',
-    Timeout   => 10,
+    PeerHost => $test_host,
+    PeerPort => 80,
+    Proto    => 'tcp',
+    Timeout  => 10,
   );
 
-my ($tiny, $response);
+my ( $tiny, $response );
 
 # default local address should work
-$tiny = HTTP::Tiny->new;
+$tiny     = HTTP::Tiny->new;
 $response = $tiny->get($test_url);
-isnt( $response->{status}, '599', "Request to $test_url completed (default local address)" );
+isnt( $response->{status}, '599',
+    "Request to $test_url completed (default local address)" );
 
 # bad local IP should fail
-$tiny = HTTP::Tiny->new(local_address => '999.999.999.999'); # bad IP is error
+$tiny = HTTP::Tiny->new( local_address => '999.999.999.999' ); # bad IP is error
 $response = $tiny->get($test_url);
-is( $response->{status}, '599', "Request to $test_url failed (invalid local address)" )
+is( $response->{status}, '599',
+    "Request to $test_url failed (invalid local address)" )
   or diag explain $response;
 
 done_testing;
