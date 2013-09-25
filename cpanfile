@@ -32,7 +32,7 @@ on 'test' => sub {
 };
 
 on 'configure' => sub {
-  requires "ExtUtils::MakeMaker" => "6.30";
+  requires "ExtUtils::MakeMaker" => "6.17";
 };
 
 on 'develop' => sub {
