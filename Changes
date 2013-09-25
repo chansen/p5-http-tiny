@@ -2,6 +2,18 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Compile test could hang on Windows
+
+    [PREREQS]
+
+    - Dropped configure_requires for ExtUtils::MakeMaker to 6.17
+
+    [META]
+
+    - Updated support files
+
 0.035     2013-09-10 12:29:28 America/New_York
 
   [CHANGED]

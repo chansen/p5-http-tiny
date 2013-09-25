@@ -30,9 +30,17 @@ You can run tests directly using the `prove` tool:
 For most distributions, `prove` is entirely sufficent for you to test any
 patches you have.
 
+### Code style and tidying
+
+Please try to match any existing coding style.  If there is a `.perltidyrc`
+file, please install Perl::Tidy and use perltidy before submitting patches.
+
+If there is a `tidyall.ini` file, you can also install Code::TidyAll and run
+`tidyall` on a file or `tidyall -a` to tidy all files.
+
 ### Patching documentation
 
-Likewise, much of the documentation Pod is generated at release time.
+Much of the documentation Pod is generated at release time.
 Depending on the distribution, some documentation may be written in a Pod
 dialect called WikiDoc. (See Pod::WikiDoc on CPAN.)
 
