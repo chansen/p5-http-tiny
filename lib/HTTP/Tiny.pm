@@ -426,7 +426,7 @@ sub _request {
         || eval { $handle->can_read(0) }
         || $@ )
     {
-        $handle = HTTP::Tiny::Handle2->new(
+        $handle = HTTP::Tiny::Handle->new(
             timeout       => $self->{timeout},
             SSL_options   => $self->{SSL_options},
             verify_SSL    => $self->{verify_SSL},
