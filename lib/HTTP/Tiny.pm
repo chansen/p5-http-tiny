@@ -417,14 +417,9 @@ sub _request {
         @sock_args = ($scheme, $host, $port);
     }
 
-    my $handle = $self->{handle};
-    if (  !$handle
-        || $sock_args[0] ne $handle->{scheme}
-        || $sock_args[1] ne $handle->{host}
-        || $sock_args[2] ne $handle->{port}
-        || $self->{timeout} != $handle->{timeout}
-        || eval { $handle->can_read(0) }
-        || $@ )
+    my $handle = delete $self->{handle};
+    unless ( $handle
+        && $handle->can_reuse( $scheme, $host, $port, $self->{timeout} ) )
     {
         $handle = HTTP::Tiny::Handle->new(
             timeout       => $self->{timeout},
@@ -450,16 +445,18 @@ sub _request {
         return $self->_request(@redir_args, $args);
     }
 
+    my $drop_connection;
     if ($method eq 'HEAD' || $response->{status} =~ /^[23]04/) {
         # response has no message body
     }
     else {
         my $data_cb = $self->_prepare_data_cb($response, $args);
-        $handle->read_body($data_cb, $response);
+        $handle->read_body($data_cb, $response)
+            || $drop_connection++;
     }
 
-    if ( $self->{keep_alive} ) {
-        my $connection = $response->{headers}{Connection} || '';
+    if ( !$drop_connection && $self->{keep_alive} ) {
+        my $connection = $response->{headers}{connection} || '';
         if ( $connection eq 'keep-alive'
             or ( $response->{http_version} eq '1.1' and $connection ne 'close' ) )
         {
@@ -960,13 +957,10 @@ sub read_body {
     @_ == 3 || die(q/Usage: $handle->read_body(callback, response)/ . "\n");
     my ($self, $cb, $response) = @_;
     my $te = $response->{headers}{'transfer-encoding'} || '';
-    if ( grep { /chunked/i } ( ref $te eq 'ARRAY' ? @$te : $te ) ) {
-        $self->read_chunked_body($cb, $response);
-    }
-    else {
-        $self->read_content_body($cb, $response);
-    }
-    return;
+    my $chunked = grep { /chunked/i } ( ref $te eq 'ARRAY' ? @$te : $te ) ;
+    return $chunked
+        ? $self->read_chunked_body($cb, $response)
+        : $self->read_content_body($cb, $response);
 }
 
 sub write_body {
@@ -992,11 +986,11 @@ sub read_content_body {
             $cb->($self->read($read, 0), $response);
             $len -= $read;
         }
+        return $len == 0;
     }
-    else {
-        my $chunk;
-        $cb->($chunk, $response) while length( $chunk = $self->read(BUFSIZE, 1) );
-    }
+
+    my $chunk;
+    $cb->($chunk, $response) while length( $chunk = $self->read(BUFSIZE, 1) );
 
     return;
 }
@@ -1045,7 +1039,7 @@ sub read_chunked_body {
           or die(qq/Malformed chunk: missing CRLF after chunk data\n/);
     }
     $self->read_header_lines($response->{headers});
-    return;
+    return 1;
 }
 
 sub write_chunked_body {
@@ -1151,6 +1145,19 @@ sub can_write {
     @_ == 1 || @_ == 2 || die(q/Usage: $handle->can_write([timeout])/ . "\n");
     my $self = shift;
     return $self->_do_timeout('write', @_)
+}
+
+sub can_reuse {
+    my ($self,$scheme,$host,$port,$timeout) = @_;
+    return 0 if
+         length($self->{rbuf})
+        || $scheme ne $self->{scheme}
+        || $host ne $self->{host}
+        || $port ne $self->{port}
+        || $timeout != $self->{timeout}
+        || eval { $self->can_read(0) }
+        || $@ ;
+        return 1;
 }
 
 # Try to find a CA bundle to validate the SSL cert,
