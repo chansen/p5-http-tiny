@@ -53,9 +53,15 @@ my @attributes;
 BEGIN {
     @attributes = qw(cookie_jar default_headers keep_alive local_address max_redirect max_size proxy no_proxy timeout SSL_options verify_SSL);
     no strict 'refs';
+    no warnings 'uninitialized';
     for my $accessor ( @attributes ) {
         *{$accessor} = sub {
-            @_ > 1 ? $_[0]->{$accessor} = $_[1] : $_[0]->{$accessor};
+            @_ > 1
+                ? do {
+                    delete $_[0]->{handle} if $_[1] ne $_[0]->{$accessor};
+                    $_[0]->{$accessor} = $_[1]
+                }
+                : $_[0]->{$accessor};
         };
     }
 }
@@ -418,9 +424,7 @@ sub _request {
     }
 
     my $handle = delete $self->{handle};
-    unless ( $handle
-        && $handle->can_reuse( $scheme, $host, $port, $self->{timeout} ) )
-    {
+    unless ( $handle && $handle->can_reuse( $scheme, $host, $port ) )  {
         $handle = HTTP::Tiny::Handle->new(
             timeout       => $self->{timeout},
             SSL_options   => $self->{SSL_options},
@@ -1148,13 +1152,12 @@ sub can_write {
 }
 
 sub can_reuse {
-    my ($self,$scheme,$host,$port,$timeout) = @_;
+    my ($self,$scheme,$host,$port) = @_;
     return 0 if
          length($self->{rbuf})
         || $scheme ne $self->{scheme}
         || $host ne $self->{host}
         || $port ne $self->{port}
-        || $timeout != $self->{timeout}
         || eval { $self->can_read(0) }
         || $@ ;
         return 1;

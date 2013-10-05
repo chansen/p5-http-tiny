@@ -32,7 +32,6 @@ trim($response);
 my $h;
 
 new_ht();
-$can_read = 0;
 test_ht( "Keep-alive", 1, 'http://foo.com' );
 
 new_ht();
@@ -47,6 +46,10 @@ test_ht( "Different port", 0, 'http://foo.com:8000' );
 new_ht();
 $h->timeout(30);
 test_ht( "Different timeout", 0, 'http://foo.com' );
+
+new_ht();
+$h->timeout(60);
+test_ht( "Same timeout", 1, 'http://foo.com' );
 
 new_ht();
 $h->{handle}->close;
@@ -70,7 +73,7 @@ sub test_ht {
 
     clear_socket_source();
     set_socket_source( tmpfile(), tmpfile($response) );
-
+    $can_read = 0 if $result;
     my $old = $h->{handle} || 'old';
     $h->request( 'POST', $url, { content => 'xx' } );
     my $new = $h->{handle} || 'new';
@@ -78,7 +81,7 @@ sub test_ht {
 }
 
 sub new_ht {
-    $h = HTTP::Tiny->new( keep_alive => 1 );
+    $h = HTTP::Tiny->new( keep_alive => 1, @_ );
     $can_read = 1;
     clear_socket_source();
     set_socket_source( tmpfile(), tmpfile($response) );
