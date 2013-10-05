@@ -458,7 +458,8 @@ sub _request {
     if ( !$drop_connection && $self->{keep_alive} ) {
         my $connection = $response->{headers}{connection} || '';
         if ( $connection eq 'keep-alive'
-            or ( $response->{http_version} eq '1.1' and $connection ne 'close' ) )
+            or ( $response->{protocol} eq 'HTTP/1.1' and $connection ne 'close' )
+            )
         {
             $self->{handle} = $handle;
         }
@@ -466,7 +467,7 @@ sub _request {
             $handle->close;
         }
     }
-    $response->{success} = substr($response->{status},0,1) eq '2';
+    $response->{success} = substr( $response->{status}, 0, 1 ) eq '2';
     $response->{url} = $url;
     return $response;
 }
@@ -986,7 +987,7 @@ sub read_content_body {
             $cb->($self->read($read, 0), $response);
             $len -= $read;
         }
-        return $len == 0;
+        return length($self->{rbuf}) == 0;
     }
 
     my $chunk;
@@ -1092,7 +1093,6 @@ sub read_response_header {
         reason       => $reason,
         headers      => $self->read_header_lines,
         protocol     => $protocol,
-        http_version => $version
     };
 }
 

@@ -2,11 +2,11 @@
 
 use strict;
 use warnings;
-
 use File::Basename;
 use Test::More 0.88;
 use t::Util qw[
     tmpfile monkey_patch dir_list clear_socket_source set_socket_source
+    $CRLF
 ];
 use HTTP::Tiny;
 our $can_read;
@@ -55,14 +55,12 @@ test_ht( "Socket closed", 0, 'http://foo.com' );
 for my $file ( dir_list( "t/cases", qr/^keepalive/ ) ) {
     my $label = basename($file);
     my $data = do { local ( @ARGV, $/ ) = $file; <> };
-    my ( $title, $response ) = split /--+/, $data;
-    chomp $title;
-    trim($response);
+    my ( $title, $ok, $response ) = map { trim($_) } split /--+/, $data;
     new_ht();
     clear_socket_source();
     set_socket_source( tmpfile(), tmpfile($response) );
     $h->request( 'POST', 'http://foo.com', { content => 'xx' } );
-    ok !$h->{handle}, "$label - $title";
+    is !!$h->{handle}, !!$ok, "$label - $title";
 }
 
 sub test_ht {
@@ -87,7 +85,7 @@ sub new_ht {
     $h->request( 'POST', 'http://foo.com' );
 }
 
-sub trim { $_[0] =~ s/\s+$// }
+sub trim { $_[0] =~ s/^\s+//; $_[0] =~ s/\s+$//; return $_ }
 
 done_testing;
 
