@@ -2,6 +2,11 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [DOCUMENTED]
+
+    - Added HTTP::Tiny::UA to SEE ALSO and suggested it as the appropriate
+      place for new features
+
 0.036     2013-09-25 12:10:06 America/New_York
 
     [FIXED]

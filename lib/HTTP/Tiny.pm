@@ -1356,9 +1356,14 @@ There is no support for IPv6 of any kind.
 
 =back
 
+Despite the limitations listed above, HTTP::Tiny is considered nearly
+feature-complete.  If there are enhancements unrelated to the underlying
+transport, please consider them for L<HTTP::Tiny::UA> instead.
+
 =head1 SEE ALSO
 
 =for :list
+* L<HTTP::Tiny::UA> — Higher level UA features for HTTP::Tiny
 * L<HTTP::Thin> - HTTP::Tiny wrapper with L<HTTP::Request>/L<HTTP::Response> compatibility
 * L<HTTP::Tiny::Mech> - Wrap L<WWW::Mechanize> instance in HTTP::Tiny compatible interface
 * L<IO::Socket::SSL> - Required for SSL support
