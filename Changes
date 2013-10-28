@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+0.037     2013-10-28 13:26:21 America/New_York
+
     [FIXED]
 
     - Basic authentication in the URL is now unescaped before being encoded
