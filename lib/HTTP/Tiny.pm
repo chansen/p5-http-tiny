@@ -241,6 +241,11 @@ redirected request.) For example:
 
     $http->request('GET', 'http://Aladdin:open sesame@example.com/');
 
+If the "user:password" stanza contains reserved characters, they must
+be percent-escaped:
+
+    $http->request('GET', 'http://john%40example.com:password@example.com/');
+
 A hashref of options may be appended to modify the request.
 
 Valid options are:
@@ -577,6 +582,8 @@ sub _split_url {
     $authority = (length($authority)) ? $authority : 'localhost';
     if ( $authority =~ /@/ ) {
         ($auth,$host) = $authority =~ m/\A([^@]*)@(.*)\z/;   # user:pass@host
+        # userinfo might be percent escaped, so recover real auth info
+        $auth =~ s/%([0-9A-Fa-f]{2})/chr(hex($1))/eg;
     }
     else {
         $host = $authority;

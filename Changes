@@ -2,6 +2,11 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Basic authentication in the URL is now unescaped before being encoded
+      into the authentication header
+
     [DOCUMENTED]
 
     - Added HTTP::Tiny::UA to SEE ALSO and suggested it as the appropriate
