@@ -23,9 +23,14 @@ plan 'skip_all' => "Internet connection timed out"
 
 my ($tiny, $response);
 
-# default local address should work
+# default local address should work; try three times since the test url
+# can have intermittent failures
 $tiny = HTTP::Tiny->new;
-$response = $tiny->get($test_url);
+for (1 .. 3) {
+    $response = $tiny->get($test_url);
+    last if $response->{success};
+    sleep 2;
+}
 isnt( $response->{status}, '599', "Request to $test_url completed (default local address)" );
 
 # bad local IP should fail
