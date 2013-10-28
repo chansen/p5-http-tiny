@@ -576,7 +576,7 @@ sub _split_url {
     my ($auth,$host);
     $authority = (length($authority)) ? $authority : 'localhost';
     if ( $authority =~ /@/ ) {
-        ($auth,$host) = $authority =~ m/\A([^@]*)@(.*)\z/;   # user:pass@host
+        ($auth,$host) = $authority =~ m/\A(.*)@(.*)\z/;   # user:pass@host
     }
     else {
         $host = $authority;
