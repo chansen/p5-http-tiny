@@ -39,6 +39,10 @@ on 'configure' => sub {
 };
 
 on 'develop' => sub {
+  requires "Dist::Zilla" => "5.006";
+  requires "Dist::Zilla::Plugin::Prereqs" => "0";
+  requires "Dist::Zilla::Plugin::RemovePrereqs" => "0";
+  requires "Dist::Zilla::PluginBundle::DAGOLDEN" => "0.053";
   requires "File::Spec" => "0";
   requires "File::Temp" => "0";
   requires "IO::Handle" => "0";
