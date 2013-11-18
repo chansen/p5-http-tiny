@@ -498,7 +498,7 @@ sub _prepare_headers_and_cb {
     }
 
     # if we have Basic auth parameters, add them
-    if ( length $auth && ! defined $request->{headers}{authentication} ) {
+    if ( length $auth && ! defined $request->{headers}{authorization} ) {
         require MIME::Base64;
         $request->{headers}{authorization} =
             "Basic " . MIME::Base64::encode_base64($auth, "");
