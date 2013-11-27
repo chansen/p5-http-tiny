@@ -1,4 +1,5 @@
 requires "Carp" => "0";
+requires "Fcntl" => "0";
 requires "IO::Socket" => "0";
 requires "MIME::Base64" => "0";
 requires "Time::Local" => "0";
