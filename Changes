@@ -2,6 +2,11 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Temporary file creating during mirror() is now opened with O_EXCL
+      for added security
+
 0.038     2013-11-18 12:56:26 America/New_York
 
     [FIXED]
