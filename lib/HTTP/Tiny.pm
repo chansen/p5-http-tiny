@@ -208,7 +208,7 @@ sub mirror {
     my $tempfile = $file . int(rand(2**31));
 
     require Fcntl;
-    sysopen my $fh, $tempfile, Fcntl::O_CREAT|Fcntl::O_EXCL|Fcntl::O_WRONLY
+    sysopen my $fh, $tempfile, Fcntl::O_CREAT()|Fcntl::O_EXCL()|Fcntl::O_WRONLY()
        or Carp::croak(qq/Error: Could not create temporary file $tempfile for downloading: $!\n/);
     binmode $fh;
     $args->{data_callback} = sub { print {$fh} $_[0] };
