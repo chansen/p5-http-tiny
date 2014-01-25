@@ -22,6 +22,8 @@ An instance of L<HTTP::CookieJar> or equivalent class that supports the C<add> a
 A hashref of default headers to apply to requests
 * C<local_address>
 The local IP address to bind to
+* C<keep_alive>
+Set to true if we should try to reuse the last connection
 * C<max_redirect>
 Maximum number of redirects allowed (defaults to 5)
 * C<max_size>
@@ -49,11 +51,17 @@ See L</SSL SUPPORT> for more on the C<verify_SSL> and C<SSL_options> attributes.
 
 my @attributes;
 BEGIN {
-    @attributes = qw(cookie_jar default_headers local_address max_redirect max_size proxy no_proxy timeout SSL_options verify_SSL);
+    @attributes = qw(cookie_jar default_headers keep_alive local_address max_redirect max_size proxy no_proxy timeout SSL_options verify_SSL);
     no strict 'refs';
+    no warnings 'uninitialized';
     for my $accessor ( @attributes ) {
         *{$accessor} = sub {
-            @_ > 1 ? $_[0]->{$accessor} = $_[1] : $_[0]->{$accessor};
+            @_ > 1
+                ? do {
+                    delete $_[0]->{handle} if $_[1] ne $_[0]->{$accessor};
+                    $_[0]->{$accessor} = $_[1]
+                }
+                : $_[0]->{$accessor};
         };
     }
 }
@@ -412,21 +420,27 @@ sub _request {
         headers   => {},
     };
 
-    my $handle  = HTTP::Tiny::Handle->new(
-        timeout         => $self->{timeout},
-        SSL_options     => $self->{SSL_options},
-        verify_SSL      => $self->{verify_SSL},
-        local_address   => $self->{local_address},
-    );
-
+    my @sock_args;
     if ($self->{proxy} && ! grep { $host =~ /\Q$_\E$/ } @{$self->{no_proxy}}) {
         $request->{uri} = "$scheme://$request->{host_port}$path_query";
         die(qq/HTTPS via proxy is not supported\n/)
             if $request->{scheme} eq 'https';
-        $handle->connect(($self->_split_url($self->{proxy}))[0..2]);
+        @sock_args = (($self->_split_url($self->{proxy}))[0..2]);
     }
     else {
-        $handle->connect($scheme, $host, $port);
+        @sock_args = ($scheme, $host, $port);
+    }
+
+    my $handle = delete $self->{handle};
+    unless ( $handle && $handle->can_reuse( $scheme, $host, $port ) )  {
+        $handle = HTTP::Tiny::Handle->new(
+            timeout       => $self->{timeout},
+            SSL_options   => $self->{SSL_options},
+            verify_SSL    => $self->{verify_SSL},
+            local_address => $self->{local_address},
+            keep_alive    => $self->{keep_alive}
+        );
+        $handle->connect(@sock_args);
     }
 
     $self->_prepare_headers_and_cb($request, $args, $url, $auth);
@@ -443,16 +457,29 @@ sub _request {
         return $self->_request(@redir_args, $args);
     }
 
+    my $drop_connection;
     if ($method eq 'HEAD' || $response->{status} =~ /^[23]04/) {
         # response has no message body
     }
     else {
         my $data_cb = $self->_prepare_data_cb($response, $args);
-        $handle->read_body($data_cb, $response);
+        $handle->read_body($data_cb, $response)
+            || $drop_connection++;
     }
 
-    $handle->close;
-    $response->{success} = substr($response->{status},0,1) eq '2';
+    if ( !$drop_connection && $self->{keep_alive} ) {
+        my $connection = $response->{headers}{connection} || '';
+        if ( $connection eq 'keep-alive'
+            or ( $response->{protocol} eq 'HTTP/1.1' and $connection ne 'close' )
+            )
+        {
+            $self->{handle} = $handle;
+        }
+        else {
+            $handle->close;
+        }
+    }
+    $response->{success} = substr( $response->{status}, 0, 1 ) eq '2';
     $response->{url} = $url;
     return $response;
 }
@@ -467,8 +494,9 @@ sub _prepare_headers_and_cb {
         }
     }
     $request->{headers}{'host'}         = $request->{host_port};
-    $request->{headers}{'connection'}   = "close";
     $request->{headers}{'user-agent'} ||= $self->{agent};
+    $request->{headers}{'connection'}   = "close"
+        unless $self->{keep_alive};
 
     if ( defined $args->{content} ) {
         if (ref $args->{content} eq 'CODE') {
@@ -710,7 +738,8 @@ sub connect {
             ( LocalAddr => $self->{local_address} ) : (),
         Proto     => 'tcp',
         Type      => SOCK_STREAM,
-        Timeout   => $self->{timeout}
+        Timeout   => $self->{timeout},
+        KeepAlive => !!$self->{keep_alive}
     ) or die(qq/Could not connect to '$host:$port': $@\n/);
 
     binmode($self->{fh})
@@ -733,6 +762,7 @@ sub connect {
         }
     }
 
+    $self->{scheme} = $scheme;
     $self->{host} = $host;
     $self->{port} = $port;
 
@@ -942,13 +972,10 @@ sub read_body {
     @_ == 3 || die(q/Usage: $handle->read_body(callback, response)/ . "\n");
     my ($self, $cb, $response) = @_;
     my $te = $response->{headers}{'transfer-encoding'} || '';
-    if ( grep { /chunked/i } ( ref $te eq 'ARRAY' ? @$te : $te ) ) {
-        $self->read_chunked_body($cb, $response);
-    }
-    else {
-        $self->read_content_body($cb, $response);
-    }
-    return;
+    my $chunked = grep { /chunked/i } ( ref $te eq 'ARRAY' ? @$te : $te ) ;
+    return $chunked
+        ? $self->read_chunked_body($cb, $response)
+        : $self->read_content_body($cb, $response);
 }
 
 sub write_body {
@@ -974,11 +1001,11 @@ sub read_content_body {
             $cb->($self->read($read, 0), $response);
             $len -= $read;
         }
+        return length($self->{rbuf}) == 0;
     }
-    else {
-        my $chunk;
-        $cb->($chunk, $response) while length( $chunk = $self->read(BUFSIZE, 1) );
-    }
+
+    my $chunk;
+    $cb->($chunk, $response) while length( $chunk = $self->read(BUFSIZE, 1) );
 
     return;
 }
@@ -1027,7 +1054,7 @@ sub read_chunked_body {
           or die(qq/Malformed chunk: missing CRLF after chunk data\n/);
     }
     $self->read_header_lines($response->{headers});
-    return;
+    return 1;
 }
 
 sub write_chunked_body {
@@ -1076,10 +1103,10 @@ sub read_response_header {
         unless $version =~ /0*1\.0*[01]/;
 
     return {
-        status   => $status,
-        reason   => $reason,
-        headers  => $self->read_header_lines,
-        protocol => $protocol,
+        status       => $status,
+        reason       => $reason,
+        headers      => $self->read_header_lines,
+        protocol     => $protocol,
     };
 }
 
@@ -1134,6 +1161,18 @@ sub can_write {
     return $self->_do_timeout('write', @_)
 }
 
+sub can_reuse {
+    my ($self,$scheme,$host,$port) = @_;
+    return 0 if
+         length($self->{rbuf})
+        || $scheme ne $self->{scheme}
+        || $host ne $self->{host}
+        || $port ne $self->{port}
+        || eval { $self->can_read(0) }
+        || $@ ;
+        return 1;
+}
+
 # Try to find a CA bundle to validate the SSL cert,
 # prefer Mozilla::CA or fallback to a system file
 sub _find_CA_file {
@@ -1162,7 +1201,7 @@ sub _ssl_args {
     my ($self, $host) = @_;
 
     my %ssl_args;
-    
+
     # This test reimplements IO::Socket::SSL::can_client_sni(), which wasn't
     # added until IO::Socket::SSL 1.84
     if ( Net::SSLeay::OPENSSL_VERSION_NUMBER() >= 0x01000000 ) {
@@ -1324,11 +1363,6 @@ automatic for response codes 301, 302 and 307 if the request method is 'GET' or
 'HEAD'.  Response code 303 is always converted into a 'GET' redirection, as
 mandated by the specification.  There is no automatic support for status 305
 ("Use proxy") redirections.
-
-=item *
-
-Persistent connections are not supported.  The C<Connection> header will
-always be set to C<close>.
 
 =item *
 
