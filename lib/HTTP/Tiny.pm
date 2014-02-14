@@ -423,7 +423,14 @@ sub _request {
         $request->{uri} = "$scheme://$request->{host_port}$path_query";
         die(qq/HTTPS via proxy is not supported\n/)
             if $request->{scheme} eq 'https';
-        $handle->connect(($self->_split_url($self->{proxy}))[0..2]);
+        my ($p_scheme, $p_host, $p_port, $p_path_query, $p_auth)
+            = $self->_split_url($self->{proxy});
+        $handle->connect($p_scheme, $p_host, $p_port);
+        if ( length $p_auth && ! defined $request->{headers}{'proxy-authorization'} ) {
+            require MIME::Base64;
+            $request->{headers}{'proxy-authorization'} =
+                "Basic " . MIME::Base64::encode_base64($p_auth, "");
+        }
     }
     else {
         $handle->connect($scheme, $host, $port);

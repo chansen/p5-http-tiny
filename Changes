@@ -2,6 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [ADDED]
+
+    - Added support for Basic authorization with http proxies
+
 0.039     2013-11-27 19:48:29 America/New_York
 
     [FIXED]
