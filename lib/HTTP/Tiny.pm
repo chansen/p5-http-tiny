@@ -723,27 +723,41 @@ sub connect {
     binmode($self->{fh})
       or die(qq/Could not binmode() socket: '$!'\n/);
 
-    if ( $scheme eq 'https') {
-        my $ssl_args = $self->_ssl_args($host);
-        IO::Socket::SSL->start_SSL(
-            $self->{fh},
-            %$ssl_args,
-            SSL_create_ctx_callback => sub {
-                my $ctx = shift;
-                Net::SSLeay::CTX_set_mode($ctx, Net::SSLeay::MODE_AUTO_RETRY());
-            },
-        );
-
-        unless ( ref($self->{fh}) eq 'IO::Socket::SSL' ) {
-            my $ssl_err = IO::Socket::SSL->errstr;
-            die(qq/SSL connection failed for $host: $ssl_err\n/);
-        }
-    }
+    $self->start_ssl($host) if $scheme eq 'https';
 
     $self->{host} = $host;
     $self->{port} = $port;
 
     return $self;
+}
+
+sub start_ssl {
+    my ($self, $host) = @_;
+
+    # As this might be used via CONNECT after an SSL session
+    # to a proxy, we shut down any existing SSL before attempting
+    # the handshake
+    if ( ref($self->{fh}) eq 'IO::Socket::SSL' ) {
+        unless ( $self->{fh}->stop_SSL ) {
+            my $ssl_err = IO::Socket::SSL->errstr;
+            die(qq/Error halting prior SSL connection: $ssl_err/);
+        }
+    }
+
+    my $ssl_args = $self->_ssl_args($host);
+    IO::Socket::SSL->start_SSL(
+        $self->{fh},
+        %$ssl_args,
+        SSL_create_ctx_callback => sub {
+            my $ctx = shift;
+            Net::SSLeay::CTX_set_mode($ctx, Net::SSLeay::MODE_AUTO_RETRY());
+        },
+    );
+
+    unless ( ref($self->{fh}) eq 'IO::Socket::SSL' ) {
+        my $ssl_err = IO::Socket::SSL->errstr;
+        die(qq/SSL connection failed for $host: $ssl_err\n/);
+    }
 }
 
 sub close {
