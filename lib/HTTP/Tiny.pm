@@ -420,17 +420,7 @@ sub _request {
     );
 
     if ($self->{proxy} && ! grep { $host =~ /\Q$_\E$/ } @{$self->{no_proxy}}) {
-        $request->{uri} = "$scheme://$request->{host_port}$path_query";
-        die(qq/HTTPS via proxy is not supported\n/)
-            if $request->{scheme} eq 'https';
-        my ($p_scheme, $p_host, $p_port, $p_path_query, $p_auth)
-            = $self->_split_url($self->{proxy});
-        $handle->connect($p_scheme, $p_host, $p_port);
-        if ( length $p_auth && ! defined $request->{headers}{'proxy-authorization'} ) {
-            require MIME::Base64;
-            $request->{headers}{'proxy-authorization'} =
-                "Basic " . MIME::Base64::encode_base64($p_auth, "");
-        }
+        $self->_proxy_connect( $request, $handle );
     }
     else {
         $handle->connect($scheme, $host, $port);
@@ -462,6 +452,26 @@ sub _request {
     $response->{success} = substr($response->{status},0,1) eq '2';
     $response->{url} = $url;
     return $response;
+}
+
+sub _proxy_connect {
+    my ($self, $request, $handle) = @_;
+
+    # when proxying, URI needs to be fully qualified
+    $request->{uri} = "$request->{scheme}://$request->{host_port}$request->{uri}";
+    die(qq/HTTPS via proxy is not supported\n/)
+        if $request->{scheme} eq 'https';
+
+    # connect to proxy; possibly set proxy authorization header
+    my ($p_scheme, $p_host, $p_port, $p_path_query, $p_auth)
+        = $self->_split_url($self->{proxy});
+    if ( length $p_auth && ! defined $request->{headers}{'proxy-authorization'} ) {
+        $self->_add_basic_auth_header( $request, 'proxy-authorization' => $p_auth );
+    }
+    $handle->connect($p_scheme, $p_host, $p_port);
+    return;
+}
+
 }
 
 sub _prepare_headers_and_cb {
