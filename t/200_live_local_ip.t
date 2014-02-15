@@ -7,8 +7,8 @@ use IO::Socket::INET;
 use Test::More 0.88;
 use HTTP::Tiny;
 
-my $test_host = "checkip.dyndns.org";
-my $test_url  = "http://checkip.dyndns.org/";
+my $test_host = "www.google.com";
+my $test_url  = "http://www.google.com/";
 
 plan 'skip_all' => "Only run for \$ENV{AUTOMATED_TESTING}"
   unless $ENV{AUTOMATED_TESTING};
