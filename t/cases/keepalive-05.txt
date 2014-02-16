@@ -1,6 +1,6 @@
 Not HTTP/1.1 with keep-alive
 ----------
-1
+0
 ----------
 HTTP/1.0 200 OK
 Date: Thu, 03 Feb 1994 00:00:00 GMT

@@ -464,6 +464,9 @@ sub _request {
         headers   => {},
     };
 
+    # We remove the cached handle so it is not reused in the case of redirect.
+    # If all is well, it will be recached at the end of _request.  We only
+    # reuse for the same scheme, host and port
     my $handle = delete $self->{handle};
     if ( $handle ) {
         unless ( $handle->can_reuse( $scheme, $host, $port ) ) {
@@ -487,27 +490,25 @@ sub _request {
         return $self->_request(@redir_args, $args);
     }
 
-    my $drop_connection;
+    my $known_message_length;
     if ($method eq 'HEAD' || $response->{status} =~ /^[23]04/) {
         # response has no message body
+        $known_message_length = 1;
     }
     else {
         my $data_cb = $self->_prepare_data_cb($response, $args);
-        $handle->read_body($data_cb, $response)
-            or $drop_connection++;
+        $known_message_length = $handle->read_body($data_cb, $response);
     }
 
-    if ( !$drop_connection && $self->{keep_alive} ) {
-        my $connection = $response->{headers}{connection} || '';
-        if ( $connection eq 'keep-alive'
-            or ( $response->{protocol} eq 'HTTP/1.1' and $connection ne 'close' )
-            )
-        {
-            $self->{handle} = $handle;
-        }
-        else {
-            $handle->close;
-        }
+    if ( $self->{keep_alive}
+        && $known_message_length
+        && $response->{protocol} eq 'HTTP/1.1'
+        && ($response->{headers}{connection} || '') ne 'close'
+    ) {
+        $self->{handle} = $handle;
+    }
+    else {
+        $handle->close;
     }
 
     $response->{success} = substr( $response->{status}, 0, 1 ) eq '2';
@@ -1119,6 +1120,9 @@ sub write_header_lines {
     return $self->write($buf);
 }
 
+# return value indicates whether message length was defined; this is generally
+# true unless there was no content-length header and we just read until EOF.
+# Other message length errors are thrown as exceptions
 sub read_body {
     @_ == 3 || die(q/Usage: $handle->read_body(callback, response)/ . "\n");
     my ($self, $cb, $response) = @_;
