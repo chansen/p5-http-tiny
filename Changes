@@ -2,6 +2,21 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [INCOMPATIBLE CHANGES]
+
+    - The 'proxy' attribute no longer takes precedence over the
+      'http_proxy' environment variable.  With the addition of http_proxy
+      and https_proxy attributes (and corresponding environment variable
+      defaults), the legacy 'proxy' attribute now maps to the
+      all_proxy/ALL_PROXY environment variable and only takes effect when
+      other proxy attributes are not defined.
+
+    [ADDED]
+
+    - Added support for Basic authorization with proxies
+
+    - Added support for https proxies via CONNECT
+
 0.039     2013-11-27 19:48:29 America/New_York
 
     [FIXED]

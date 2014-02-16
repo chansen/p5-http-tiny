@@ -22,13 +22,18 @@ An instance of L<HTTP::CookieJar> or equivalent class that supports the C<add> a
 A hashref of default headers to apply to requests
 * C<local_address>
 The local IP address to bind to
+* C<keep_alive>
+Whether to reuse the last connection (if for the same scheme, host and port) (defaults to 1)
 * C<max_redirect>
 Maximum number of redirects allowed (defaults to 5)
 * C<max_size>
-Maximum response size (only when not using a data callback).  If defined,
-responses larger than this will return an exception.
+Maximum response size (only when not using a data callback).  If defined, responses larger than this will return an exception.
+* C<http_proxy>
+URL of a proxy server to use for HTTP connections (default is C<$ENV{http_proxy}> if set)
+* C<https_proxy>
+URL of a proxy server to use for HTTPS connections (default is C<$ENV{https_proxy}> if set)
 * C<proxy>
-URL of a proxy server to use (default is C<$ENV{http_proxy}> if set)
+URL of a generic proxy server for both HTTP and HTTPS connections (default is C<$ENV{all_proxy}> if set)
 * C<no_proxy>
 List of domain suffixes that should not be proxied.  Must be a comma-separated string or an array reference. (default is C<$ENV{no_proxy}>)
 * C<timeout>
@@ -43,17 +48,36 @@ Exceptions from C<max_size>, C<timeout> or other errors will result in a
 pseudo-HTTP status code of 599 and a reason of "Internal Exception". The
 content field in the response will contain the text of the exception.
 
+The C<keep_alive> parameter enables a persistent connection, but only to a
+single destination scheme, host and port.  Also, if any connection-relevant
+attributes are modified, a persistent connection will be dropped.  If you want
+persistent connections across multiple destinations, use multiple HTTP::Tiny
+objects.
+
 See L</SSL SUPPORT> for more on the C<verify_SSL> and C<SSL_options> attributes.
 
 =cut
 
 my @attributes;
 BEGIN {
-    @attributes = qw(cookie_jar default_headers local_address max_redirect max_size proxy no_proxy timeout SSL_options verify_SSL);
+    @attributes = qw(
+        cookie_jar default_headers http_proxy https_proxy keep_alive
+        local_address max_redirect max_size proxy no_proxy timeout
+        SSL_options verify_SSL
+    );
+    my %persist_ok = map {; $_ => 1 } qw(
+        cookie_jar default_headers max_redirect max_size
+    );
     no strict 'refs';
+    no warnings 'uninitialized';
     for my $accessor ( @attributes ) {
         *{$accessor} = sub {
-            @_ > 1 ? $_[0]->{$accessor} = $_[1] : $_[0]->{$accessor};
+            @_ > 1
+                ? do {
+                    delete $_[0]->{handle} if !$persist_ok{$accessor} && $_[1] ne $_[0]->{$accessor};
+                    $_[0]->{$accessor} = $_[1]
+                }
+                : $_[0]->{$accessor};
         };
     }
 }
@@ -73,6 +97,7 @@ sub new {
     my $self = {
         max_redirect => 5,
         timeout      => 60,
+        keep_alive   => 1,
         verify_SSL   => $args{verify_SSL} || $args{verify_ssl} || 0, # no verification by default
         no_proxy     => $ENV{no_proxy},
     };
@@ -87,13 +112,43 @@ sub new {
 
     $self->agent( exists $args{agent} ? $args{agent} : $class->_agent );
 
-    # Never override proxy argument as this breaks backwards compat.
-    if (!exists $self->{proxy} && (my $http_proxy = $ENV{http_proxy})) {
-        if ($http_proxy =~ m{\Ahttp://[^/?#:@]+:\d+/?\z}) {
-            $self->{proxy} = $http_proxy;
+    $self->_set_proxies;
+
+    return $self;
+}
+
+sub _set_proxies {
+    my ($self) = @_;
+
+    if (! $self->{proxy} ) {
+        $self->{proxy} = $ENV{all_proxy} || $ENV{ALL_PROXY};
+        if ( defined $self->{proxy} ) {
+            $self->_split_proxy( 'generic proxy' => $self->{proxy} ); # validate
         }
         else {
-            Carp::croak(qq{Environment 'http_proxy' must be in format http://<host>:<port>/\n});
+            delete $self->{proxy};
+        }
+    }
+
+    if (! $self->{http_proxy} ) {
+        $self->{http_proxy} = $ENV{http_proxy} || $self->{proxy};
+        if ( defined $self->{http_proxy} ) {
+            $self->_split_proxy( http_proxy => $self->{http_proxy} ); # validate
+            $self->{_has_proxy} = 1;
+        }
+        else {
+            delete $self->{http_proxy};
+        }
+    }
+
+    if (! $self->{https_proxy} ) {
+        $self->{https_proxy} = $ENV{https_proxy} || $ENV{HTTPS_PROXY} || $self->{proxy};
+        if ( $self->{https_proxy} ) {
+            $self->_split_proxy( https_proxy => $self->{https_proxy} ); # validate
+            $self->{_has_proxy} = 1;
+        }
+        else {
+            delete $self->{https_proxy};
         }
     }
 
@@ -103,7 +158,7 @@ sub new {
             (defined $self->{no_proxy}) ? [ split /\s*,\s*/, $self->{no_proxy} ] : [];
     }
 
-    return $self;
+    return;
 }
 
 =method get|head|put|post|delete
@@ -326,7 +381,14 @@ sub request {
             && $@ =~ m{^(?:Socket closed|Unexpected end)};
     }
 
-    if (my $e = "$@") {
+    if (my $e = $@) {
+        # maybe we got a response hash thrown from somewhere deep
+        if ( ref $e eq 'HASH' && exists $e->{status} ) {
+            return $e;
+        }
+
+        # otherwise, stringify it
+        $e = "$e";
         $response = {
             url     => $url,
             success => q{},
@@ -412,22 +474,17 @@ sub _request {
         headers   => {},
     };
 
-    my $handle  = HTTP::Tiny::Handle->new(
-        timeout         => $self->{timeout},
-        SSL_options     => $self->{SSL_options},
-        verify_SSL      => $self->{verify_SSL},
-        local_address   => $self->{local_address},
-    );
-
-    if ($self->{proxy} && ! grep { $host =~ /\Q$_\E$/ } @{$self->{no_proxy}}) {
-        $request->{uri} = "$scheme://$request->{host_port}$path_query";
-        die(qq/HTTPS via proxy is not supported\n/)
-            if $request->{scheme} eq 'https';
-        $handle->connect(($self->_split_url($self->{proxy}))[0..2]);
+    # We remove the cached handle so it is not reused in the case of redirect.
+    # If all is well, it will be recached at the end of _request.  We only
+    # reuse for the same scheme, host and port
+    my $handle = delete $self->{handle};
+    if ( $handle ) {
+        unless ( $handle->can_reuse( $scheme, $host, $port ) ) {
+            $handle->close;
+            undef $handle;
+        }
     }
-    else {
-        $handle->connect($scheme, $host, $port);
-    }
+    $handle ||= $self->_open_handle( $request, $scheme, $host, $port );
 
     $self->_prepare_headers_and_cb($request, $args, $url, $auth);
     $handle->write_request($request);
@@ -443,18 +500,135 @@ sub _request {
         return $self->_request(@redir_args, $args);
     }
 
+    my $known_message_length;
     if ($method eq 'HEAD' || $response->{status} =~ /^[23]04/) {
         # response has no message body
+        $known_message_length = 1;
     }
     else {
         my $data_cb = $self->_prepare_data_cb($response, $args);
-        $handle->read_body($data_cb, $response);
+        $known_message_length = $handle->read_body($data_cb, $response);
     }
 
-    $handle->close;
-    $response->{success} = substr($response->{status},0,1) eq '2';
+    if ( $self->{keep_alive}
+        && $known_message_length
+        && $response->{protocol} eq 'HTTP/1.1'
+        && ($response->{headers}{connection} || '') ne 'close'
+    ) {
+        $self->{handle} = $handle;
+    }
+    else {
+        $handle->close;
+    }
+
+    $response->{success} = substr( $response->{status}, 0, 1 ) eq '2';
     $response->{url} = $url;
     return $response;
+}
+
+sub _open_handle {
+    my ($self, $request, $scheme, $host, $port) = @_;
+
+    my $handle  = HTTP::Tiny::Handle->new(
+        timeout         => $self->{timeout},
+        SSL_options     => $self->{SSL_options},
+        verify_SSL      => $self->{verify_SSL},
+        local_address   => $self->{local_address},
+        keep_alive      => $self->{keep_alive}
+    );
+
+    if ($self->{_has_proxy} && ! grep { $host =~ /\Q$_\E$/ } @{$self->{no_proxy}}) {
+        return $self->_proxy_connect( $request, $handle );
+    }
+    else {
+        return $handle->connect($scheme, $host, $port);
+    }
+}
+
+sub _proxy_connect {
+    my ($self, $request, $handle) = @_;
+
+    $request->{uri} = "$request->{scheme}://$request->{host_port}$request->{uri}";
+
+    my @proxy_vars;
+    if ( $request->{scheme} eq 'https' ) {
+        Carp::croak(qq{No https_proxy defined}) unless $self->{https_proxy};
+        @proxy_vars = $self->_split_proxy( https_proxy => $self->{https_proxy} );
+        if ( $proxy_vars[0] eq 'https' ) {
+            Carp::croak(qq{Can't proxy https over https: $request->{uri} via $self->{https_proxy}});
+        }
+    }
+    else {
+        Carp::croak(qq{No http_proxy defined}) unless $self->{http_proxy};
+        @proxy_vars = $self->_split_proxy( http_proxy => $self->{http_proxy} );
+    }
+
+    my ($p_scheme, $p_host, $p_port, $p_auth) = @proxy_vars;
+
+    if ( length $p_auth && ! defined $request->{headers}{'proxy-authorization'} ) {
+        $self->_add_basic_auth_header( $request, 'proxy-authorization' => $p_auth );
+    }
+
+    $handle->connect($p_scheme, $p_host, $p_port);
+
+    $self->_create_proxy_tunnel( $request, $handle )
+        if $request->{scheme} eq 'https';
+
+    return $handle;
+}
+
+sub _split_proxy {
+    my ($self, $type, $proxy) = @_;
+
+    my ($scheme, $host, $port, $path_query, $auth) = eval { $self->_split_url($proxy) };
+
+    unless(
+        defined($scheme) && length($scheme) && length($host) && length($port)
+        && $path_query eq '/'
+    ) {
+        Carp::croak(qq{$type URL must be in format http[s]://[auth@]<host>:<port>/\n});
+    }
+
+    return ($scheme, $host, $port, $auth);
+}
+
+sub _create_proxy_tunnel {
+    my ($self, $request, $handle) = @_;
+
+    $handle->_assert_ssl;
+
+    my $agent = exists($request->{headers}{'user-agent'})
+        ? $request->{headers}{'user-agent'} : $self->{agent};
+
+    my $connect_request = {
+        method    => 'CONNECT',
+        uri       => $request->{host_port},
+        headers   => {
+            host => $request->{host_port},
+            'user-agent' => $agent,
+        }
+    };
+
+    if ( $request->{headers}{'proxy-authorization'} ) {
+        $connect_request->{headers}{'proxy-authorization'} =
+            delete $request->{headers}{'proxy-authorization'};
+    }
+
+    $handle->write_request($connect_request);
+    my $response;
+    do { $response = $handle->read_response_header }
+        until (substr($response->{status},0,1) ne '1');
+
+    # if CONNECT failed, throw the response so it will be
+    # returned from the original request() method;
+    unless (substr($response->{status},0,1) eq '2') {
+        die $response;
+    }
+
+    # tunnel established, so start SSL handshake
+    $handle->start_ssl( $request->{host} );
+
+    return;
 }
 
 sub _prepare_headers_and_cb {
@@ -467,8 +641,9 @@ sub _prepare_headers_and_cb {
         }
     }
     $request->{headers}{'host'}         = $request->{host_port};
-    $request->{headers}{'connection'}   = "close";
     $request->{headers}{'user-agent'} ||= $self->{agent};
+    $request->{headers}{'connection'}   = "close"
+        unless $self->{keep_alive};
 
     if ( defined $args->{content} ) {
         if (ref $args->{content} eq 'CODE') {
@@ -502,11 +677,17 @@ sub _prepare_headers_and_cb {
 
     # if we have Basic auth parameters, add them
     if ( length $auth && ! defined $request->{headers}{authorization} ) {
-        require MIME::Base64;
-        $request->{headers}{authorization} =
-            "Basic " . MIME::Base64::encode_base64($auth, "");
+        $self->_add_basic_auth_header( $request, 'authorization' => $auth );
     }
 
+    return;
+}
+
+sub _add_basic_auth_header {
+    my ($self, $request, $header, $auth) = @_;
+    require MIME::Base64;
+    $request->{headers}{$header} =
+        "Basic " . MIME::Base64::encode_base64($auth, "");
     return;
 }
 
@@ -693,12 +874,7 @@ sub connect {
     my ($self, $scheme, $host, $port) = @_;
 
     if ( $scheme eq 'https' ) {
-        # Need IO::Socket::SSL 1.42 for SSL_create_ctx_callback
-        die(qq/IO::Socket::SSL 1.42 must be installed for https support\n/)
-            unless eval {require IO::Socket::SSL; IO::Socket::SSL->VERSION(1.42)};
-        # Need Net::SSLeay 1.49 for MODE_AUTO_RETRY
-        die(qq/Net::SSLeay 1.49 must be installed for https support\n/)
-            unless eval {require Net::SSLeay; Net::SSLeay->VERSION(1.49)};
+        $self->_assert_ssl;
     }
     elsif ( $scheme ne 'http' ) {
       die(qq/Unsupported URL scheme '$scheme'\n/);
@@ -710,33 +886,49 @@ sub connect {
             ( LocalAddr => $self->{local_address} ) : (),
         Proto     => 'tcp',
         Type      => SOCK_STREAM,
-        Timeout   => $self->{timeout}
+        Timeout   => $self->{timeout},
+        KeepAlive => !!$self->{keep_alive}
     ) or die(qq/Could not connect to '$host:$port': $@\n/);
 
     binmode($self->{fh})
       or die(qq/Could not binmode() socket: '$!'\n/);
 
-    if ( $scheme eq 'https') {
-        my $ssl_args = $self->_ssl_args($host);
-        IO::Socket::SSL->start_SSL(
-            $self->{fh},
-            %$ssl_args,
-            SSL_create_ctx_callback => sub {
-                my $ctx = shift;
-                Net::SSLeay::CTX_set_mode($ctx, Net::SSLeay::MODE_AUTO_RETRY());
-            },
-        );
+    $self->start_ssl($host) if $scheme eq 'https';
 
-        unless ( ref($self->{fh}) eq 'IO::Socket::SSL' ) {
-            my $ssl_err = IO::Socket::SSL->errstr;
-            die(qq/SSL connection failed for $host: $ssl_err\n/);
-        }
-    }
-
+    $self->{scheme} = $scheme;
     $self->{host} = $host;
     $self->{port} = $port;
 
     return $self;
+}
+
+sub start_ssl {
+    my ($self, $host) = @_;
+
+    # As this might be used via CONNECT after an SSL session
+    # to a proxy, we shut down any existing SSL before attempting
+    # the handshake
+    if ( ref($self->{fh}) eq 'IO::Socket::SSL' ) {
+        unless ( $self->{fh}->stop_SSL ) {
+            my $ssl_err = IO::Socket::SSL->errstr;
+            die(qq/Error halting prior SSL connection: $ssl_err/);
+        }
+    }
+
+    my $ssl_args = $self->_ssl_args($host);
+    IO::Socket::SSL->start_SSL(
+        $self->{fh},
+        %$ssl_args,
+        SSL_create_ctx_callback => sub {
+            my $ctx = shift;
+            Net::SSLeay::CTX_set_mode($ctx, Net::SSLeay::MODE_AUTO_RETRY());
+        },
+    );
+
+    unless ( ref($self->{fh}) eq 'IO::Socket::SSL' ) {
+        my $ssl_err = IO::Socket::SSL->errstr;
+        die(qq/SSL connection failed for $host: $ssl_err\n/);
+    }
 }
 
 sub close {
@@ -938,17 +1130,17 @@ sub write_header_lines {
     return $self->write($buf);
 }
 
+# return value indicates whether message length was defined; this is generally
+# true unless there was no content-length header and we just read until EOF.
+# Other message length errors are thrown as exceptions
 sub read_body {
     @_ == 3 || die(q/Usage: $handle->read_body(callback, response)/ . "\n");
     my ($self, $cb, $response) = @_;
     my $te = $response->{headers}{'transfer-encoding'} || '';
-    if ( grep { /chunked/i } ( ref $te eq 'ARRAY' ? @$te : $te ) ) {
-        $self->read_chunked_body($cb, $response);
-    }
-    else {
-        $self->read_content_body($cb, $response);
-    }
-    return;
+    my $chunked = grep { /chunked/i } ( ref $te eq 'ARRAY' ? @$te : $te ) ;
+    return $chunked
+        ? $self->read_chunked_body($cb, $response)
+        : $self->read_content_body($cb, $response);
 }
 
 sub write_body {
@@ -974,11 +1166,11 @@ sub read_content_body {
             $cb->($self->read($read, 0), $response);
             $len -= $read;
         }
+        return length($self->{rbuf}) == 0;
     }
-    else {
-        my $chunk;
-        $cb->($chunk, $response) while length( $chunk = $self->read(BUFSIZE, 1) );
-    }
+
+    my $chunk;
+    $cb->($chunk, $response) while length( $chunk = $self->read(BUFSIZE, 1) );
 
     return;
 }
@@ -1027,7 +1219,7 @@ sub read_chunked_body {
           or die(qq/Malformed chunk: missing CRLF after chunk data\n/);
     }
     $self->read_header_lines($response->{headers});
-    return;
+    return 1;
 }
 
 sub write_chunked_body {
@@ -1076,10 +1268,10 @@ sub read_response_header {
         unless $version =~ /0*1\.0*[01]/;
 
     return {
-        status   => $status,
-        reason   => $reason,
-        headers  => $self->read_header_lines,
-        protocol => $protocol,
+        status       => $status,
+        reason       => $reason,
+        headers      => $self->read_header_lines,
+        protocol     => $protocol,
     };
 }
 
@@ -1134,6 +1326,27 @@ sub can_write {
     return $self->_do_timeout('write', @_)
 }
 
+sub _assert_ssl {
+    # Need IO::Socket::SSL 1.42 for SSL_create_ctx_callback
+    die(qq/IO::Socket::SSL 1.42 must be installed for https support\n/)
+        unless eval {require IO::Socket::SSL; IO::Socket::SSL->VERSION(1.42)};
+    # Need Net::SSLeay 1.49 for MODE_AUTO_RETRY
+    die(qq/Net::SSLeay 1.49 must be installed for https support\n/)
+        unless eval {require Net::SSLeay; Net::SSLeay->VERSION(1.49)};
+}
+
+sub can_reuse {
+    my ($self,$scheme,$host,$port) = @_;
+    return 0 if
+         length($self->{rbuf})
+        || $scheme ne $self->{scheme}
+        || $host ne $self->{host}
+        || $port ne $self->{port}
+        || eval { $self->can_read(0) }
+        || $@ ;
+        return 1;
+}
+
 # Try to find a CA bundle to validate the SSL cert,
 # prefer Mozilla::CA or fallback to a system file
 sub _find_CA_file {
@@ -1162,7 +1375,7 @@ sub _ssl_args {
     my ($self, $host) = @_;
 
     my %ssl_args;
-    
+
     # This test reimplements IO::Socket::SSL::can_client_sni(), which wasn't
     # added until IO::Socket::SSL 1.84
     if ( Net::SSLeay::OPENSSL_VERSION_NUMBER() >= 0x01000000 ) {
@@ -1197,6 +1410,8 @@ default_headers
 local_address
 max_redirect
 max_size
+http_proxy
+https_proxy
 proxy
 no_proxy
 timeout
@@ -1227,16 +1442,16 @@ This is a very simple HTTP/1.1 client, designed for doing simple GET
 requests without the overhead of a large framework like L<LWP::UserAgent>.
 
 It is more correct and more complete than L<HTTP::Lite>.  It supports
-proxies (currently only non-authenticating ones) and redirection.  It
-also correctly resumes after EINTR.
+proxies and redirection.  It also correctly resumes after EINTR.
 
 =head1 SSL SUPPORT
 
 Direct C<https> connections are supported only if L<IO::Socket::SSL> 1.56 or
 greater and L<Net::SSLeay> 1.49 or greater are installed. An exception will be
 thrown if a new enough versions of these modules not installed or if the SSL
-encryption fails. There is no support for C<https> connections via proxy (i.e.
-RFC 2817).
+encryption fails. An C<https> connection may be made via an C<http> proxy that
+supports the CONNECT command (i.e. RFC 2817).  You may not proxy C<https> via
+a proxy that itself requires C<https> to communicate.
 
 SSL provides two distinct capabilities:
 
@@ -1294,6 +1509,32 @@ client certificate for authentication to a server or controlling the choice of
 cipher used for the SSL connection. See L<IO::Socket::SSL> documentation for
 details.
 
+=head1 PROXY SUPPORT
+
+HTTP::Tiny can proxy both C<http> and C<https> requests.  Only Basic proxy
+authorization is supported and it must be provided as part of the proxy URL:
+C<http://user:pass@proxy.example.com/>.
+
+HTTP::Tiny supports the following proxy environment variables:
+
+=for :list
+* http_proxy
+* https_proxy or HTTPS_PROXY
+* all_proxy or ALL_PROXY
+
+Tunnelling C<https> over an C<http> proxy using the CONNECT method is
+supported.  If your proxy uses C<https> itself, you can not tunnel C<https>
+over it.
+
+Be warned that proxying an C<https> connection opens you to the risk of a
+man-in-the-middle attack by the proxy server.
+
+The C<no_proxy> environment variable is supported in the format of a
+comma-separated list of domain extensions proxy should not be used for.
+
+Proxy arguments passed to C<new> will override their corresponding
+environment variables.
+
 =head1 LIMITATIONS
 
 HTTP::Tiny is I<conditionally compliant> with the
@@ -1327,25 +1568,7 @@ mandated by the specification.  There is no automatic support for status 305
 
 =item *
 
-Persistent connections are not supported.  The C<Connection> header will
-always be set to C<close>.
-
-=item *
-
 Cookie support requires L<HTTP::CookieJar> or an equivalent class.
-
-=item *
-
-Only the C<http_proxy> environment variable is supported in the format
-C<http://HOST:PORT/>.  If a C<proxy> argument is passed to C<new> (including
-undef), then the C<http_proxy> environment variable is ignored.
-
-=item *
-
-C<no_proxy> environment variable is supported in the format comma-separated
-list of domain extensions proxy should not be used for.  If a C<no_proxy>
-argument is passed to C<new>, then the C<no_proxy> environment variable is
-ignored.
 
 =item *
 
