@@ -23,7 +23,7 @@ A hashref of default headers to apply to requests
 * C<local_address>
 The local IP address to bind to
 * C<keep_alive>
-Set to true if we should try to reuse the last connection
+Whether to reuse the last connection for the same scheme, host and port (defaults to 1)
 * C<max_redirect>
 Maximum number of redirects allowed (defaults to 5)
 * C<max_size>
@@ -88,6 +88,7 @@ sub new {
     my $self = {
         max_redirect => 5,
         timeout      => 60,
+        keep_alive   => 1,
         verify_SSL   => $args{verify_SSL} || $args{verify_ssl} || 0, # no verification by default
         no_proxy     => $ENV{no_proxy},
     };
