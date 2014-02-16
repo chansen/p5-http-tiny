@@ -23,7 +23,7 @@ A hashref of default headers to apply to requests
 * C<local_address>
 The local IP address to bind to
 * C<keep_alive>
-Whether to reuse the last connection for the same scheme, host and port (defaults to 1)
+Whether to reuse the last connection (if for the same scheme, host and port) (defaults to 1)
 * C<max_redirect>
 Maximum number of redirects allowed (defaults to 5)
 * C<max_size>
@@ -48,6 +48,12 @@ Exceptions from C<max_size>, C<timeout> or other errors will result in a
 pseudo-HTTP status code of 599 and a reason of "Internal Exception". The
 content field in the response will contain the text of the exception.
 
+The C<keep_alive> parameter enables a persistent connection, but only to a
+single destination scheme, host and port.  Also, if any connection-relevant
+attributes are modified, a persistent connection will be dropped.  If you want
+persistent connections across multiple destinations, use multiple HTTP::Tiny
+objects.
+
 See L</SSL SUPPORT> for more on the C<verify_SSL> and C<SSL_options> attributes.
 
 =cut
@@ -59,13 +65,16 @@ BEGIN {
         local_address max_redirect max_size proxy no_proxy timeout
         SSL_options verify_SSL
     );
+    my %persist_ok = map {; $_ => 1 } qw(
+        cookie_jar default_headers max_redirect max_size
+    );
     no strict 'refs';
     no warnings 'uninitialized';
     for my $accessor ( @attributes ) {
         *{$accessor} = sub {
             @_ > 1
                 ? do {
-                    delete $_[0]->{handle} if $_[1] ne $_[0]->{$accessor};
+                    delete $_[0]->{handle} if !$persist_ok{$accessor} && $_[1] ne $_[0]->{$accessor};
                     $_[0]->{$accessor} = $_[1]
                 }
                 : $_[0]->{$accessor};

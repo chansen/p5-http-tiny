@@ -52,6 +52,10 @@ $h->timeout(60);
 test_ht( "Same timeout", 1, 'http://foo.com' );
 
 new_ht();
+$h->default_headers({ 'X-Foo' => 'Bar' });
+test_ht( "Default headers change", 1, 'http://foo.com' );
+
+new_ht();
 $h->{handle}->close;
 test_ht( "Socket closed", 0, 'http://foo.com' );
 
