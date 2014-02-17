@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+0.041     2014-02-17 13:07:54-05:00 America/New_York
+
     [no code change, only an amended Changes file]
 
     [INCOMPATIBLE CHANGES (from 0.039)]
