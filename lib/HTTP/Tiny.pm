@@ -1110,7 +1110,7 @@ sub write_header_lines {
     (@_ == 2 || @_ == 3 && ref $_[1] eq 'HASH') || die(q/Usage: $handle->write_header_lines(headers[,prefix])/ . "\n");
     my($self, $headers, $prefix_data) = @_;
 
-    my $buf = ($prefix_data ? $prefix_data : '');
+    my $buf = (defined $prefix_data ? $prefix_data : '');
     while (my ($k, $v) = each %$headers) {
         my $field_name = lc $k;
         if (exists $HeaderCase{$field_name}) {
