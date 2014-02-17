@@ -1317,6 +1317,9 @@ sub _do_timeout {
 sub can_read {
     @_ == 1 || @_ == 2 || die(q/Usage: $handle->can_read([timeout])/ . "\n");
     my $self = shift;
+    if ( ref($self->{fh}) eq 'IO::Socket::SSL' ) {
+        return 1 if $self->{fh}->pending;
+    }
     return $self->_do_timeout('read', @_)
 }
 
