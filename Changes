@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+0.040     2014-02-17 13:02:47-05:00 America/New_York
+
     [INCOMPATIBLE CHANGES]
 
     - The 'proxy' attribute no longer takes precedence over the
