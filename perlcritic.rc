@@ -7,6 +7,9 @@ allow = $@ $!
 [TestingAndDebugging::ProhibitNoStrict]
 allow = refs
 
+[Variables::ProhibitEvilVariables]
+variables = $DB::single
+
 # Turn these off
 [-BuiltinFunctions::ProhibitStringyEval]
 [-ControlStructures::ProhibitPostfixControls]

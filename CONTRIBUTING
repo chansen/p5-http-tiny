@@ -4,8 +4,23 @@ Thank you for considering contributing to this distribution.  This file
 contains instructions that will help you work with the source code.
 
 The distribution is managed with Dist::Zilla.  This means than many of the
-usual files you might expect are not in the repository, but are generated
-at release time (e.g. Makefile.PL).
+usual files you might expect are not in the repository, but are generated at
+release time (e.g. Makefile.PL).
+
+Generally, **you do not need Dist::Zilla to contribute patches**.  You do need
+Dist::Zilla to create a tarball and/or install from the repository.  See below
+for guidance.
+
+### Acceptable contributions
+
+HTTP::Tiny is considered nearly feature-complete.  The only features likely to
+be added are those that improve compliance with RFC 2616.  If you have ideas
+for other features, please look at
+[HTTP::Tiny::UA](http://p3rl.org/HTTP::Tiny::UA/) and consider adding your
+feature there.
+
+Bug fixes and performance improvements that do not bloat the code will be
+considered for inclusion.
 
 ### Getting dependencies
 
@@ -27,22 +42,16 @@ You can run tests directly using the `prove` tool:
     $ prove -l
     $ prove -lv t/some_test_file.t
 
-For most distributions, `prove` is entirely sufficent for you to test any
-patches you have.
+For most of my distributions, `prove` is entirely sufficient for you to test any
+patches you have. I use `prove` for 99% of my testing during development.
 
 ### Code style and tidying
 
-Please try to match any existing coding style.  If there is a `.perltidyrc`
-file, please install Perl::Tidy and use perltidy before submitting patches.
-
-If there is a `tidyall.ini` file, you can also install Code::TidyAll and run
-`tidyall` on a file or `tidyall -a` to tidy all files.
+Please try to match any existing coding style.
 
 ### Patching documentation
 
 Much of the documentation Pod is generated at release time.
-Depending on the distribution, some documentation may be written in a Pod
-dialect called WikiDoc. (See Pod::WikiDoc on CPAN.)
 
 If you would like to submit a documentation edit, please limit yourself to the
 documentation you see.
@@ -50,12 +59,34 @@ documentation you see.
 If you see typos or documentation issues in the generated docs, please
 email or open a bug ticket instead of patching.
 
-### Learning Dist::Zilla
+### Installing from the repository
 
-Dist::Zilla is a very powerful authoring tool, but requires a number of
-author-specific plugins.  If you would like to use it for contributing,
-install it from CPAN, then run one of the following commands, depending on
-your CPAN client:
+If you want to install directly from the repository, you need to have
+Dist::Zilla installed (see below).  If this is a burden to you, I welcome
+patches against a CPAN tarball instead of the repository.
+
+### Installing and using Dist::Zilla
+
+Dist::Zilla is a very powerful authoring tool, optimized for maintaining a
+large number of distributions with a high degree of automation, but it has a
+large dependency chain, a bit of a learning curve and requires a number of
+author-specific plugins.
+
+To install it from CPAN, I recommend one of the following approaches for
+the quickest installation:
+
+    # using CPAN.pm, but bypassing non-functional pod tests
+    $ cpan TAP::Harness::Restricted
+    $ PERL_MM_USE_DEFAULT=1 HARNESS_CLASS=TAP::Harness::Restricted cpan Dist::Zilla
+
+    # using cpanm, bypassing *all* tests
+    $ cpanm -n Dist::Zilla
+
+In either case, it's probably going to take about 10 minutes.  Go for a walk,
+go get a cup of your favorite beverage, take a bathroom break, or whatever.
+When you get back, Dist::Zilla should be ready for you.
+
+Then you need to install any plugins specific to this distribution:
 
     $ cpan `dzil authordeps`
     $ dzil authordeps | cpanm
@@ -65,6 +96,10 @@ Once installed, here are some dzil commands you might try:
     $ dzil build
     $ dzil test
     $ dzil xtest
+
+To install from the repository, use:
+
+    $ dzil install
 
 You can learn more about Dist::Zilla at http://dzil.org/
 
