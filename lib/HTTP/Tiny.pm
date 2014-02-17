@@ -1408,19 +1408,20 @@ sub _ssl_args {
 1;
 
 =for Pod::Coverage
+SSL_options
 agent
 cookie_jar
 default_headers
+http_proxy
+https_proxy
+keep_alive
 local_address
 max_redirect
 max_size
-http_proxy
-https_proxy
-proxy
 no_proxy
+proxy
 timeout
 verify_SSL
-SSL_options
 
 =head1 SYNOPSIS
 
