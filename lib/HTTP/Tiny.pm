@@ -1104,11 +1104,13 @@ my %HeaderCase = (
     'x-xss-protection' => 'X-XSS-Protection',
 );
 
+# to avoid multiple small writes and hence nagle, you can pass the method line or anything else to
+# combine writes.
 sub write_header_lines {
-    (@_ == 2 && ref $_[1] eq 'HASH') || die(q/Usage: $handle->write_header_lines(headers)/ . "\n");
-    my($self, $headers) = @_;
+    (@_ == 2 || @_ == 3 && ref $_[1] eq 'HASH') || die(q/Usage: $handle->write_header_lines(headers[,prefix])/ . "\n");
+    my($self, $headers, $prefix_data) = @_;
 
-    my $buf = '';
+    my $buf = ($prefix_data ? $prefix_data : '');
     while (my ($k, $v) = each %$headers) {
         my $field_name = lc $k;
         if (exists $HeaderCase{$field_name}) {
@@ -1279,8 +1281,7 @@ sub write_request_header {
     @_ == 4 || die(q/Usage: $handle->write_request_header(method, request_uri, headers)/ . "\n");
     my ($self, $method, $request_uri, $headers) = @_;
 
-    return $self->write("$method $request_uri HTTP/1.1\x0D\x0A")
-         + $self->write_header_lines($headers);
+    return $self->write_header_lines($headers, "$method $request_uri HTTP/1.1\x0D\x0A");
 }
 
 sub _do_timeout {
