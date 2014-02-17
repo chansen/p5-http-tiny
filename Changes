@@ -2,6 +2,31 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [no code change, only an amended Changes file]
+
+    [INCOMPATIBLE CHANGES (from 0.039)]
+
+    - The 'proxy' attribute no longer takes precedence over the
+      'http_proxy' environment variable.  With the addition of http_proxy
+      and https_proxy attributes (and corresponding environment variable
+      defaults), the legacy 'proxy' attribute now maps to the
+      all_proxy/ALL_PROXY environment variable and only takes effect when
+      other proxy attributes are not defined.
+
+    [ADDED (since 0.039)]
+
+    - Added 'keep_alive' attribute for single-server persistent connections
+      (Clinton Gormley)
+
+    - Added support for Basic authorization with proxies
+
+    - Added support for https proxies via CONNECT
+
+    [FIXED (since 0.039)]
+
+    - Requests are made with one less write for lower latency (Martin
+      Evans)
+
 0.040     2014-02-17 13:02:47-05:00 America/New_York
 
     [INCOMPATIBLE CHANGES]
