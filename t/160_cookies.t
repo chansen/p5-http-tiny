@@ -5,7 +5,6 @@ use warnings;
 
 use File::Basename;
 use Test::More 0.96;
-use t::SimpleCookieJar;
 use t::Util qw[tmpfile rewind slurp monkey_patch dir_list parse_case
   hashify connect_args clear_socket_source set_socket_source sort_headers
   $CRLF $LF];
