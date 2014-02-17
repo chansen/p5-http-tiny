@@ -134,7 +134,7 @@ sub _set_proxies {
         $self->{http_proxy} = $ENV{http_proxy} || $self->{proxy};
         if ( defined $self->{http_proxy} ) {
             $self->_split_proxy( http_proxy => $self->{http_proxy} ); # validate
-            $self->{_has_proxy} = 1;
+            $self->{_has_proxy}{http} = 1;
         }
         else {
             delete $self->{http_proxy};
@@ -145,7 +145,7 @@ sub _set_proxies {
         $self->{https_proxy} = $ENV{https_proxy} || $ENV{HTTPS_PROXY} || $self->{proxy};
         if ( $self->{https_proxy} ) {
             $self->_split_proxy( https_proxy => $self->{https_proxy} ); # validate
-            $self->{_has_proxy} = 1;
+            $self->{_has_proxy}{https} = 1;
         }
         else {
             delete $self->{https_proxy};
@@ -537,7 +537,7 @@ sub _open_handle {
         keep_alive      => $self->{keep_alive}
     );
 
-    if ($self->{_has_proxy} && ! grep { $host =~ /\Q$_\E$/ } @{$self->{no_proxy}}) {
+    if ($self->{_has_proxy}{$scheme} && ! grep { $host =~ /\Q$_\E$/ } @{$self->{no_proxy}}) {
         return $self->_proxy_connect( $request, $handle );
     }
     else {
