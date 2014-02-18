@@ -416,9 +416,6 @@ array reference, the key will be repeated with each of the values of the array
 reference.  If data is provided as a hash reference, the key/value pairs in the
 resulting string will be sorted by key and value for consistent ordering.
 
-To preserve the order (r
-
-
 =cut
 
 sub www_form_urlencode {
@@ -1451,7 +1448,7 @@ verify_SSL
 
 =head1 DESCRIPTION
 
-This is a very simple HTTP/1.1 client, designed for doing simple GET
+This is a very simple HTTP/1.1 client, designed for doing simple
 requests without the overhead of a large framework like L<LWP::UserAgent>.
 
 It is more correct and more complete than L<HTTP::Lite>.  It supports
@@ -1606,7 +1603,7 @@ L<HTTP::Tiny::UA>.
 =head1 SEE ALSO
 
 =for :list
-* L<HTTP::Tiny::UA> — Higher level UA features for HTTP::Tiny
+* L<HTTP::Tiny::UA> - Higher level UA features for HTTP::Tiny
 * L<HTTP::Thin> - HTTP::Tiny wrapper with L<HTTP::Request>/L<HTTP::Response> compatibility
 * L<HTTP::Tiny::Mech> - Wrap L<WWW::Mechanize> instance in HTTP::Tiny compatible interface
 * L<IO::Socket::IP> - Required for IPv6 support
