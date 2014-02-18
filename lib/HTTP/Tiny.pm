@@ -843,6 +843,9 @@ use warnings;
 use Errno      qw[EINTR EPIPE];
 use IO::Socket qw[SOCK_STREAM];
 
+my $SOCKET_CLASS = eval { require IO::Socket::IP; IO::Socket::IP->VERSION(0.25) }
+    ? 'IO::Socket::IP' : 'IO::Socket::INET';
+
 sub BUFSIZE () { 32768 } ## no critic
 
 my $Printable = sub {
@@ -879,7 +882,7 @@ sub connect {
     elsif ( $scheme ne 'http' ) {
       die(qq/Unsupported URL scheme '$scheme'\n/);
     }
-    $self->{fh} = 'IO::Socket::INET'->new(
+    $self->{fh} = $SOCKET_CLASS->new(
         PeerHost  => $host,
         PeerPort  => $port,
         $self->{local_address} ?
@@ -1449,6 +1452,9 @@ requests without the overhead of a large framework like L<LWP::UserAgent>.
 It is more correct and more complete than L<HTTP::Lite>.  It supports
 proxies and redirection.  It also correctly resumes after EINTR.
 
+If L<IO::Socket::IP> 0.25 or later is installed, HTTP::Tiny will use it instead
+of L<IO::Socket::INET> for transparent support for both IPv4 and IPv6.
+
 =head1 SSL SUPPORT
 
 Direct C<https> connections are supported only if L<IO::Socket::SSL> 1.56 or
@@ -1588,10 +1594,6 @@ Only 'chunked' C<Transfer-Encoding> is supported.
 
 There is no support for a Request-URI of '*' for the 'OPTIONS' request.
 
-=item *
-
-There is no support for IPv6 of any kind.
-
 =back
 
 Despite the limitations listed above, HTTP::Tiny is considered nearly
@@ -1604,6 +1606,7 @@ transport, please consider them for L<HTTP::Tiny::UA> instead.
 * L<HTTP::Tiny::UA> — Higher level UA features for HTTP::Tiny
 * L<HTTP::Thin> - HTTP::Tiny wrapper with L<HTTP::Request>/L<HTTP::Response> compatibility
 * L<HTTP::Tiny::Mech> - Wrap L<WWW::Mechanize> instance in HTTP::Tiny compatible interface
+* L<IO::Socket::IP> - Required for IPv6 support
 * L<IO::Socket::SSL> - Required for SSL support
 * L<LWP::UserAgent> - If HTTP::Tiny isn't enough for you, this is the "standard" way to do things
 * L<Mozilla::CA> - Required if you want to validate SSL certificates

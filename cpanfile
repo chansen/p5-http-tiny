@@ -8,6 +8,7 @@ requires "perl" => "5.006";
 requires "strict" => "0";
 requires "warnings" => "0";
 recommends "HTTP::CookieJar" => "0.001";
+recommends "IO::Socket::IP" => "0.25";
 recommends "IO::Socket::SSL" => "1.42";
 recommends "Mozilla::CA" => "20120823";
 recommends "Net::SSLeay" => "1.49";
