@@ -1460,6 +1460,8 @@ proxies and redirection.  It also correctly resumes after EINTR.
 If L<IO::Socket::IP> 0.25 or later is installed, HTTP::Tiny will use it instead
 of L<IO::Socket::INET> for transparent support for both IPv4 and IPv6.
 
+Cookie support requires L<HTTP::CookieJar> or an equivalent class.
+
 =head1 SSL SUPPORT
 
 Direct C<https> connections are supported only if L<IO::Socket::SSL> 1.56 or
@@ -1584,10 +1586,6 @@ mandated by the specification.  There is no automatic support for status 305
 
 =item *
 
-Cookie support requires L<HTTP::CookieJar> or an equivalent class.
-
-=item *
-
 There is no provision for delaying a request body using an C<Expect> header.
 Unexpected C<1XX> responses are silently ignored as per the specification.
 
@@ -1601,9 +1599,9 @@ There is no support for a Request-URI of '*' for the 'OPTIONS' request.
 
 =back
 
-Despite the limitations listed above, HTTP::Tiny is considered nearly
-feature-complete.  If there are enhancements unrelated to the underlying
-transport, please consider them for L<HTTP::Tiny::UA> instead.
+Despite the limitations listed above, HTTP::Tiny is considered
+feature-complete.  New feature requests should be directed to
+L<HTTP::Tiny::UA>.
 
 =head1 SEE ALSO
 
