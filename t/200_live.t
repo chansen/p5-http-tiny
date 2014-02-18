@@ -22,7 +22,12 @@ plan 'skip_all' => "Internet connection timed out"
     Timeout   => 10,
   );
 
-my $response = HTTP::Tiny->new->get($test_url);
+my $ua = HTTP::Tiny->new;
+my $response = $ua->get($test_url);
+if ( $ua->{handle} ) {
+    my $socket_class = ref $ua->{handle}{fh};
+    diag "HTTP::Tiny using $socket_class version " . $socket_class->VERSION;
+}
 
 ok( $response->{status} ne '599', "Request to $test_url completed" )
   or dump_hash($response);

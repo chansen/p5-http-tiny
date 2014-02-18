@@ -843,8 +843,13 @@ use warnings;
 use Errno      qw[EINTR EPIPE];
 use IO::Socket qw[SOCK_STREAM];
 
-my $SOCKET_CLASS = eval { require IO::Socket::IP; IO::Socket::IP->VERSION(0.25) }
-    ? 'IO::Socket::IP' : 'IO::Socket::INET';
+# PERL_HTTP_TINY_IPV4_ONLY is a private environment variable to force old
+# behavior if someone is unable to boostrap CPAN from a new perl install; it is
+# not intended for general, per-client use and may be removed in the future
+my $SOCKET_CLASS =
+    $ENV{PERL_HTTP_TINY_IPV4_ONLY} ? 'IO::Socket::INET' :
+    eval { require IO::Socket::IP; IO::Socket::IP->VERSION(0.25) } ? 'IO::Socket::IP' :
+    'IO::Socket::INET';
 
 sub BUFSIZE () { 32768 } ## no critic
 
