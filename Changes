@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+0.043     2014-02-20 20:40:23-05:00 America/New_York
+
     [FIXED]
 
     - Does not send absolute request URI when tunneling SSL via proxy
