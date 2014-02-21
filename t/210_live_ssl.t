@@ -21,9 +21,6 @@ use HTTP::Tiny;
 plan skip_all => 'Only run for $ENV{AUTOMATED_TESTING}'
   unless $ENV{AUTOMATED_TESTING};
 
-plan skip_all => "Can't test SSL with http_proxy set"
-  if $ENV{http_proxy};
-
 use IPC::Cmd qw/can_run/;
 
 if ( can_run('openssl') ) {

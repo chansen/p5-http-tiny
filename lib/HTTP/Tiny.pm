@@ -546,8 +546,6 @@ sub _open_handle {
 sub _proxy_connect {
     my ($self, $request, $handle) = @_;
 
-    $request->{uri} = "$request->{scheme}://$request->{host_port}$request->{uri}";
-
     my @proxy_vars;
     if ( $request->{scheme} eq 'https' ) {
         Carp::croak(qq{No https_proxy defined}) unless $self->{https_proxy};
@@ -569,8 +567,13 @@ sub _proxy_connect {
 
     $handle->connect($p_scheme, $p_host, $p_port);
 
-    $self->_create_proxy_tunnel( $request, $handle )
-        if $request->{scheme} eq 'https';
+    if ($request->{scheme} eq 'https') {
+        $self->_create_proxy_tunnel( $request, $handle );
+    }
+    else {
+        # non-tunneled proxy requires absolute URI
+        $request->{uri} = "$request->{scheme}://$request->{host_port}$request->{uri}";
+    }
 
     return $handle;
 }
