@@ -466,6 +466,7 @@ sub _request {
     my $request = {
         method    => $method,
         scheme    => $scheme,
+        host      => $host,
         host_port => ($port == $DefaultPort{$scheme} ? $host : "$host:$port"),
         uri       => $path_query,
         headers   => {},
