@@ -766,31 +766,30 @@ sub _split_url {
     my $url = pop;
 
     # URI regex adapted from the URI module
-    my ($scheme, $authority, $path_query) = $url =~ m<\A([^:/?#]+)://([^/?#]*)([^#]*)>
+    my ($scheme, $host, $path_query) = $url =~ m<\A([^:/?#]+)://([^/?#]*)([^#]*)>
       or die(qq/Cannot parse URL: '$url'\n/);
 
     $scheme     = lc $scheme;
     $path_query = "/$path_query" unless $path_query =~ m<\A/>;
 
-    my ($auth,$host);
-    $authority = (length($authority)) ? $authority : 'localhost';
-    if ( $authority =~ /@/ ) {
-        ($auth,$host) = $authority =~ m/\A([^@]*)@(.*)\z/;   # user:pass@host
+    my $auth = '';
+    if ( (my $i = index $host, '@') != -1 ) {
+        # user:pass@host
+        $auth = substr $host, 0, $i, ''; # take up to the @ for auth
+        substr $host, 0, 1, '';          # knock the @ off the host
+
         # userinfo might be percent escaped, so recover real auth info
         $auth =~ s/%([0-9A-Fa-f]{2})/chr(hex($1))/eg;
     }
     else {
-        $host = $authority;
-        $auth = '';
+        $host = length $host ? $host : 'localhost';
     }
-    $host = lc $host;
-    my $port = do {
-       $host =~ s/:([0-9]*)\z// && length $1
-         ? $1
-         : ($scheme eq 'http' ? 80 : $scheme eq 'https' ? 443 : undef);
-    };
+    my $port = $host =~ s/:(\d*)\z// && length $1 ? $1
+             : $scheme eq 'http'                  ? 80
+             : $scheme eq 'https'                 ? 443
+             : undef;
 
-    return ($scheme, $host, $port, $path_query, $auth);
+    return ($scheme, lc $host, $port, $path_query, $auth);
 }
 
 # Date conversions adapted from HTTP::Date
