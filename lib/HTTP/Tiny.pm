@@ -1467,7 +1467,7 @@ Cookie support requires L<HTTP::CookieJar> or an equivalent class.
 
 Direct C<https> connections are supported only if L<IO::Socket::SSL> 1.56 or
 greater and L<Net::SSLeay> 1.49 or greater are installed. An exception will be
-thrown if a new enough versions of these modules not installed or if the SSL
+thrown if a new enough versions of these modules is not installed or if the SSL
 encryption fails. An C<https> connection may be made via an C<http> proxy that
 supports the CONNECT command (i.e. RFC 2817).  You may not proxy C<https> via
 a proxy that itself requires C<https> to communicate.
