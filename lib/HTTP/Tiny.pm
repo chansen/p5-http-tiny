@@ -323,6 +323,10 @@ Valid options are:
     A code reference that will be called for each chunks of the response
     body received.
 
+The C<Host> header is generated from the URL in accordance with RFC 2616.  It
+is a fatal error to specify C<Host> in the C<headers> option.  Other headers
+may be ignored or overwritten if necessary for transport compliance.
+
 If the C<content> option is a code reference, it will be called iteratively
 to provide the content body of the request.  It should return the empty
 string or undef when the iterator is exhausted.
@@ -641,6 +645,11 @@ sub _prepare_headers_and_cb {
             $request->{headers}{lc $k} = $v;
         }
     }
+
+    if (exists $request->{headers}{'host'}) {
+        die(qq/The 'Host' header must not be provided as header option\n/);
+    }
+
     $request->{headers}{'host'}         = $request->{host_port};
     $request->{headers}{'user-agent'} ||= $self->{agent};
     $request->{headers}{'connection'}   = "close"
