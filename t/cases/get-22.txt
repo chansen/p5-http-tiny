@@ -1,0 +1,20 @@
+new_args
+  default_headers => { Host => 'www.example2.com' }
+url
+  http://example.com/index.html
+expected
+  abcdefghijklmnopqrstuvwxyz1234567890abcdef
+----------
+GET /index.html HTTP/1.1
+Host: www.example2.com
+Connection: close
+User-Agent: HTTP-Tiny/VERSION
+
+----------
+HTTP/1.1 200 OK
+Date: Thu, 03 Feb 1994 00:00:00 GMT
+Content-Type: text/plain
+Content-Length: 44
+
+abcdefghijklmnopqrstuvwxyz1234567890abcdef
+
