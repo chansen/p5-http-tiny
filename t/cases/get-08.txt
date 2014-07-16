@@ -1,5 +1,5 @@
 new_args
-  max_size: 26
+  max_size => 26
 url
   http://example.com/index.html
 expected_rc

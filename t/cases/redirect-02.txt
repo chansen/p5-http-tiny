@@ -1,5 +1,5 @@
 new_args
-  max_redirect: 0
+  max_redirect => 0
 url
   http://example.com/index.html
 expected

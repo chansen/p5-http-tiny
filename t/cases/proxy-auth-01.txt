@@ -3,7 +3,7 @@ url
 expected
   abcdefghijklmnopqrstuvwxyz1234567890abcdef
 new_args
-  proxy: http://foo:bar@proxy.example.com/
+  proxy => 'http://foo:bar@proxy.example.com/'
 
 ----------
 GET http://example.com/index.html HTTP/1.1
