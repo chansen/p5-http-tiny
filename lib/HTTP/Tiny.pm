@@ -14,35 +14,35 @@ use Carp ();
 This constructor returns a new HTTP::Tiny object.  Valid attributes include:
 
 =for :list
-* C<agent>
-A user-agent string (defaults to 'HTTP-Tiny/$VERSION'). If C<agent> ends in a space character, the default user-agent string is appended.
-* C<cookie_jar>
-An instance of L<HTTP::CookieJar> or equivalent class that supports the C<add> and C<cookie_header> methods
-* C<default_headers>
-A hashref of default headers to apply to requests
-* C<local_address>
-The local IP address to bind to
-* C<keep_alive>
-Whether to reuse the last connection (if for the same scheme, host and port) (defaults to 1)
-* C<max_redirect>
-Maximum number of redirects allowed (defaults to 5)
-* C<max_size>
-Maximum response size (only when not using a data callback).  If defined, responses larger than this will return an exception.
-* C<http_proxy>
-URL of a proxy server to use for HTTP connections (default is C<$ENV{http_proxy}> if set)
-* C<https_proxy>
-URL of a proxy server to use for HTTPS connections (default is C<$ENV{https_proxy}> if set)
-* C<proxy>
-URL of a generic proxy server for both HTTP and HTTPS connections (default is C<$ENV{all_proxy}> if set)
-* C<no_proxy>
-List of domain suffixes that should not be proxied.  Must be a comma-separated string or an array reference. (default is C<$ENV{no_proxy}>)
-* C<timeout>
-Request timeout in seconds (default is 60)
-* C<verify_SSL>
-A boolean that indicates whether to validate the SSL certificate of an C<https>
-connection (default is false)
-* C<SSL_options>
-A hashref of C<SSL_*> options to pass through to L<IO::Socket::SSL>
+* C<agent> —
+    A user-agent string (defaults to 'HTTP-Tiny/$VERSION'). If C<agent> — ends in a space character, the default user-agent string is appended.
+* C<cookie_jar> —
+    An instance of L<HTTP::CookieJar> — or equivalent class that supports the C<add> and C<cookie_header> methods
+* C<default_headers> —
+    A hashref of default headers to apply to requests
+* C<local_address> —
+    The local IP address to bind to
+* C<keep_alive> —
+    Whether to reuse the last connection (if for the same scheme, host and port) (defaults to 1)
+* C<max_redirect> —
+    Maximum number of redirects allowed (defaults to 5)
+* C<max_size> —
+    Maximum response size (only when not using a data callback).  If defined, responses larger than this will return an exception.
+* C<http_proxy> —
+    URL of a proxy server to use for HTTP connections (default is C<$ENV{http_proxy}> — if set)
+* C<https_proxy> —
+    URL of a proxy server to use for HTTPS connections (default is C<$ENV{https_proxy}> — if set)
+* C<proxy> —
+    URL of a generic proxy server for both HTTP and HTTPS connections (default is C<$ENV{all_proxy}> — if set)
+* C<no_proxy> —
+    List of domain suffixes that should not be proxied.  Must be a comma-separated string or an array reference. (default is C<$ENV{no_proxy}> —)
+* C<timeout> —
+    Request timeout in seconds (default is 60)
+* C<verify_SSL> —
+    A boolean that indicates whether to validate the SSL certificate of an C<https> —
+    connection (default is false)
+* C<SSL_options> —
+    A hashref of C<SSL_*> — options to pass through to L<IO::Socket::SSL>
 
 Exceptions from C<max_size>, C<timeout> or other errors will result in a
 pseudo-HTTP status code of 599 and a reason of "Internal Exception". The
@@ -309,19 +309,19 @@ A hashref of options may be appended to modify the request.
 Valid options are:
 
 =for :list
-* C<headers>
-A hashref containing headers to include with the request.  If the value for
-a header is an array reference, the header will be output multiple times with
-each value in the array.  These headers over-write any default headers.
-* C<content>
-A scalar to include as the body of the request OR a code reference
-that will be called iteratively to produce the body of the request
-* C<trailer_callback>
-A code reference that will be called if it exists to provide a hashref
-of trailing headers (only used with chunked transfer-encoding)
-* C<data_callback>
-A code reference that will be called for each chunks of the response
-body received.
+* C<headers> —
+    A hashref containing headers to include with the request.  If the value for
+    a header is an array reference, the header will be output multiple times with
+    each value in the array.  These headers over-write any default headers.
+* C<content> —
+    A scalar to include as the body of the request OR a code reference
+    that will be called iteratively to produce the body of the request
+* C<trailer_callback> —
+    A code reference that will be called if it exists to provide a hashref
+    of trailing headers (only used with chunked transfer-encoding)
+* C<data_callback> —
+    A code reference that will be called for each chunks of the response
+    body received.
 
 If the C<content> option is a code reference, it will be called iteratively
 to provide the content body of the request.  It should return the empty
@@ -341,24 +341,24 @@ The C<request> method returns a hashref containing the response.  The hashref
 will have the following keys:
 
 =for :list
-* C<success>
-Boolean indicating whether the operation returned a 2XX status code
-* C<url>
-URL that provided the response. This is the URL of the request unless
-there were redirections, in which case it is the last URL queried
-in a redirection chain
-* C<status>
-The HTTP status code of the response
-* C<reason>
-The response phrase returned by the server
-* C<content>
-The body of the response.  If the response does not have any content
-or if a data callback is provided to consume the response body,
-this will be the empty string
-* C<headers>
-A hashref of header fields.  All header field names will be normalized
-to be lower case. If a header is repeated, the value will be an arrayref;
-it will otherwise be a scalar string containing the value
+* C<success> —
+    Boolean indicating whether the operation returned a 2XX status code
+* C<url> —
+    URL that provided the response. This is the URL of the request unless
+    there were redirections, in which case it is the last URL queried
+    in a redirection chain
+* C<status> —
+    The HTTP status code of the response
+* C<reason> —
+    The response phrase returned by the server
+* C<content> —
+    The body of the response.  If the response does not have any content
+    or if a data callback is provided to consume the response body,
+    this will be the empty string
+* C<headers> —
+    A hashref of header fields.  All header field names will be normalized
+    to be lower case. If a header is repeated, the value will be an arrayref;
+    it will otherwise be a scalar string containing the value
 
 On an exception during the execution of the request, the C<status> field will
 contain 599, and the C<content> field will contain the text of the exception.
