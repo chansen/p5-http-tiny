@@ -19,7 +19,12 @@ for my $file ( dir_list("t/cases", qr/^get/ ) ) {
 
   my $url = $case->{url}[0];
   my %headers = hashify( $case->{headers} );
-  my %new_args = hashify( $case->{new_args} );
+
+  my %new_args;
+  if ($case->{new_args}) {
+    %new_args = eval join("\n", @{ $case->{new_args} });
+    die $@ if $@;
+  }
 
   my %options;
   $options{headers} = \%headers if %headers;

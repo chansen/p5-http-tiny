@@ -33,7 +33,12 @@ SKIP: for my $class ( qw/t::SimpleCookieJar HTTP::CookieJar/ ) {
                 my $url = $case->{url}[0];
                 my $method = $case->{method}[0] || 'GET';
                 my %headers = hashify( $case->{headers} );
-                my %new_args = hashify( $case->{new_args} );
+
+                my %new_args;
+                if ($case->{new_args}) {
+                    %new_args = eval join("\n", @{ $case->{new_args} });
+                    die $@ if $@;
+                }
 
                 if( exists $headers{Cookie} ) {
                 my $cookies = delete $headers{Cookie};

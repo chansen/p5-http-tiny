@@ -641,7 +641,7 @@ sub _prepare_headers_and_cb {
             $request->{headers}{lc $k} = $v;
         }
     }
-    $request->{headers}{'host'}         = $request->{host_port};
+    $request->{headers}{'host'}       = $request->{headers}{'host'} // $request->{host_port};
     $request->{headers}{'user-agent'} ||= $self->{agent};
     $request->{headers}{'connection'}   = "close"
         unless $self->{keep_alive};
