@@ -8,6 +8,8 @@ Release notes for HTTP-Tiny
       was silently ignored, as the RFC mandates that Host be set from the
       URL, but ignoring it could lead to unexpected, confusing errors.
 
+    - optimized URL splitting
+
 0.043     2014-02-20 20:40:23-05:00 America/New_York
 
     [FIXED]
