@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+0.044     2014-07-16 23:46:09-04:00 America/New_York
+
     [CHANGED]
 
     - Providing a custom 'Host' header is now a fatal exception.  Previously, it
