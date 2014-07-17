@@ -44,6 +44,9 @@ This constructor returns a new HTTP::Tiny object.  Valid attributes include:
 * C<SSL_options> —
     A hashref of C<SSL_*> — options to pass through to L<IO::Socket::SSL>
 
+Passing an explicit C<undef> for C<proxy>, C<http_proxy> or C<https_proxy> will
+prevent getting the corresponding proxies from the environment.
+
 Exceptions from C<max_size>, C<timeout> or other errors will result in a
 pseudo-HTTP status code of 599 and a reason of "Internal Exception". The
 content field in the response will contain the text of the exception.
@@ -120,36 +123,45 @@ sub new {
 sub _set_proxies {
     my ($self) = @_;
 
-    if (! $self->{proxy} ) {
+    # get proxies from %ENV only if not provided; explicit undef will disable
+    # getting proxies from the environment
+
+    # generic proxy
+    if (! exists $self->{proxy} ) {
         $self->{proxy} = $ENV{all_proxy} || $ENV{ALL_PROXY};
-        if ( defined $self->{proxy} ) {
-            $self->_split_proxy( 'generic proxy' => $self->{proxy} ); # validate
-        }
-        else {
-            delete $self->{proxy};
-        }
     }
 
-    if (! $self->{http_proxy} ) {
+    if ( defined $self->{proxy} ) {
+        $self->_split_proxy( 'generic proxy' => $self->{proxy} ); # validate
+    }
+    else {
+        delete $self->{proxy};
+    }
+
+    # http proxy
+    if (! exists $self->{http_proxy} ) {
         $self->{http_proxy} = $ENV{http_proxy} || $self->{proxy};
-        if ( defined $self->{http_proxy} ) {
-            $self->_split_proxy( http_proxy => $self->{http_proxy} ); # validate
-            $self->{_has_proxy}{http} = 1;
-        }
-        else {
-            delete $self->{http_proxy};
-        }
     }
 
-    if (! $self->{https_proxy} ) {
+    if ( defined $self->{http_proxy} ) {
+        $self->_split_proxy( http_proxy => $self->{http_proxy} ); # validate
+        $self->{_has_proxy}{http} = 1;
+    }
+    else {
+        delete $self->{http_proxy};
+    }
+
+    # https proxy
+    if (! exists $self->{https_proxy} ) {
         $self->{https_proxy} = $ENV{https_proxy} || $ENV{HTTPS_PROXY} || $self->{proxy};
-        if ( $self->{https_proxy} ) {
-            $self->_split_proxy( https_proxy => $self->{https_proxy} ); # validate
-            $self->{_has_proxy}{https} = 1;
-        }
-        else {
-            delete $self->{https_proxy};
-        }
+    }
+
+    if ( $self->{https_proxy} ) {
+        $self->_split_proxy( https_proxy => $self->{https_proxy} ); # validate
+        $self->{_has_proxy}{https} = 1;
+    }
+    else {
+        delete $self->{https_proxy};
     }
 
     # Split no_proxy to array reference if not provided as such

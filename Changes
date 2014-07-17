@@ -10,6 +10,9 @@ Release notes for HTTP-Tiny
 
     - optimized URL splitting
 
+    - Passing 'undef' for any proxy attribute will prevent HTTP::Tiny from
+      setting the proxy from the environment.
+
 0.043     2014-02-20 20:40:23-05:00 America/New_York
 
     [FIXED]
