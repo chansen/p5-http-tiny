@@ -781,15 +781,12 @@ sub _split_url {
         # userinfo might be percent escaped, so recover real auth info
         $auth =~ s/%([0-9A-Fa-f]{2})/chr(hex($1))/eg;
     }
-    else {
-        $host = length $host ? $host : 'localhost';
-    }
     my $port = $host =~ s/:(\d*)\z// && length $1 ? $1
              : $scheme eq 'http'                  ? 80
              : $scheme eq 'https'                 ? 443
              : undef;
 
-    return ($scheme, lc $host, $port, $path_query, $auth);
+    return ($scheme, (length $host ? lc $host : "localhost") , $port, $path_query, $auth);
 }
 
 # Date conversions adapted from HTTP::Date
