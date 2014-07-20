@@ -27,13 +27,15 @@ on 'test' => sub {
   requires "IO::Socket::INET" => "0";
   requires "IPC::Cmd" => "0";
   requires "List::Util" => "0";
+  requires "Scalar::Util" => "0";
   requires "Test::More" => "0.96";
   requires "open" => "0";
-  requires "version" => "0";
+  requires "version" => "0.77";
 };
 
 on 'test' => sub {
   recommends "CPAN::Meta" => "0";
+  recommends "CPAN::Meta::Prereqs" => "0";
   recommends "CPAN::Meta::Requirements" => "2.120900";
 };
 
