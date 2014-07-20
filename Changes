@@ -2,6 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Fixed t/002_croakage.t for various operating systems.
+
 0.044     2014-07-16 23:46:09-04:00 America/New_York
 
     [CHANGED]
