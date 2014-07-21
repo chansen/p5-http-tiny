@@ -1149,8 +1149,7 @@ sub write_header_lines {
             $HeaderCase{lc $field_name} = $field_name;
         }
         for (ref $v eq 'ARRAY' ? @$v : $v) {
-            die(qq/Invalid HTTP header field value ($field_name): / . $Printable->($_). "\n")
-                if $_ ne '' && !$_ =~ m/[^\x0D\x0A]/;
+            $_ = '' unless defined $_;
             $buf .= "$field_name: $_\x0D\x0A";
         }
     }

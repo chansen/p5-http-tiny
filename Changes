@@ -2,6 +2,11 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Empty header fields are now allowed; headers with the 'undef' value
+      will be rendered as an empty header.
+
 0.045     2014-07-19 23:17:28-04:00 America/New_York (TRIAL RELEASE)
 
     [FIXED]
