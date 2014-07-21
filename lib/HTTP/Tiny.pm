@@ -1573,9 +1573,20 @@ environment variables.
 =head1 LIMITATIONS
 
 HTTP::Tiny is I<conditionally compliant> with the
-L<HTTP/1.1 specification|http://www.w3.org/Protocols/rfc2616/rfc2616.html>.
+L<HTTP/1.1 specifications|http://www.w3.org/Protocols/>:
+
+=for :list
+* "Message Syntax and Routing" [RFC7230]
+* "Semantics and Content" [RFC7231]
+* "Conditional Requests" [RFC7232]
+* "Range Requests" [RFC7233]
+* "Caching" [RFC7234]
+* "Authentication" [RFC7235]
+
 It attempts to meet all "MUST" requirements of the specification, but does not
-implement all "SHOULD" requirements.
+implement all "SHOULD" requirements.  (Note: it was developed against the
+earlier RFC 2616 specification and may not yet meet the revised RFC 7230-7235
+spec.)
 
 Some particular limitations of note include:
 

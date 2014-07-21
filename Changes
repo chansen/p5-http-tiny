@@ -7,6 +7,10 @@ Release notes for HTTP-Tiny
     - Empty header fields are now allowed; headers with the 'undef' value
       will be rendered as an empty header.
 
+    [DOCUMENTED]
+
+    - Updated HTTP/1.1 spec description from RFC 2616 to RFC 7230-7235
+
 0.045     2014-07-19 23:17:28-04:00 America/New_York (TRIAL RELEASE)
 
     [FIXED]
