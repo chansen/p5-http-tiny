@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+0.046     2014-07-21 10:32:32-04:00 America/New_York
+
     [FIXED]
 
     - Empty header fields are now allowed; headers with the 'undef' value
