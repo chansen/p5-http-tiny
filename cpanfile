@@ -10,7 +10,7 @@ requires "warnings" => "0";
 recommends "HTTP::CookieJar" => "0.001";
 recommends "IO::Socket::IP" => "0.25";
 recommends "IO::Socket::SSL" => "1.42";
-recommends "Mozilla::CA" => "20120823";
+recommends "Mozilla::CA" => "20130114";
 recommends "Net::SSLeay" => "1.49";
 suggests "IO::Socket::SSL" => "1.56";
 
