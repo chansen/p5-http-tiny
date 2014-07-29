@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+0.047     2014-07-29 14:09:05-04:00 America/New_York
+
     [CHANGED]
 
     - Updated Mozilla::CA module recommendation version to 20130114
