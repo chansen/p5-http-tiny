@@ -53,9 +53,9 @@ content field in the response will contain the text of the exception.
 
 The C<keep_alive> parameter enables a persistent connection, but only to a
 single destination scheme, host and port.  Also, if any connection-relevant
-attributes are modified, a persistent connection will be dropped.  If you want
-persistent connections across multiple destinations, use multiple HTTP::Tiny
-objects.
+attributes are modified, or if the process ID or thread ID change, the
+persistent connection will be dropped.  If you want persistent connections
+across multiple destinations, use multiple HTTP::Tiny objects.
 
 See L</SSL SUPPORT> for more on the C<verify_SSL> and C<SSL_options> attributes.
 
@@ -861,6 +861,15 @@ use warnings;
 use Errno      qw[EINTR EPIPE];
 use IO::Socket qw[SOCK_STREAM];
 
+# for thread safety, we need to know thread id or else fake it;
+# requires "threads.pm" to hide it from the minimum version detector
+if ( eval { require "threads.pm"; 1 } ) { ## no critic
+    *_get_tid = sub { threads->tid };
+}
+else {
+    *_get_tid = sub () { 0 };
+}
+
 # PERL_HTTP_TINY_IPV4_ONLY is a private environment variable to force old
 # behavior if someone is unable to boostrap CPAN from a new perl install; it is
 # not intended for general, per-client use and may be removed in the future
@@ -924,6 +933,8 @@ sub connect {
     $self->{scheme} = $scheme;
     $self->{host} = $host;
     $self->{port} = $port;
+    $self->{pid} = $$;
+    $self->{tid} = _get_tid();
 
     return $self;
 }
@@ -1367,7 +1378,9 @@ sub _assert_ssl {
 sub can_reuse {
     my ($self,$scheme,$host,$port) = @_;
     return 0 if
-         length($self->{rbuf})
+        $self->{pid} != $$
+        || $self->{tid} != _get_tid()
+        || length($self->{rbuf})
         || $scheme ne $self->{scheme}
         || $host ne $self->{host}
         || $port ne $self->{port}
