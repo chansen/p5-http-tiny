@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More 0.88;
+use Test::More 0.96;
 use IO::Socket::INET;
 BEGIN {
     eval { require IO::Socket::SSL; IO::Socket::SSL->VERSION(1.56); 1 };
