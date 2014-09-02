@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+0.049     2014-09-02 11:20:07-04:00 America/New_York
+
     [FIXED]
 
     - 'keep_alive' is now fork-safe and thread-safe
