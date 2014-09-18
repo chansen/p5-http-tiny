@@ -483,6 +483,7 @@ sub _request {
         method    => $method,
         scheme    => $scheme,
         host      => $host,
+        port      => $port,
         host_port => ($port == $DefaultPort{$scheme} ? $host : "$host:$port"),
         uri       => $path_query,
         headers   => {},
@@ -619,9 +620,9 @@ sub _create_proxy_tunnel {
 
     my $connect_request = {
         method    => 'CONNECT',
-        uri       => $request->{host_port},
+        uri       => "$request->{host}:$request->{port}",
         headers   => {
-            host => $request->{host_port},
+            host => "$request->{host}:$request->{port}",
             'user-agent' => $agent,
         }
     };
