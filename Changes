@@ -2,6 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Fixed CONNECT requests for some proxies
+
 0.049     2014-09-02 11:20:07-04:00 America/New_York
 
     [FIXED]
