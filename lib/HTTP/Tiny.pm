@@ -862,15 +862,6 @@ use warnings;
 use Errno      qw[EINTR EPIPE];
 use IO::Socket qw[SOCK_STREAM];
 
-# for thread safety, we need to know thread id or else fake it;
-# requires "threads.pm" to hide it from the minimum version detector
-if ( eval { require "threads.pm"; 1 } ) { ## no critic
-    *_get_tid = sub { threads->tid };
-}
-else {
-    *_get_tid = sub () { 0 };
-}
-
 # PERL_HTTP_TINY_IPV4_ONLY is a private environment variable to force old
 # behavior if someone is unable to boostrap CPAN from a new perl install; it is
 # not intended for general, per-client use and may be removed in the future
@@ -1412,6 +1403,12 @@ sub _find_CA_file {
 
     die qq/Couldn't find a CA bundle with which to verify the SSL certificate.\n/
       . qq/Try installing Mozilla::CA from CPAN\n/;
+}
+
+# for thread safety, we need to know thread id if threads are loaded
+sub _get_tid {
+    no warnings 'reserved'; # for 'threads'
+    return threads->can("tid") ? threads->tid : 0;
 }
 
 sub _ssl_args {
