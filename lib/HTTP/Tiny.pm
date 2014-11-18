@@ -3,7 +3,8 @@ package HTTP::Tiny;
 use strict;
 use warnings;
 # ABSTRACT: A small, simple, correct HTTP/1.1 client
-# VERSION
+
+our $VERSION = '0.051';
 
 use Carp ();
 
@@ -471,7 +472,7 @@ my %DefaultPort = (
 sub _agent {
     my $class = ref($_[0]) || $_[0];
     (my $default_agent = $class) =~ s{::}{-}g;
-    return $default_agent . "/" . ($class->VERSION || 0);
+    return $default_agent . "/" . $class->VERSION;
 }
 
 sub _request {
