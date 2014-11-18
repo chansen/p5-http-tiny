@@ -2,6 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Checks for threads without loading threads.pm
+
 0.050     2014-09-23 15:30:18-04:00 America/New_York
 
     [FIXED]
