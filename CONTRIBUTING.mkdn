@@ -5,35 +5,21 @@ contains instructions that will help you work with the source code.
 
 The distribution is managed with Dist::Zilla.  This means than many of the
 usual files you might expect are not in the repository, but are generated at
-release time (e.g. Makefile.PL).
+release time, as is much of the documentation.  Some generated files are
+kept in the repository as a convenience (e.g. Makefile.PL or cpanfile).
 
 Generally, **you do not need Dist::Zilla to contribute patches**.  You do need
-Dist::Zilla to create a tarball and/or install from the repository.  See below
-for guidance.
-
-### Acceptable contributions
-
-HTTP::Tiny is considered nearly feature-complete.  The only features likely to
-be added are those that improve compliance with RFC 2616.  If you have ideas
-for other features, please look at
-[HTTP::Tiny::UA](http://p3rl.org/HTTP::Tiny::UA/) and consider adding your
-feature there.
-
-Bug fixes and performance improvements that do not bloat the code will be
-considered for inclusion.
+Dist::Zilla to create a tarball.  See below for guidance.
 
 ### Getting dependencies
 
-See the included `cpanfile` file for a list of dependencies.  If you have
-App::cpanminus 1.6 or later installed, you can use `cpanm` to satisfy
-dependencies like this:
+If you have App::cpanminus 1.6 or later installed, you can use `cpanm` to
+satisfy dependencies like this:
 
     $ cpanm --installdeps .
 
-Otherwise, you can install Module::CPANfile 1.0002 or later and then satisfy
-dependencies with the regular `cpan` client and `cpanfile-dump`:
-
-    $ cpan `cpanfile-dump`
+Otherwise, look for either a `Makefile.PL` or `cpanfile` file for
+a list of dependencies to satisfy.
 
 ### Running tests
 
@@ -47,23 +33,23 @@ patches you have. I use `prove` for 99% of my testing during development.
 
 ### Code style and tidying
 
-Please try to match any existing coding style.
+Please try to match any existing coding style.  If there is a `.perltidyrc`
+file, please install Perl::Tidy and use perltidy before submitting patches.
+
+If there is a `tidyall.ini` file, you can also install Code::TidyAll and run
+`tidyall` on a file or `tidyall -a` to tidy all files.
 
 ### Patching documentation
 
-Much of the documentation Pod is generated at release time.
+Much of the documentation Pod is generated at release time.  Some is
+generated boilerplate; other documentation is built from pseudo-POD
+directives in the source like C<=method> or C<=func>.
 
-If you would like to submit a documentation edit, please limit yourself to the
-documentation you see.
+If you would like to submit a documentation edit, please limit yourself to
+the documentation you see.
 
 If you see typos or documentation issues in the generated docs, please
 email or open a bug ticket instead of patching.
-
-### Installing from the repository
-
-If you want to install directly from the repository, you need to have
-Dist::Zilla installed (see below).  If this is a burden to you, I welcome
-patches against a CPAN tarball instead of the repository.
 
 ### Installing and using Dist::Zilla
 
@@ -96,10 +82,6 @@ Once installed, here are some dzil commands you might try:
     $ dzil build
     $ dzil test
     $ dzil xtest
-
-To install from the repository, use:
-
-    $ dzil install
 
 You can learn more about Dist::Zilla at http://dzil.org/
 
