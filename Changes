@@ -2,6 +2,11 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [CHANGED]
+
+    - Proxy allowed from environment variable HTTP_PROXY (uppercase) unless
+      REQUEST_METHOD is also set.
+
 0.051     2014-11-17 22:58:44-05:00 America/New_York
 
     [FIXED]
