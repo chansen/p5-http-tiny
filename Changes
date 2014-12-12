@@ -2,6 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [ADDED]
+
+    - Added more fallback paths to find CA files (thanks golang)
+
 0.053     2014-12-11 23:42:17-05:00 America/New_York
 
     [FIXED]
