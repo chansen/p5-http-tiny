@@ -6,7 +6,13 @@ use warnings;
 use File::Basename;
 use Test::More 0.88;
 
+use t::Util qw[ monkey_patch ];
 use HTTP::Tiny;
+
+BEGIN {
+    monkey_patch();
+}
+
 
 # Require a true value
 for my $proxy (undef, "", 0){

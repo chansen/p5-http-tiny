@@ -2,6 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Defended tests against HTTP_PROXY set in the environment
+
 0.052     2014-12-11 15:23:54-05:00 America/New_York
 
     [CHANGED]
