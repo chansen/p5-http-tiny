@@ -1228,7 +1228,7 @@ sub write_content_body {
     }
 
     $len == $content_length
-      or die(qq/Content-Length missmatch (got: $len expected: $content_length)\n/);
+      or die(qq/Content-Length mismatch (got: $len expected: $content_length)\n/);
 
     return $len;
 }

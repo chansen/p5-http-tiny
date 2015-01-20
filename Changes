@@ -6,6 +6,10 @@ Release notes for HTTP-Tiny
 
     - Added more fallback paths to find CA files (thanks golang)
 
+    [DOCUMENTED]
+
+    - Fixed a typo
+
 0.053     2014-12-11 23:42:17-05:00 America/New_York
 
     [FIXED]
