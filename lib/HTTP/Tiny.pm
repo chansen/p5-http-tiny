@@ -28,7 +28,7 @@ This constructor returns a new HTTP::Tiny object.  Valid attributes include:
 * C<max_redirect> —
     Maximum number of redirects allowed (defaults to 5)
 * C<max_size> —
-    Maximum response size (only when not using a data callback).  If defined, responses larger than this will return an exception.
+    Maximum response size in bytes (only when not using a data callback).  If defined, responses larger than this will return an exception.
 * C<http_proxy> —
     URL of a proxy server to use for HTTP connections (default is C<$ENV{http_proxy}> — if set)
 * C<https_proxy> —
