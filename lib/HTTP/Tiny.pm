@@ -766,7 +766,7 @@ sub _maybe_redirect {
     my ($self, $request, $response, $args) = @_;
     my $headers = $response->{headers};
     my ($status, $method) = ($response->{status}, $request->{method});
-    if (($status eq '303' or ($status =~ /^30[127]/ && $method =~ /^GET|HEAD$/))
+    if (($status eq '303' or ($status =~ /^30[1278]/ && $method =~ /^GET|HEAD$/))
         and $headers->{location}
         and ++$args->{redirects} <= $self->{max_redirect}
     ) {
@@ -1631,10 +1631,10 @@ L<URI::_punycode> and L<Net::IDN::Encode>.
 =item *
 
 Redirection is very strict against the specification.  Redirection is only
-automatic for response codes 301, 302 and 307 if the request method is 'GET' or
-'HEAD'.  Response code 303 is always converted into a 'GET' redirection, as
-mandated by the specification.  There is no automatic support for status 305
-("Use proxy") redirections.
+automatic for response codes 301, 302, 307 and 308 if the request method is
+'GET' or 'HEAD'.  Response code 303 is always converted into a 'GET'
+redirection, as mandated by the specification.  There is no automatic support
+for status 305 ("Use proxy") redirections.
 
 =item *
 
