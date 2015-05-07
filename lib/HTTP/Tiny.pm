@@ -86,6 +86,24 @@ BEGIN {
     }
 }
 
+sub can_ssl {
+    my($ok, $reason) = (1, '');
+
+    # Need IO::Socket::SSL 1.42 for SSL_create_ctx_callback
+    unless (eval {require IO::Socket::SSL; IO::Socket::SSL->VERSION(1.42)}) {
+        $ok = 0;
+        $reason .= qq/IO::Socket::SSL 1.42 must be installed for https support\n/;
+    }
+
+    # Need Net::SSLeay 1.49 for MODE_AUTO_RETRY
+    unless (eval {require Net::SSLeay; Net::SSLeay->VERSION(1.49)}) {
+        $ok = 0;
+        $reason .= qq/Net::SSLeay 1.49 must be installed for https support\n/;
+    }
+
+    wantarray ? ($ok, $reason) : $ok;
+}
+
 sub agent {
     my($self, $agent) = @_;
     if( @_ > 1 ){
@@ -1362,12 +1380,8 @@ sub can_write {
 }
 
 sub _assert_ssl {
-    # Need IO::Socket::SSL 1.42 for SSL_create_ctx_callback
-    die(qq/IO::Socket::SSL 1.42 must be installed for https support\n/)
-        unless eval {require IO::Socket::SSL; IO::Socket::SSL->VERSION(1.42)};
-    # Need Net::SSLeay 1.49 for MODE_AUTO_RETRY
-    die(qq/Net::SSLeay 1.49 must be installed for https support\n/)
-        unless eval {require Net::SSLeay; Net::SSLeay->VERSION(1.49)};
+    my($ok, $reason) = HTTP::Tiny::can_ssl();
+    die $reason unless $ok;
 }
 
 sub can_reuse {
@@ -1503,9 +1517,12 @@ Cookie support requires L<HTTP::CookieJar> or an equivalent class.
 Direct C<https> connections are supported only if L<IO::Socket::SSL> 1.56 or
 greater and L<Net::SSLeay> 1.49 or greater are installed. An exception will be
 thrown if new enough versions of these modules are not installed or if the SSL
-encryption fails. An C<https> connection may be made via an C<http> proxy that
-supports the CONNECT command (i.e. RFC 2817).  You may not proxy C<https> via
-a proxy that itself requires C<https> to communicate.
+encryption fails. You can also use C<HTTP::Tiny::can_ssl()> utility function
+that returns boolean to see if the required modules are installed.
+
+An C<https> connection may be made via an C<http> proxy that supports the CONNECT
+command (i.e. RFC 2817).  You may not proxy C<https> via a proxy that itself
+requires C<https> to communicate.
 
 SSL provides two distinct capabilities:
 
