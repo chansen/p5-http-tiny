@@ -53,7 +53,21 @@ my $data = {
         default_should_yield => '',
     }
 };
-plan tests => scalar keys %$data;
+plan tests => 1+ scalar keys %$data;
+
+subtest "can_ssl" => sub {
+    ok( HTTP::Tiny->can_ssl, "class method" );
+    ok( HTTP::Tiny->new->can_ssl, "object method, default params" );
+    ok( HTTP::Tiny->new(verify_SSL => 1)->can_ssl, "object method, verify_SSL" );
+
+    my $ht = HTTP::Tiny->new(
+        verify_SSL => 1,
+        SSL_options => { SSL_ca_file => 'adlfadkfadlfad' },
+    );
+    my ($ok, $why) = $ht->can_ssl;
+    ok( ! $ok, "object methods, verify_SSL, bogus CA file (FAILS)" );
+    like( $why, qr/not found or not readable/, "failure reason" );
+};
 
 
 while (my ($url, $data) = each %$data) {

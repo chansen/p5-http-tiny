@@ -87,6 +87,8 @@ BEGIN {
 }
 
 sub can_ssl {
+    my ($self) = @_;
+
     my($ok, $reason) = (1, '');
 
     # Need IO::Socket::SSL 1.42 for SSL_create_ctx_callback
@@ -99,6 +101,18 @@ sub can_ssl {
     unless (eval {require Net::SSLeay; Net::SSLeay->VERSION(1.49)}) {
         $ok = 0;
         $reason .= qq/Net::SSLeay 1.49 must be installed for https support\n/;
+    }
+
+    # If an object, check that SSL config lets us get a CA if necessary
+    if ( ref $self && $self->{verify_SSL} ) {
+        my $handle = HTTP::Tiny::Handle->new(
+            SSL_options => $self->{SSL_options},
+            verify_SSL  => $self->{verify_SSL},
+        );
+        unless ( eval { $handle->_find_CA_file; 1} ) {
+            $ok = 0;
+            $reason .= "$@";
+        }
     }
 
     wantarray ? ($ok, $reason) : $ok;
@@ -1380,7 +1394,7 @@ sub can_write {
 }
 
 sub _assert_ssl {
-    my($ok, $reason) = HTTP::Tiny::can_ssl();
+    my($ok, $reason) = HTTP::Tiny->can_ssl();
     die $reason unless $ok;
 }
 
