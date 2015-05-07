@@ -86,38 +86,6 @@ BEGIN {
     }
 }
 
-sub can_ssl {
-    my ($self) = @_;
-
-    my($ok, $reason) = (1, '');
-
-    # Need IO::Socket::SSL 1.42 for SSL_create_ctx_callback
-    unless (eval {require IO::Socket::SSL; IO::Socket::SSL->VERSION(1.42)}) {
-        $ok = 0;
-        $reason .= qq/IO::Socket::SSL 1.42 must be installed for https support\n/;
-    }
-
-    # Need Net::SSLeay 1.49 for MODE_AUTO_RETRY
-    unless (eval {require Net::SSLeay; Net::SSLeay->VERSION(1.49)}) {
-        $ok = 0;
-        $reason .= qq/Net::SSLeay 1.49 must be installed for https support\n/;
-    }
-
-    # If an object, check that SSL config lets us get a CA if necessary
-    if ( ref $self && $self->{verify_SSL} ) {
-        my $handle = HTTP::Tiny::Handle->new(
-            SSL_options => $self->{SSL_options},
-            verify_SSL  => $self->{verify_SSL},
-        );
-        unless ( eval { $handle->_find_CA_file; 1} ) {
-            $ok = 0;
-            $reason .= "$@";
-        }
-    }
-
-    wantarray ? ($ok, $reason) : $ok;
-}
-
 sub agent {
     my($self, $agent) = @_;
     if( @_ > 1 ){
@@ -492,6 +460,55 @@ sub www_form_urlencode {
     }
 
     return join("&", (ref $data eq 'ARRAY') ? (@terms) : (sort @terms) );
+}
+
+=method can_ssl
+
+    $ok         = HTTP::Tiny->can_ssl;
+    ($ok, $why) = HTTP::Tiny->can_ssl;
+    ($ok, $why) = $http->can_ssl;
+
+Indicates if SSL support is available.  When called as a class object, it
+checks for the correct version of L<Net::SSLeay> and L<IO::Socket::SSL>.
+When called as an object methods, if C<SSL_verify> is true or if C<SSL_verify_mode>
+is set in C<SSL_options>, it checks that a CA file is available.
+
+In scalar context, returns a boolean indicating if SSL is available.
+In list context, returns the boolean and a (possibly multi-line) string of
+errors indicating why SSL isn't available.
+
+=cut
+
+sub can_ssl {
+    my ($self) = @_;
+
+    my($ok, $reason) = (1, '');
+
+    # Need IO::Socket::SSL 1.42 for SSL_create_ctx_callback
+    unless (eval {require IO::Socket::SSL; IO::Socket::SSL->VERSION(1.42)}) {
+        $ok = 0;
+        $reason .= qq/IO::Socket::SSL 1.42 must be installed for https support\n/;
+    }
+
+    # Need Net::SSLeay 1.49 for MODE_AUTO_RETRY
+    unless (eval {require Net::SSLeay; Net::SSLeay->VERSION(1.49)}) {
+        $ok = 0;
+        $reason .= qq/Net::SSLeay 1.49 must be installed for https support\n/;
+    }
+
+    # If an object, check that SSL config lets us get a CA if necessary
+    if ( ref($self) && ( $self->{verify_SSL} || $self->{SSL_options}{SSL_verify_mode} ) ) {
+        my $handle = HTTP::Tiny::Handle->new(
+            SSL_options => $self->{SSL_options},
+            verify_SSL  => $self->{verify_SSL},
+        );
+        unless ( eval { $handle->_find_CA_file; 1 } ) {
+            $ok = 0;
+            $reason .= "$@";
+        }
+    }
+
+    wantarray ? ($ok, $reason) : $ok;
 }
 
 #--------------------------------------------------------------------------#
