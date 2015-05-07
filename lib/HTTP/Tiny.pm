@@ -1389,8 +1389,9 @@ sub can_reuse {
 sub _find_CA_file {
     my $self = shift();
 
-    return $self->{SSL_options}->{SSL_ca_file}
-        if $self->{SSL_options}->{SSL_ca_file} and -e $self->{SSL_options}->{SSL_ca_file};
+    for my $try ($self->{SSL_options}->{SSL_ca_file}, $ENV{SSL_CERT_FILE}) {
+        return $try if $try and -e $try;
+    }
 
     return Mozilla::CA::SSL_ca_file()
         if eval { require Mozilla::CA };
@@ -1533,6 +1534,10 @@ attack|http://en.wikipedia.org/wiki/Man-in-the-middle_attack>.  If you are
 concerned about security, you should enable this option.
 
 Certificate verification requires a file containing trusted CA certificates.
+
+If the environment variable C<SSL_CERT_FILE> is present, HTTP::Tiny
+will try to find a CA certificate file in that location.
+
 If the L<Mozilla::CA> module is installed, HTTP::Tiny will use the CA file
 included with it as a source of trusted CA's.  (This means you trust Mozilla,
 the author of Mozilla::CA, the CPAN mirror where you got Mozilla::CA, the
