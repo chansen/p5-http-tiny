@@ -2,6 +2,22 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [ADDED]
+
+    - Added 'can_ssl' method to detect SSL support before trying and
+      failing with a fatal exception.
+
+    - Added support for 308 redirects
+
+    [FIXED]
+
+    - When specifying a custom CA file, if that file is missing or
+      unreadable, HTTP::Tiny will no longer fall back to a default CA
+
+    [DOCUMENTED]
+
+    - Noted units are bytes for max_size
+
 0.054     2015-01-27 07:18:19-05:00 America/New_York
 
     [ADDED]
