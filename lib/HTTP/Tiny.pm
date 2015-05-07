@@ -1403,11 +1403,15 @@ sub can_reuse {
 sub _find_CA_file {
     my $self = shift();
 
-    return $self->{SSL_options}->{SSL_ca_file}
-        if $self->{SSL_options}->{SSL_ca_file} and -e $self->{SSL_options}->{SSL_ca_file};
+    if ( $self->{SSL_options}->{SSL_ca_file} ) {
+        unless ( -r $self->{SSL_options}->{SSL_ca_file} ) {
+            die qq/SSL_ca_file '$self->{SSL_options}->{SSL_ca_file}' not found or not readable\n/;
+        }
+        return 1;
+    }
 
     return Mozilla::CA::SSL_ca_file()
-        if eval { require Mozilla::CA };
+        if eval { require Mozilla::CA; 1 };
 
     # cert list copied from golang src/crypto/x509/root_unix.go
     foreach my $ca_bundle (
