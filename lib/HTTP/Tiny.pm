@@ -1438,7 +1438,7 @@ sub _find_CA_file {
         unless ( -r $self->{SSL_options}->{SSL_ca_file} ) {
             die qq/SSL_ca_file '$self->{SSL_options}->{SSL_ca_file}' not found or not readable\n/;
         }
-        return 1;
+        return $self->{SSL_options}->{SSL_ca_file};
     }
 
     return Mozilla::CA::SSL_ca_file()
