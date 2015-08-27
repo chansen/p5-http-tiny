@@ -2,6 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [CHANGED]
+
+    - Updated Mozilla::CA module recommendation version to 20150826
+
 0.056     2015-05-19 06:00:40-04:00 America/New_York
 
     - No changes from 0.055
