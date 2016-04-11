@@ -66,7 +66,7 @@ my @attributes;
 BEGIN {
     @attributes = qw(
         cookie_jar default_headers http_proxy https_proxy keep_alive
-        local_address max_redirect max_size proxy no_proxy timeout
+        local_address max_redirect max_size proxy no_proxy
         SSL_options verify_SSL
     );
     my %persist_ok = map {; $_ => 1 } qw(
@@ -93,6 +93,17 @@ sub agent {
             (defined $agent && $agent =~ / $/) ? $agent . $self->_agent : $agent;
     }
     return $self->{agent};
+}
+
+sub timeout {
+    my ($self, $timeout) = @_;
+    if ( @_ > 1 ) {
+        $self->{timeout} = $timeout;
+        if ($self->{handle}) {
+            $self->{handle}->timeout($timeout);
+        }
+    }
+    return $self->{timeout};
 }
 
 sub new {
@@ -946,6 +957,17 @@ sub new {
         SSL_options      => {},
         %args
     }, $class;
+}
+
+sub timeout {
+    my ($self, $timeout) = @_;
+    if ( @_ > 1 ) {
+        $self->{timeout} = $timeout;
+        if ( $self->{fh} && $self->{fh}->can('timeout') ) {
+            $self->{fh}->timeout($timeout);
+        }
+    }
+    return $self->{timeout};
 }
 
 sub connect {
