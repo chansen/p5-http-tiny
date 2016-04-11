@@ -378,6 +378,8 @@ will have the following keys:
     A hashref of header fields.  All header field names will be normalized
     to be lower case. If a header is repeated, the value will be an arrayref;
     it will otherwise be a scalar string containing the value
+* C<redirects>
+    An arrayref of responses in the same order that redirections occured.
 
 On an exception during the execution of the request, the C<status> field will
 contain 599, and the C<content> field will contain the text of the exception.
@@ -561,11 +563,7 @@ sub _request {
         until (substr($response->{status},0,1) ne '1');
 
     $self->_update_cookie_jar( $url, $response ) if $self->{cookie_jar};
-
-    if ( my @redir_args = $self->_maybe_redirect($request, $response, $args) ) {
-        $handle->close;
-        return $self->_request(@redir_args, $args);
-    }
+    my @redir_args = $self->_maybe_redirect($request, $response, $args);
 
     my $known_message_length;
     if ($method eq 'HEAD' || $response->{status} =~ /^[23]04/) {
@@ -573,7 +571,9 @@ sub _request {
         $known_message_length = 1;
     }
     else {
-        my $data_cb = $self->_prepare_data_cb($response, $args);
+        # Ignore any data callbacks during redirection.
+        my $cb_args = @redir_args ? +{} : $args;
+        my $data_cb = $self->_prepare_data_cb($response, $cb_args);
         $known_message_length = $handle->read_body($data_cb, $response);
     }
 
@@ -590,6 +590,16 @@ sub _request {
 
     $response->{success} = substr( $response->{status}, 0, 1 ) eq '2';
     $response->{url} = $url;
+
+    # Push the current response onto the stack of redirects if redirecting.
+    my $redirects = $args->{redirects};
+    if (@redir_args) {
+        push @$redirects, $response;
+        return $self->_request(@redir_args, $args);
+    }
+
+    # Copy the stack of redirects into the response before returning.
+    $response->{redirects} = $redirects;
     return $response;
 }
 
@@ -815,9 +825,11 @@ sub _maybe_redirect {
     my ($self, $request, $response, $args) = @_;
     my $headers = $response->{headers};
     my ($status, $method) = ($response->{status}, $request->{method});
+    my $redirects = $args->{redirects} ||= [];
+
     if (($status eq '303' or ($status =~ /^30[1278]/ && $method =~ /^GET|HEAD$/))
         and $headers->{location}
-        and ++$args->{redirects} <= $self->{max_redirect}
+        and @$redirects < $self->{max_redirect}
     ) {
         my $location = ($headers->{location} =~ /^\//)
             ? "$request->{scheme}://$request->{host_port}$headers->{location}"
