@@ -2,6 +2,11 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - The 'keep_alive' option now also sets the SO_KEEPALIVE option
+      on the underlying socket to help with long-lived, idle connections.
+
 0.056     2015-05-19 06:00:40-04:00 America/New_York
 
     - No changes from 0.055

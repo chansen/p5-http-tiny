@@ -913,6 +913,7 @@ use warnings;
 
 use Errno      qw[EINTR EPIPE];
 use IO::Socket qw[SOCK_STREAM];
+use Socket     qw[SOL_SOCKET SO_KEEPALIVE];
 
 # PERL_HTTP_TINY_IPV4_ONLY is a private environment variable to force old
 # behavior if someone is unable to boostrap CPAN from a new perl install; it is
@@ -966,11 +967,17 @@ sub connect {
         Proto     => 'tcp',
         Type      => SOCK_STREAM,
         Timeout   => $self->{timeout},
-        KeepAlive => !!$self->{keep_alive}
     ) or die(qq/Could not connect to '$host:$port': $@\n/);
 
     binmode($self->{fh})
       or die(qq/Could not binmode() socket: '$!'\n/);
+
+    if ( $self->{keep_alive} ) {
+        unless ( defined( $self->{fh}->setsockopt( SOL_SOCKET, SO_KEEPALIVE, 1 ) ) ) {
+            CORE::close($self->{fh});
+            die(qq/Could not set SO_KEEPALIVE on socket: '$!'\n/);
+        }
+    }
 
     $self->start_ssl($host) if $scheme eq 'https';
 
