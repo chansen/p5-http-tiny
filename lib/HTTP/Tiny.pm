@@ -524,6 +524,38 @@ sub can_ssl {
     wantarray ? ($ok, $reason) : $ok;
 }
 
+=method connected
+
+    $host = $http->connected;
+    ($host, $port) = $http->connected;
+
+Indicates if a connection to a peer is being kept alive, per the C<keep_alive>
+option.
+
+In scalar context, returns the peer host and port, joined with a colon, or
+C<undef> (if no peer is connected).
+In list context, returns the peer host and port or an empty list (if no peer
+is connected).
+
+=cut
+
+sub connected {
+    my ($self) = @_;
+
+    # If a socket exists...
+    if ($self->{handle} && $self->{handle}{fh}) {
+        my $socket = $self->{handle}{fh};
+
+        # ...and is connected, return the peer host and port.
+        if ($socket->connected) {
+            return wantarray
+                ? ($socket->peerhost, $socket->peerport)
+                : join(':', $socket->peerhost, $socket->peerport);
+        }
+    }
+    return undef;
+}
+
 #--------------------------------------------------------------------------#
 # private methods
 #--------------------------------------------------------------------------#
