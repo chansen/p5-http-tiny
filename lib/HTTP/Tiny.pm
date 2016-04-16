@@ -37,7 +37,8 @@ This constructor returns a new HTTP::Tiny object.  Valid attributes include:
 * C<no_proxy> — List of domain suffixes that should not be proxied.  Must
   be a comma-separated string or an array reference. (default is
   C<$ENV{no_proxy}> —)
-* C<timeout> — Request timeout in seconds (default is 60)
+* C<timeout> — Request timeout in seconds (default is 60) If a socket open,
+  read or write takes longer than the timeout, an exception is thrown.
 * C<verify_SSL> — A boolean that indicates whether to validate the SSL
   certificate of an C<https> — connection (default is false)
 * C<SSL_options> — A hashref of C<SSL_*> — options to pass through to
