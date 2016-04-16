@@ -15,35 +15,33 @@ use Carp ();
 This constructor returns a new HTTP::Tiny object.  Valid attributes include:
 
 =for :list
-* C<agent> —
-    A user-agent string (defaults to 'HTTP-Tiny/$VERSION'). If C<agent> — ends in a space character, the default user-agent string is appended.
-* C<cookie_jar> —
-    An instance of L<HTTP::CookieJar> — or equivalent class that supports the C<add> and C<cookie_header> methods
-* C<default_headers> —
-    A hashref of default headers to apply to requests
-* C<local_address> —
-    The local IP address to bind to
-* C<keep_alive> —
-    Whether to reuse the last connection (if for the same scheme, host and port) (defaults to 1)
-* C<max_redirect> —
-    Maximum number of redirects allowed (defaults to 5)
-* C<max_size> —
-    Maximum response size in bytes (only when not using a data callback).  If defined, responses larger than this will return an exception.
-* C<http_proxy> —
-    URL of a proxy server to use for HTTP connections (default is C<$ENV{http_proxy}> — if set)
-* C<https_proxy> —
-    URL of a proxy server to use for HTTPS connections (default is C<$ENV{https_proxy}> — if set)
-* C<proxy> —
-    URL of a generic proxy server for both HTTP and HTTPS connections (default is C<$ENV{all_proxy}> — if set)
-* C<no_proxy> —
-    List of domain suffixes that should not be proxied.  Must be a comma-separated string or an array reference. (default is C<$ENV{no_proxy}> —)
-* C<timeout> —
-    Request timeout in seconds (default is 60)
-* C<verify_SSL> —
-    A boolean that indicates whether to validate the SSL certificate of an C<https> —
-    connection (default is false)
-* C<SSL_options> —
-    A hashref of C<SSL_*> — options to pass through to L<IO::Socket::SSL>
+* C<agent> — A user-agent string (defaults to 'HTTP-Tiny/$VERSION'). If
+  C<agent> — ends in a space character, the default user-agent string is
+  appended.
+* C<cookie_jar> — An instance of L<HTTP::CookieJar> — or equivalent class
+  that supports the C<add> and C<cookie_header> methods
+* C<default_headers> — A hashref of default headers to apply to requests
+* C<local_address> — The local IP address to bind to
+* C<keep_alive> — Whether to reuse the last connection (if for the same
+  scheme, host and port) (defaults to 1)
+* C<max_redirect> — Maximum number of redirects allowed (defaults to 5)
+* C<max_size> — Maximum response size in bytes (only when not using a data
+  callback).  If defined, responses larger than this will return an
+  exception.
+* C<http_proxy> — URL of a proxy server to use for HTTP connections
+  (default is C<$ENV{http_proxy}> — if set)
+* C<https_proxy> — URL of a proxy server to use for HTTPS connections
+  (default is C<$ENV{https_proxy}> — if set)
+* C<proxy> — URL of a generic proxy server for both HTTP and HTTPS
+  connections (default is C<$ENV{all_proxy}> — if set)
+* C<no_proxy> — List of domain suffixes that should not be proxied.  Must
+  be a comma-separated string or an array reference. (default is
+  C<$ENV{no_proxy}> —)
+* C<timeout> — Request timeout in seconds (default is 60)
+* C<verify_SSL> — A boolean that indicates whether to validate the SSL
+  certificate of an C<https> — connection (default is false)
+* C<SSL_options> — A hashref of C<SSL_*> — options to pass through to
+  L<IO::Socket::SSL>
 
 Passing an explicit C<undef> for C<proxy>, C<http_proxy> or C<https_proxy> will
 prevent getting the corresponding proxies from the environment.
