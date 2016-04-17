@@ -336,6 +336,9 @@ Valid options are:
 * C<data_callback> —
     A code reference that will be called for each chunks of the response
     body received.
+* C<peer> —
+    A specific IP to connect to.  Normally the provided hostname will be looked
+    up, but if a specific IP is required, it can be specified here.
 
 The C<Host> header is generated from the URL in accordance with RFC 2616.  It
 is a fatal error to specify C<Host> in the C<headers> option.  Other headers
@@ -540,17 +543,19 @@ sub _request {
         headers   => {},
     };
 
+    my $peer = $args->{peer} || $host;
+
     # We remove the cached handle so it is not reused in the case of redirect.
     # If all is well, it will be recached at the end of _request.  We only
     # reuse for the same scheme, host and port
     my $handle = delete $self->{handle};
     if ( $handle ) {
-        unless ( $handle->can_reuse( $scheme, $host, $port ) ) {
+        unless ( $handle->can_reuse( $scheme, $host, $port, $peer ) ) {
             $handle->close;
             undef $handle;
         }
     }
-    $handle ||= $self->_open_handle( $request, $scheme, $host, $port );
+    $handle ||= $self->_open_handle( $request, $scheme, $host, $port, $peer );
 
     $self->_prepare_headers_and_cb($request, $args, $url, $auth);
     $handle->write_request($request);
@@ -593,7 +598,7 @@ sub _request {
 }
 
 sub _open_handle {
-    my ($self, $request, $scheme, $host, $port) = @_;
+    my ($self, $request, $scheme, $host, $port, $peer) = @_;
 
     my $handle  = HTTP::Tiny::Handle->new(
         timeout         => $self->{timeout},
@@ -607,7 +612,7 @@ sub _open_handle {
         return $self->_proxy_connect( $request, $handle );
     }
     else {
-        return $handle->connect($scheme, $host, $port);
+        return $handle->connect($scheme, $host, $port, $peer);
     }
 }
 
@@ -633,7 +638,7 @@ sub _proxy_connect {
         $self->_add_basic_auth_header( $request, 'proxy-authorization' => $p_auth );
     }
 
-    $handle->connect($p_scheme, $p_host, $p_port);
+    $handle->connect($p_scheme, $p_host, $p_port, $p_host);
 
     if ($request->{scheme} eq 'https') {
         $self->_create_proxy_tunnel( $request, $handle );
@@ -951,8 +956,8 @@ sub new {
 }
 
 sub connect {
-    @_ == 4 || die(q/Usage: $handle->connect(scheme, host, port)/ . "\n");
-    my ($self, $scheme, $host, $port) = @_;
+    @_ == 5 || die(q/Usage: $handle->connect(scheme, host, port, peer)/ . "\n");
+    my ($self, $scheme, $host, $port, $peer) = @_;
 
     if ( $scheme eq 'https' ) {
         $self->_assert_ssl;
@@ -961,7 +966,7 @@ sub connect {
       die(qq/Unsupported URL scheme '$scheme'\n/);
     }
     $self->{fh} = $SOCKET_CLASS->new(
-        PeerHost  => $host,
+        PeerHost  => $peer,
         PeerPort  => $port,
         $self->{local_address} ?
             ( LocalAddr => $self->{local_address} ) : (),
@@ -984,6 +989,7 @@ sub connect {
 
     $self->{scheme} = $scheme;
     $self->{host} = $host;
+    $self->{peer} = $peer;
     $self->{port} = $port;
     $self->{pid} = $$;
     $self->{tid} = _get_tid();
@@ -1458,7 +1464,7 @@ sub _assert_ssl {
 }
 
 sub can_reuse {
-    my ($self,$scheme,$host,$port) = @_;
+    my ($self,$scheme,$host,$port,$peer) = @_;
     return 0 if
         $self->{pid} != $$
         || $self->{tid} != _get_tid()
@@ -1466,6 +1472,7 @@ sub can_reuse {
         || $scheme ne $self->{scheme}
         || $host ne $self->{host}
         || $port ne $self->{port}
+        || $peer ne $self->{peer}
         || eval { $self->can_read(0) }
         || $@ ;
         return 1;
