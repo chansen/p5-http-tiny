@@ -1208,8 +1208,24 @@ sub write_header_lines {
     $header_case ||= {};
 
     my $buf = (defined $prefix_data ? $prefix_data : '');
+
+    # Per RFC, control fields should be listed first
+    my %seen;
+    for my $k ( qw/host cache-control expect max-forwards pragma range te/ ) {
+        next unless exists $headers->{$k};
+        $seen{$k}++;
+        my $field_name = $HeaderCase{$k};
+        my $v = $headers->{$k};
+        for (ref $v eq 'ARRAY' ? @$v : $v) {
+            $_ = '' unless defined $_;
+            $buf .= "$field_name: $_\x0D\x0A";
+        }
+    }
+
+    # Other headers sent in arbitrary order
     while (my ($k, $v) = each %$headers) {
         my $field_name = lc $k;
+        next if $seen{$field_name};
         if (exists $HeaderCase{$field_name}) {
             $field_name = $HeaderCase{$field_name};
         }
@@ -1724,7 +1740,8 @@ There is no support for a Request-URI of '*' for the 'OPTIONS' request.
 
 Headers mentioned in the RFCs and some other, well-known headers are
 generated with their canonical case.  Other headers are sent in the
-case provided by the user.  There is no order to header fields.
+case provided by the user.  Except for control headers (which are sent first),
+headers are sent in arbitrary order.
 
 =back
 
