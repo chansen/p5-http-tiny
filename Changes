@@ -9,6 +9,9 @@ Release notes for HTTP-Tiny
     - Added 'peer' attribute to force a connection to a particular
       server.
 
+    - Added 'connected' method to allow introspection of persistent
+      connections.
+
     [CHANGED]
 
     - Because folded headers are obsoleted in the revised RFCs, if CRLF is
