@@ -2,6 +2,12 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [CHANGED]
+
+    - Because folded headers are obsoleted in the revised RFCs, if CRLF is
+      found in header values followed by one or more spaces, they are all
+      replaced by a single space.
+
     [FIXED]
 
     - Per the RFC, control headers are now sent first before other headers
@@ -12,6 +18,10 @@ Release notes for HTTP-Tiny
 
     - The 'keep_alive' option now also sets the SO_KEEPALIVE option
       on the underlying socket to help with long-lived, idle connections.
+
+    - Request header field values are now validated against the RFC rules
+      (i.e. empty or else space-or-tab separated tokens of printable
+      characters).
 
 0.056     2015-05-19 06:00:40-04:00 America/New_York
 

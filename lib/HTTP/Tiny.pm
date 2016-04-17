@@ -935,6 +935,7 @@ my $Printable = sub {
 };
 
 my $Token = qr/[\x21\x23-\x27\x2A\x2B\x2D\x2E\x30-\x39\x41-\x5A\x5E-\x7A\x7C\x7E]/;
+my $Field_Content = qr/[[:print:]]+ (?: [\x20\x09]+ [[:print:]]+ )*/x;
 
 sub new {
     my ($class, %args) = @_;
@@ -1229,16 +1230,22 @@ sub write_header_lines {
         if (exists $HeaderCase{$field_name}) {
             $field_name = $HeaderCase{$field_name};
         }
-        elsif (exists $header_case->{$field_name}) {
-            $field_name = $header_case->{$field_name};
-        }
         else {
+            if (exists $header_case->{$field_name}) {
+                $field_name = $header_case->{$field_name};
+            }
+            else {
+                $field_name =~ s/\b(\w)/\u$1/g;
+            }
             $field_name =~ /\A $Token+ \z/xo
               or die(q/Invalid HTTP header field name: / . $Printable->($field_name) . "\n");
-            $field_name =~ s/\b(\w)/\u$1/g;
             $HeaderCase{lc $field_name} = $field_name;
         }
         for (ref $v eq 'ARRAY' ? @$v : $v) {
+            # unwrap a field value if pre-wrapped by user
+            s/\x0D?\x0A\s+/ /g;
+            die(qq/Invalid HTTP header field value ($field_name): / . $Printable->($_). "\n")
+              unless $_ eq '' || /\A $Field_Content \z/xo;
             $_ = '' unless defined $_;
             $buf .= "$field_name: $_\x0D\x0A";
         }
