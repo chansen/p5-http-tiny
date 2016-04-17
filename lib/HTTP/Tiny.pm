@@ -537,6 +537,9 @@ C<undef> (if no peer is connected).
 In list context, returns the peer host and port or an empty list (if no peer
 is connected).
 
+B<Note>: This method cannot reliably be used to discover whether the remote
+host has closed its end of the socket.
+
 =cut
 
 sub connected {
