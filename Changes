@@ -4,6 +4,12 @@ Release notes for HTTP-Tiny
 
     [FIXED]
 
+    - Per the RFC, control headers are now sent first before other headers
+      (which are sent in arbitrary order).
+
+    - Only well-known headers have their case canonicalized; all other
+      headers are sent in the case provided by the user.
+
     - The 'keep_alive' option now also sets the SO_KEEPALIVE option
       on the underlying socket to help with long-lived, idle connections.
 
