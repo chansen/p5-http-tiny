@@ -337,8 +337,8 @@ Valid options are:
     A code reference that will be called for each chunks of the response
     body received.
 * C<peer> —
-    A specific IP to connect to.  Normally the provided hostname will be looked
-    up, but if a specific IP is required, it can be specified here.
+    Force all connections to go only to a specific peer address, regardless
+    of the URL of the request.
 
 The C<Host> header is generated from the URL in accordance with RFC 2616.  It
 is a fatal error to specify C<Host> in the C<headers> option.  Other headers
