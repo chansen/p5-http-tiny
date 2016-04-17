@@ -707,6 +707,7 @@ sub _prepare_headers_and_cb {
         next unless defined;
         while (my ($k, $v) = each %$_) {
             $request->{headers}{lc $k} = $v;
+            $request->{header_case}{lc $k} = $k;
         }
     }
 
@@ -1178,30 +1179,42 @@ sub read_header_lines {
 sub write_request {
     @_ == 2 || die(q/Usage: $handle->write_request(request)/ . "\n");
     my($self, $request) = @_;
-    $self->write_request_header(@{$request}{qw/method uri headers/});
+    $self->write_request_header(@{$request}{qw/method uri headers header_case/});
     $self->write_body($request) if $request->{cb};
     return;
 }
 
-my %HeaderCase = (
-    'content-md5'      => 'Content-MD5',
-    'etag'             => 'ETag',
-    'te'               => 'TE',
-    'www-authenticate' => 'WWW-Authenticate',
-    'x-xss-protection' => 'X-XSS-Protection',
+# Standard request header names/case from HTTP/1.1 RFCs
+my @rfc_request_headers = qw(
+  Accept Accept-Charset Accept-Encoding Accept-Language Authorization
+  Cache-Control Connection Content-Length Expect From Host
+  If-Match If-Modified-Since If-None-Match If-Range If-Unmodified-Since
+  Max-Forwards Pragma Proxy-Authorization Range Referer TE Trailer
+  Transfer-Encoding Upgrade User-Agent Via
 );
+
+my @other_request_headers = qw(
+  Content-Encoding Content-MD5 Content-Type Cookie DNT Date Origin
+  X-XSS-Protection
+);
+
+my %HeaderCase = map { lc($_) => $_ } @rfc_request_headers, @other_request_headers;
 
 # to avoid multiple small writes and hence nagle, you can pass the method line or anything else to
 # combine writes.
 sub write_header_lines {
-    (@_ == 2 || @_ == 3 && ref $_[1] eq 'HASH') || die(q/Usage: $handle->write_header_lines(headers[,prefix])/ . "\n");
-    my($self, $headers, $prefix_data) = @_;
+    (@_ >= 2 && @_ <= 4 && ref $_[1] eq 'HASH') || die(q/Usage: $handle->write_header_lines(headers, [header_case, prefix])/ . "\n");
+    my($self, $headers, $header_case, $prefix_data) = @_;
+    $header_case ||= {};
 
     my $buf = (defined $prefix_data ? $prefix_data : '');
     while (my ($k, $v) = each %$headers) {
         my $field_name = lc $k;
         if (exists $HeaderCase{$field_name}) {
             $field_name = $HeaderCase{$field_name};
+        }
+        elsif (exists $header_case->{$field_name}) {
+            $field_name = $header_case->{$field_name};
         }
         else {
             $field_name =~ /\A $Token+ \z/xo
@@ -1364,10 +1377,10 @@ sub read_response_header {
 }
 
 sub write_request_header {
-    @_ == 4 || die(q/Usage: $handle->write_request_header(method, request_uri, headers)/ . "\n");
-    my ($self, $method, $request_uri, $headers) = @_;
+    @_ == 5 || die(q/Usage: $handle->write_request_header(method, request_uri, headers, header_case)/ . "\n");
+    my ($self, $method, $request_uri, $headers, $header_case) = @_;
 
-    return $self->write_header_lines($headers, "$method $request_uri HTTP/1.1\x0D\x0A");
+    return $self->write_header_lines($headers, $header_case, "$method $request_uri HTTP/1.1\x0D\x0A");
 }
 
 sub _do_timeout {
@@ -1706,6 +1719,12 @@ Only 'chunked' C<Transfer-Encoding> is supported.
 =item *
 
 There is no support for a Request-URI of '*' for the 'OPTIONS' request.
+
+=item *
+
+Headers mentioned in the RFCs and some other, well-known headers are
+generated with their canonical case.  Other headers are sent in the
+case provided by the user.  There is no order to header fields.
 
 =back
 
