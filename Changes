@@ -6,6 +6,9 @@ Release notes for HTTP-Tiny
 
     - Added support for the SSL_CERT_FILE environment variable.
 
+    - Added 'peer' attribute to force a connection to a particular
+      server.
+
     [CHANGED]
 
     - Because folded headers are obsoleted in the revised RFCs, if CRLF is
