@@ -392,7 +392,9 @@ will have the following keys:
     to be lower case. If a header is repeated, the value will be an arrayref;
     it will otherwise be a scalar string containing the value
 * C<redirects>
-    An arrayref of responses in the same order that redirections occured.
+    If this field exists, it is an arrayref of response hash references from
+    redirects in the same order that redirections occured.  If it does
+    not exist, then no redirections occured.
 
 On an exception during the execution of the request, the C<status> field will
 contain 599, and the C<content> field will contain the text of the exception.
@@ -642,14 +644,14 @@ sub _request {
     $response->{url} = $url;
 
     # Push the current response onto the stack of redirects if redirecting.
-    my $redirects = $args->{redirects};
     if (@redir_args) {
-        push @$redirects, $response;
+        push @{$args->{_redirects}}, $response;
         return $self->_request(@redir_args, $args);
     }
 
     # Copy the stack of redirects into the response before returning.
-    $response->{redirects} = $redirects;
+    $response->{redirects} = delete $args->{_redirects}
+      if @{$args->{_redirects}};
     return $response;
 }
 
@@ -876,11 +878,11 @@ sub _maybe_redirect {
     my ($self, $request, $response, $args) = @_;
     my $headers = $response->{headers};
     my ($status, $method) = ($response->{status}, $request->{method});
-    my $redirects = $args->{redirects} ||= [];
+    $args->{_redirects} ||= [];
 
     if (($status eq '303' or ($status =~ /^30[1278]/ && $method =~ /^GET|HEAD$/))
         and $headers->{location}
-        and @$redirects < $self->{max_redirect}
+        and @{$args->{_redirects}} < $self->{max_redirect}
     ) {
         my $location = ($headers->{location} =~ /^\//)
             ? "$request->{scheme}://$request->{host_port}$headers->{location}"
