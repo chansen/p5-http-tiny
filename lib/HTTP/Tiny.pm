@@ -351,7 +351,7 @@ Valid options are:
     Override host resolution and force all connections to go only to a
     specific peer address, regardless of the URL of the request.  This will
     include any redirections!  This options should be used with extreme
-    caution (e.g. debuggging or very special circumstances).
+    caution (e.g. debugging or very special circumstances).
 
 The C<Host> header is generated from the URL in accordance with RFC 2616.  It
 is a fatal error to specify C<Host> in the C<headers> option.  Other headers
@@ -395,8 +395,8 @@ will have the following keys:
     it will otherwise be a scalar string containing the value
 * C<redirects>
     If this field exists, it is an arrayref of response hash references from
-    redirects in the same order that redirections occured.  If it does
-    not exist, then no redirections occured.
+    redirects in the same order that redirections occurred.  If it does
+    not exist, then no redirections occurred.
 
 On an exception during the execution of the request, the C<status> field will
 contain 599, and the C<content> field will contain the text of the exception.
@@ -562,7 +562,7 @@ sub connected {
                 : join(':', $socket->peerhost, $socket->peerport);
         }
     }
-    return undef;
+    return;
 }
 
 #--------------------------------------------------------------------------#
