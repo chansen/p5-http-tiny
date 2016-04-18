@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+0.057     2016-04-18 10:17:00-04:00 America/New_York (TRIAL RELEASE)
+
     [ADDED]
 
     - Added support for the SSL_CERT_FILE environment variable.
