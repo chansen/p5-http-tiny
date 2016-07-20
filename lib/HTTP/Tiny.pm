@@ -110,7 +110,7 @@ sub new {
 
     my $self = {
         max_redirect => 5,
-        timeout      => $args{timeout} || 60,
+        timeout      => defined $args{timeout} ? $args{timeout} : 60,
         keep_alive   => 1,
         verify_SSL   => $args{verify_SSL} || $args{verify_ssl} || 0, # no verification by default
         no_proxy     => $ENV{no_proxy},

@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 3;
+use Test::More tests => 5;
 use HTTP::Tiny;
 
 # Just make sure timeout is handled correctly as a constructor param,
@@ -19,6 +19,16 @@ my $default = 60;
 {
     my $ua = HTTP::Tiny->new(timeout => 10);
     is $ua->timeout, 10, 'timeout is handled as a constructor param';
+}
+
+{
+    my $ua = HTTP::Tiny->new(timeout => 0);
+    is $ua->timeout, 0, 'constructor arg of timeout=0 is passed through';
+}
+
+{
+    my $ua = HTTP::Tiny->new(timeout => undef);
+    is $ua->timeout, $default, 'constructor arg of timeout=undef is ignored';
 }
 
 {
