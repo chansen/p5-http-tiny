@@ -4,7 +4,8 @@ use strict;
 use warnings;
 
 use Test::More qw[no_plan];
-use t::Util    qw[tmpfile rewind $CRLF];
+use lib 't';
+use Util    qw[tmpfile rewind $CRLF];
 use HTTP::Tiny;
 
 {
