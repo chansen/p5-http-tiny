@@ -38,6 +38,7 @@ my %WriteMakefileArgs = (
     "IO::Socket::INET" => 0,
     "IPC::Cmd" => 0,
     "Test::More" => "0.96",
+    "lib" => 0,
     "open" => 0
   },
   "VERSION" => "0.059",
@@ -66,6 +67,7 @@ my %FallbackPrereqs = (
   "Test::More" => "0.96",
   "Time::Local" => 0,
   "bytes" => 0,
+  "lib" => 0,
   "open" => 0,
   "strict" => 0,
   "warnings" => 0
