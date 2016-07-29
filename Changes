@@ -2,6 +2,18 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Timeout can now be set as a constructor argument again.
+
+    - CVE-2016-1238: avoid loading optional modules from
+      @INC path with `.` at the end.
+
+    [TESTS]
+
+    - Updated tests for a future perl which may omit `.` from
+      the list of directories in @INC by default.
+
 0.058     2016-05-03 11:29:57-04:00 America/New_York
 
     - No changes from 0.057
