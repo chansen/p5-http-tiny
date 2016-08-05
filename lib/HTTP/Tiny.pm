@@ -282,6 +282,15 @@ sub mirror {
     my ($self, $url, $file, $args) = @_;
     @_ == 3 || (@_ == 4 && ref $args eq 'HASH')
       or Carp::croak(q/Usage: $http->mirror(URL, FILE, [HASHREF])/ . "\n");
+
+    if ( exists $args->{headers} ) {
+        my $headers = {};
+        while ( my ($key, $value) = each %{$args->{headers} || {}} ) {
+            $headers->{lc $key} = $value;
+        }
+        $args->{headers} = $headers;
+    }
+
     if ( -e $file and my $mtime = (stat($file))[9] ) {
         $args->{headers}{'if-modified-since'} ||= $self->_http_date($mtime);
     }

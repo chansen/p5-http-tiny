@@ -2,6 +2,11 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Avoid overwriting 'If-Modified-Since' header in mirror() if
+      the header already exists in something other than lower-case.
+
 0.059     2016-07-29 16:10:32-04:00 America/New_York (TRIAL RELEASE)
 
     [FIXED]
