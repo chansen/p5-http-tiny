@@ -14,6 +14,7 @@ BEGIN { monkey_patch() }
 
 for my $file ( dir_list("corpus", qr/^form/ ) ) {
   my $data = do { local (@ARGV,$/) = $file; <> };
+  $data =~ s/$CRLF/$LF/gm if $^O eq 'MSWin32';
   my ($params, $expect_req, $give_res) = split /--+\n/, $data;
   # cleanup source data
   my $version = HTTP::Tiny->VERSION || 0;

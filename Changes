@@ -7,6 +7,11 @@ Release notes for HTTP-Tiny
     - Avoid overwriting 'If-Modified-Since' header in mirror() if
       the header already exists in something other than lower-case.
 
+    [TESTS]
+
+    - Normalize CRLF when reading test data files in t\150-post_form.t
+      on Win32
+
 0.059     2016-07-29 16:10:32-04:00 America/New_York (TRIAL RELEASE)
 
     [FIXED]
