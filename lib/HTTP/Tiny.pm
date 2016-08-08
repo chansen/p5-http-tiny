@@ -1461,7 +1461,7 @@ sub write_chunked_body {
 
         $self->write($chunk);
     }
-    $self->write("0\x0D\x0A");
+    $self->write("0\x0D\x0A\x0D\x0A");
     $self->write_header_lines($request->{trailer_cb}->())
         if ref $request->{trailer_cb} eq 'CODE';
     return $len;
