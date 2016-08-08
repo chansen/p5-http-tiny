@@ -2,6 +2,11 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Fixed chunked transfer encoding, which previously omitted a trailing
+      CRLF.
+
 0.061     2016-08-05 12:10:19-04:00 America/New_York (TRIAL RELEASE)
 
     [FIXED]
