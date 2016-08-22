@@ -7,6 +7,7 @@ use warnings;
 our $VERSION = '0.065';
 
 use Carp ();
+use Scalar::Util ();
 
 =method new
 
@@ -613,6 +614,13 @@ sub _request {
     # reuse for the same scheme, host and port
     my $handle = delete $self->{handle};
     if ( $handle ) {
+        if ( ! Scalar::Util::blessed $handle || ! $handle->isa( __PACKAGE__ ) ) {
+            Carp::croak(sprintf
+                "Playing with the internals of %s? I've received an unexpected bogus handle: %s",
+                __PACKAGE__,
+                $handle,
+            );
+        }
         unless ( $handle->can_reuse( $scheme, $host, $port, $peer ) ) {
             $handle->close;
             undef $handle;
