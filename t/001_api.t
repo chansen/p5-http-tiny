@@ -12,7 +12,7 @@ my @accessors = qw(
 );
 my @methods   = qw(
   new get head put post delete post_form request mirror www_form_urlencode can_ssl
-  connected
+  connected croak
 );
 
 my %api;
