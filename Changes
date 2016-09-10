@@ -2,6 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [TESTS]
+
+    - Try harder to clean up environment in t/140_proxy.t (needed for VMS)
+
 0.064     2016-08-16 21:37:51-04:00 America/New_York
 
     - No changes from 0.063-TRIAL
