@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+0.065     2016-09-09 22:42:43-04:00 America/New_York (TRIAL RELEASE)
+
     [TESTS]
 
     - Try harder to clean up environment in t/140_proxy.t (needed for VMS)
