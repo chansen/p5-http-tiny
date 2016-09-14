@@ -431,6 +431,7 @@ sub request {
     if (my $e = $@) {
         # maybe we got a response hash thrown from somewhere deep
         if ( ref $e eq 'HASH' && exists $e->{status} ) {
+            $e->{redirects} = delete $args->{_redirects} if @{ $args->{_redirects} || []};
             return $e;
         }
 
@@ -445,7 +446,8 @@ sub request {
             headers => {
                 'content-type'   => 'text/plain',
                 'content-length' => length $e,
-            }
+            },
+            ( @{$args->{_redirects} || []} ? (redirects => delete $args->{_redirects}) : () ),
         };
     }
     return $response;
