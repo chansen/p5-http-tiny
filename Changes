@@ -2,6 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Includes redirect history when issuing a 599 internal error.
+
 0.065     2016-09-09 22:42:43-04:00 America/New_York (TRIAL RELEASE)
 
     [TESTS]
