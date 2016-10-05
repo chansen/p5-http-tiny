@@ -6,7 +6,7 @@ use warnings;
 
 our $VERSION = '0.069';
 
-BEGIN { sub croak($) { require Carp; Carp::croak(@_) } }
+sub _croak { require Carp; Carp::croak(@_) }
 
 =method new
 
@@ -207,7 +207,7 @@ for my $sub_name ( qw/get head put post delete/ ) {
     sub $sub_name {
         my (\$self, \$url, \$args) = \@_;
         \@_ == 2 || (\@_ == 3 && ref \$args eq 'HASH')
-        or croak(q/Usage: \$http->$sub_name(URL, [HASHREF])/ . "\n");
+        or _croak(q/Usage: \$http->$sub_name(URL, [HASHREF])/ . "\n");
         return \$self->request('$req_method', \$url, \$args || {});
     }
 HERE
@@ -236,7 +236,7 @@ The C<success> field of the response will be true if the status code is 2XX.
 sub post_form {
     my ($self, $url, $data, $args) = @_;
     (@_ == 3 || @_ == 4 && ref $args eq 'HASH')
-        or croak(q/Usage: $http->post_form(URL, DATAREF, [HASHREF])/ . "\n");
+        or _croak(q/Usage: $http->post_form(URL, DATAREF, [HASHREF])/ . "\n");
 
     my $headers = {};
     while ( my ($key, $value) = each %{$args->{headers} || {}} ) {
@@ -281,7 +281,7 @@ be updated accordingly.
 sub mirror {
     my ($self, $url, $file, $args) = @_;
     @_ == 3 || (@_ == 4 && ref $args eq 'HASH')
-      or croak(q/Usage: $http->mirror(URL, FILE, [HASHREF])/ . "\n");
+      or _croak(q/Usage: $http->mirror(URL, FILE, [HASHREF])/ . "\n");
 
     if ( exists $args->{headers} ) {
         my $headers = {};
@@ -298,16 +298,16 @@ sub mirror {
 
     require Fcntl;
     sysopen my $fh, $tempfile, Fcntl::O_CREAT()|Fcntl::O_EXCL()|Fcntl::O_WRONLY()
-       or croak(qq/Error: Could not create temporary file $tempfile for downloading: $!\n/);
+       or _croak(qq/Error: Could not create temporary file $tempfile for downloading: $!\n/);
     binmode $fh;
     $args->{data_callback} = sub { print {$fh} $_[0] };
     my $response = $self->request('GET', $url, $args);
     close $fh
-        or croak(qq/Error: Caught error closing temporary file $tempfile: $!\n/);
+        or _croak(qq/Error: Caught error closing temporary file $tempfile: $!\n/);
 
     if ( $response->{success} ) {
         rename $tempfile, $file
-            or croak(qq/Error replacing $file with $tempfile: $!\n/);
+            or _croak(qq/Error replacing $file with $tempfile: $!\n/);
         my $lm = $response->{headers}{'last-modified'};
         if ( $lm and my $mtime = $self->_parse_http_date($lm) ) {
             utime $mtime, $mtime, $file;
@@ -417,7 +417,7 @@ my %idempotent = map { $_ => 1 } qw/GET HEAD PUT DELETE OPTIONS TRACE/;
 sub request {
     my ($self, $method, $url, $args) = @_;
     @_ == 3 || (@_ == 4 && ref $args eq 'HASH')
-      or croak(q/Usage: $http->request(METHOD, URL, [HASHREF])/ . "\n");
+      or _croak(q/Usage: $http->request(METHOD, URL, [HASHREF])/ . "\n");
     $args ||= {}; # we keep some state in this during _request
 
     # RFC 2616 Section 8.1.4 mandates a single retry on broken socket
@@ -470,13 +470,13 @@ resulting string will be sorted by key and value for consistent ordering.
 sub www_form_urlencode {
     my ($self, $data) = @_;
     (@_ == 2 && ref $data)
-        or croak(q/Usage: $http->www_form_urlencode(DATAREF)/ . "\n");
+        or _croak(q/Usage: $http->www_form_urlencode(DATAREF)/ . "\n");
     (ref $data eq 'HASH' || ref $data eq 'ARRAY')
-        or croak("form data must be a hash or array reference\n");
+        or _croak("form data must be a hash or array reference\n");
 
     my @params = ref $data eq 'HASH' ? %$data : @$data;
     @params % 2 == 0
-        or croak("form data reference must have an even number of terms\n");
+        or _croak("form data reference must have an even number of terms\n");
 
     my @terms;
     while( @params ) {
@@ -694,14 +694,14 @@ sub _proxy_connect {
 
     my @proxy_vars;
     if ( $request->{scheme} eq 'https' ) {
-        croak(qq{No https_proxy defined}) unless $self->{https_proxy};
+        _croak(qq{No https_proxy defined}) unless $self->{https_proxy};
         @proxy_vars = $self->_split_proxy( https_proxy => $self->{https_proxy} );
         if ( $proxy_vars[0] eq 'https' ) {
-            croak(qq{Can't proxy https over https: $request->{uri} via $self->{https_proxy}});
+            _croak(qq{Can't proxy https over https: $request->{uri} via $self->{https_proxy}});
         }
     }
     else {
-        croak(qq{No http_proxy defined}) unless $self->{http_proxy};
+        _croak(qq{No http_proxy defined}) unless $self->{http_proxy};
         @proxy_vars = $self->_split_proxy( http_proxy => $self->{http_proxy} );
     }
 
@@ -733,7 +733,7 @@ sub _split_proxy {
         defined($scheme) && length($scheme) && length($host) && length($port)
         && $path_query eq '/'
     ) {
-        croak(qq{$type URL must be in format http[s]://[auth@]<host>:<port>/\n});
+        _croak(qq{$type URL must be in format http[s]://[auth@]<host>:<port>/\n});
     }
 
     return ($scheme, $host, $port, $auth);
@@ -882,7 +882,7 @@ sub _validate_cookie_jar {
 
     # duck typing
     for my $method ( qw/add cookie_header/ ) {
-        croak(qq/Cookie jar must provide the '$method' method\n/)
+        _croak(qq/Cookie jar must provide the '$method' method\n/)
             unless ref($jar) && ref($jar)->can($method);
     }
 
