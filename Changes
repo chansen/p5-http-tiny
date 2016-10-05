@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+0.069     2016-10-05 11:35:58-04:00 America/New_York (TRIAL RELEASE)
+
     [INTERNAL]
 
     - Lazy load Carp only if needed.
