@@ -1,0 +1,56 @@
+url
+  http://example.com/index.html
+method
+  POST
+headers
+  Content-Type: text/plain
+  Content-Length: 42
+content
+  abcdefghijklmnopqrstuvwxyz1234567890abcdef
+expected
+  abcdefghijklmnopqrstuvwxyz1234567890abcdef
+expected_url
+  http://example.com/index3.html
+----------
+POST /index.html HTTP/1.1
+Host: example.com
+Connection: close
+User-Agent: HTTP-Tiny/VERSION
+Content-Length: 42
+Content-Type: text/plain
+
+abcdefghijklmnopqrstuvwxyz1234567890abcdef
+
+----------
+HTTP/1.1 307 Temporary Redirect
+Date: Thu, 03 Feb 1994 00:00:00 GMT
+Content-Type: text/html
+Content-Length: 172
+Location: http://example.com/index3.html
+
+<html>
+<head><title>307 Temporary Redirect</title></head>
+<body bgcolor="white">
+<center><h1>307 Temporary Redirect</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+
+----------
+POST /index3.html HTTP/1.1
+Host: example.com
+Connection: close
+User-Agent: HTTP-Tiny/VERSION
+Content-Length: 42
+Content-Type: text/plain
+
+abcdefghijklmnopqrstuvwxyz1234567890abcdef
+
+----------
+HTTP/1.1 200 OK
+Date: Thu, 03 Feb 1994 00:00:00 GMT
+Content-Type: text/plain
+Content-Length: 42
+
+abcdefghijklmnopqrstuvwxyz1234567890abcdef
+
