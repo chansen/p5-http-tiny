@@ -2,6 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [DOCS]
+
+    - Documented that method argument to request() is case-sensitive.
+
 0.070     2016-10-09 23:23:28-04:00 America/New_York
 
     - No changes from 0.069-TRIAL.
