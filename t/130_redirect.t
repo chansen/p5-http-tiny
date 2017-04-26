@@ -27,6 +27,11 @@ for my $file ( dir_list("corpus", qr/^redirect/ ) ) {
 
   my %options;
   $options{headers} = \%headers if %headers;
+
+  if ( $case->{content} ) {
+    $options{content} = $case->{content}[0];
+  }
+
   my $call_args = %options ? [$method, $url, \%options] : [$method, $url];
 
   my $version = HTTP::Tiny->VERSION || 0;

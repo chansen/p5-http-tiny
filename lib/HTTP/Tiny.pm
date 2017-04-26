@@ -899,7 +899,7 @@ sub _maybe_redirect {
     my ($status, $method) = ($response->{status}, $request->{method});
     $args->{_redirects} ||= [];
 
-    if (($status eq '303' or ($status =~ /^30[1278]/ && $method =~ /^GET|HEAD$/))
+    if (($status =~ /^30[378]/ or ($status =~ /^30[12]/ && $method =~ /^GET|HEAD$/))
         and $headers->{location}
         and @{$args->{_redirects}} < $self->{max_redirect}
     ) {
