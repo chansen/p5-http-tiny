@@ -327,6 +327,10 @@ Executes an HTTP request of the given method type ('GET', 'HEAD', 'POST',
 'PUT', etc.) on the given URL.  The URL must have unsafe characters escaped and
 international domain names encoded.
 
+B<NOTE>: Method names are B<case-sensitive> per the HTTP/1.1 specification.
+Don't use C<get> when you really want C<GET>.  See L<LIMITATIONS> for
+how this applies to redirection.
+
 If the URL includes a "user:password" stanza, they will be used for Basic-style
 authorization headers.  (Authorization headers will not be included in a
 redirected request.) For example:
