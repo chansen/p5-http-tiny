@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use 5.006;
+use 5.020;
 
 use ExtUtils::MakeMaker 6.17;
 
@@ -13,7 +13,7 @@ my %WriteMakefileArgs = (
   },
   "DISTNAME" => "HTTP-Tiny",
   "LICENSE" => "perl",
-  "MIN_PERL_VERSION" => "5.006",
+  "MIN_PERL_VERSION" => "5.020",
   "NAME" => "HTTP::Tiny",
   "PREREQ_PM" => {
     "Carp" => 0,
