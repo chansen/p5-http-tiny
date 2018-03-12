@@ -986,7 +986,7 @@ sub _uri_escape {
             if ( length $str == do { use bytes; length $str } );
         $str = pack("C*", unpack("C*", $str)); # clear UTF-8 flag
     }
-    $str =~ s/($unsafe_char)/$escapes{$1}/ge;
+    $str =~ s/($unsafe_char)/$escapes{$1}/g;
     return $str;
 }
 
