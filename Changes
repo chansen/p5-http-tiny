@@ -6,6 +6,12 @@ Release notes for HTTP-Tiny
 
     - Documented that method argument to request() is case-sensitive.
 
+    [INTERNAL]
+
+    - Minor regex cleanup
+
+    - Updated .travis.yml for recent Perls
+
 0.070     2016-10-09 23:23:28-04:00 America/New_York
 
     - No changes from 0.069-TRIAL.
