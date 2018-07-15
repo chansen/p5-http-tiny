@@ -406,6 +406,9 @@ will have the following keys:
     A hashref of header fields.  All header field names will be normalized
     to be lower case. If a header is repeated, the value will be an arrayref;
     it will otherwise be a scalar string containing the value
+* C<protocol> -
+    If this field exists, it is the protocol of the response
+    such as HTTP/1.0 or HTTP/1.1
 * C<redirects>
     If this field exists, it is an arrayref of response hash references from
     redirects in the same order that redirections occurred.  If it does
