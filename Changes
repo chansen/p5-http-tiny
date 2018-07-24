@@ -2,6 +2,12 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    0.071 never made it to CPAN; skipping to 0.073
+
+    [DOCS]
+
+    - Documented 'protocol' field in response hash.
+
 0.071     2018-04-22 14:45:43+02:00 Europe/Oslo (TRIAL RELEASE)
 
     [DOCS]
