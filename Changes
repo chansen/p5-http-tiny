@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    - No changes from 0.073-TRIAL.
+
 0.073     2018-07-24 11:33:53-04:00 America/New_York (TRIAL RELEASE)
 
     0.071 never made it to CPAN; skipping to 0.073
