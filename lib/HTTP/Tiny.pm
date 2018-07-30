@@ -364,7 +364,9 @@ Valid options are:
     Override host resolution and force all connections to go only to a
     specific peer address, regardless of the URL of the request.  This will
     include any redirections!  This options should be used with extreme
-    caution (e.g. debugging or very special circumstances).
+    caution (e.g. debugging or very special circumstances). It can be given as
+    either a scalar or a code reference that will receive the hostname and
+    whose response will be taken as the address.
 
 The C<Host> header is generated from the URL in accordance with RFC 2616.  It
 is a fatal error to specify C<Host> in the C<headers> option.  Other headers
@@ -616,6 +618,11 @@ sub _request {
     };
 
     my $peer = $args->{peer} || $host;
+
+    # Allow 'peer' to be a coderef.
+    if ('CODE' eq ref $peer) {
+        $peer = $peer->($host);
+    }
 
     # We remove the cached handle so it is not reused in the case of redirect.
     # If all is well, it will be recached at the end of _request.  We only
