@@ -2,6 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [CHANGED]
+
+    - The 'peer' option now also can take a code reference
+
 0.074     2018-07-30 15:35:44-04:00 America/New_York
 
     - No changes from 0.073-TRIAL.
