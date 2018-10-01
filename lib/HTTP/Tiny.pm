@@ -670,6 +670,7 @@ sub _request {
     }
 
     if ( $self->{keep_alive}
+        && $self->connected
         && $known_message_length
         && $response->{protocol} eq 'HTTP/1.1'
         && ($response->{headers}{connection} || '') ne 'close'
