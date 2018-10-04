@@ -709,7 +709,7 @@ sub _should_use_proxy {
     my ($self, $scheme, $host) = @_;
 
     return $self->{_has_proxy}{$scheme} 
-        && $host !~ /^(localhost|127\.)/
+        && $host !~ /^(localhost|127\.|::1$)/
         && ! grep { $host =~ /\Q$_\E$/ } @{$self->{no_proxy}};
 }
 

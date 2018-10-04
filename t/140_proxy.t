@@ -97,6 +97,10 @@ for my $var ( qw/http_proxy https_proxy all_proxy/ ) {
         !$c->_should_use_proxy("https", "127.0.0.1"),
         "No proxy for 127.0.0.1",
     );
+    ok(
+        !$c->_should_use_proxy("http", "::1"),
+        "No proxy for  ::1",
+    );
 }
 
 done_testing();
