@@ -695,7 +695,10 @@ sub _open_handle {
         keep_alive      => $self->{keep_alive}
     );
 
-    if ($self->{_has_proxy}{$scheme} && ! grep { $host =~ /\Q$_\E$/ } @{$self->{no_proxy}}) {
+    if ($self->{_has_proxy}{$scheme} 
+        && ! grep { $host =~ /\Q$_\E$/ } @{$self->{no_proxy}}
+        && $host !~ /^(localhost|127\.)/
+    ) {
         return $self->_proxy_connect( $request, $handle );
     }
     else {
