@@ -695,12 +695,22 @@ sub _open_handle {
         keep_alive      => $self->{keep_alive}
     );
 
-    if ($self->{_has_proxy}{$scheme} && ! grep { $host =~ /\Q$_\E$/ } @{$self->{no_proxy}}) {
+    if ($self->_should_use_proxy($scheme, $host)) {
         return $self->_proxy_connect( $request, $handle );
     }
     else {
         return $handle->connect($scheme, $host, $port, $peer);
     }
+}
+
+# Given a scheme and hostname, determine whether we would use a proxy
+# to connect to it.
+sub _should_use_proxy {
+    my ($self, $scheme, $host) = @_;
+
+    return $self->{_has_proxy}{$scheme} 
+        && $host !~ /^(localhost|127\.|::1$)/
+        && ! grep { $host =~ /\Q$_\E$/ } @{$self->{no_proxy}};
 }
 
 sub _proxy_connect {
