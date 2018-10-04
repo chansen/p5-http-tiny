@@ -80,4 +80,23 @@ for my $var ( qw/http_proxy https_proxy all_proxy/ ) {
 
 }
 
+# Ignore proxy settings if we're connecting to localhost
+{
+    my $c = HTTP::Tiny->new(
+        proxy => 'http://localhost:8080',
+    );
+    ok(
+        $c->_should_use_proxy("http", "www.google.com"),
+        "Would use proxy for www.google.com",
+    );
+    ok(
+        !$c->_should_use_proxy("http", "localhost"),
+        "No proxy for localhost",
+    );
+    ok(
+        !$c->_should_use_proxy("https", "127.0.0.1"),
+        "No proxy for 127.0.0.1",
+    );
+}
+
 done_testing();
