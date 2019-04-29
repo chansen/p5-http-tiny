@@ -1005,7 +1005,7 @@ package
 use strict;
 use warnings;
 
-use Errno      qw[EINTR EPIPE];
+use Errno      qw[EINTR EPIPE ECONNRESET];
 use IO::Socket qw[SOCK_STREAM];
 use Socket     qw[SOL_SOCKET SO_KEEPALIVE];
 
@@ -1190,7 +1190,7 @@ sub read {
         $self->can_read
           or die(q/Timed out while waiting for socket to become ready for reading/ . "\n");
         my $r = sysread($self->{fh}, $buf, $len, length $buf);
-        if (defined $r) {
+        if (defined $r || $! == ECONNRESET) {
             last unless $r;
             $len -= $r;
         }
