@@ -1009,6 +1009,8 @@ use Errno      qw[EINTR EPIPE];
 use IO::Socket qw[SOCK_STREAM];
 use Socket     qw[SOL_SOCKET SO_KEEPALIVE];
 
+use constant DEBUG => $ENV{HTTP_TINY_DEBUG} || 0;
+
 # PERL_HTTP_TINY_IPV4_ONLY is a private environment variable to force old
 # behavior if someone is unable to boostrap CPAN from a new perl install; it is
 # not intended for general, per-client use and may be removed in the future
@@ -1151,6 +1153,7 @@ sub write {
         $self->can_write
           or die(qq/Timed out while waiting for socket to become ready for writing\n/);
         my $r = syswrite($self->{fh}, $buf, $len, $off);
+        warn(qq/$buf\n/) if DEBUG;
         if (defined $r) {
             $len -= $r;
             $off += $r;
