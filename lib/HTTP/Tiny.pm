@@ -186,7 +186,7 @@ sub _set_proxies {
     return;
 }
 
-=method get|head|put|post|delete
+=method get|head|put|post|patch|delete
 
     $response = $http->get($url);
     $response = $http->get($url, \%options);
@@ -200,7 +200,7 @@ The C<success> field of the response will be true if the status code is 2XX.
 
 =cut
 
-for my $sub_name ( qw/get head put post delete/ ) {
+for my $sub_name ( qw/get head put post patch delete/ ) {
     my $req_method = uc $sub_name;
     no strict 'refs';
     eval <<"HERE"; ## no critic
