@@ -4,6 +4,8 @@ Release notes for HTTP-Tiny
 
     [ADDED]
 
+    - Added a `patch` helper method for the HTTP `PATCH` verb.
+
     - If the REQUEST_METHOD environment variable is set, then CGI_HTTP_PROXY
       replaces HTTP_PROXY.
 

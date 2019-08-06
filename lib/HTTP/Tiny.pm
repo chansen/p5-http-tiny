@@ -186,7 +186,7 @@ sub _set_proxies {
     return;
 }
 
-=method get|head|put|post|delete
+=method get|head|put|post|patch|delete
 
     $response = $http->get($url);
     $response = $http->get($url, \%options);
@@ -200,7 +200,7 @@ The C<success> field of the response will be true if the status code is 2XX.
 
 =cut
 
-for my $sub_name ( qw/get head put post delete/ ) {
+for my $sub_name ( qw/get head put post patch delete/ ) {
     my $req_method = uc $sub_name;
     no strict 'refs';
     eval <<"HERE"; ## no critic
@@ -1826,7 +1826,7 @@ L<HTTP/1.1 specifications|http://www.w3.org/Protocols/>:
 It attempts to meet all "MUST" requirements of the specification, but does not
 implement all "SHOULD" requirements.  (Note: it was developed against the
 earlier RFC 2616 specification and may not yet meet the revised RFC 7230-7235
-spec.)
+spec.) Additionally, HTTP::Tiny supports the C<PATCH> method of RFC 5789.
 
 Some particular limitations of note include:
 
