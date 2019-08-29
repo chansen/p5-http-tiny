@@ -152,7 +152,7 @@ sub _set_proxies {
     # http proxy
     if (! exists $self->{http_proxy} ) {
         # under CGI, bypass HTTP_PROXY as request sets it from Proxy header
-        local $ENV{HTTP_PROXY} if $ENV{REQUEST_METHOD};
+        local $ENV{HTTP_PROXY} = $ENV{CGI_HTTP_PROXY} if $ENV{REQUEST_METHOD};
         $self->{http_proxy} = $ENV{http_proxy} || $ENV{HTTP_PROXY} || $self->{proxy};
     }
 
