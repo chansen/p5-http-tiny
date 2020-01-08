@@ -1014,7 +1014,7 @@ use Socket     qw[SOL_SOCKET SO_KEEPALIVE];
 # not intended for general, per-client use and may be removed in the future
 my $SOCKET_CLASS =
     $ENV{PERL_HTTP_TINY_IPV4_ONLY} ? 'IO::Socket::INET' :
-    eval { require IO::Socket::IP; IO::Socket::IP->VERSION(0.25) } ? 'IO::Socket::IP' :
+    eval { require IO::Socket::IP; IO::Socket::IP->VERSION(0.32) } ? 'IO::Socket::IP' :
     'IO::Socket::INET';
 
 sub BUFSIZE () { 32768 } ## no critic
