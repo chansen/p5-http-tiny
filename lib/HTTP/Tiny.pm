@@ -1795,7 +1795,7 @@ HTTP::Tiny supports the following proxy environment variables:
 If the C<REQUEST_METHOD> environment variable is set, then this might be a CGI
 process and C<HTTP_PROXY> would be set from the C<Proxy:> header, which is a
 security risk.  If C<REQUEST_METHOD> is set, C<HTTP_PROXY> (the upper case
-variant only) is ignored.
+variant only) is ignored, but C<CGI_HTTP_PROXY> is considered instead.
 
 Tunnelling C<https> over an C<http> proxy using the CONNECT method is
 supported.  If your proxy uses C<https> itself, you can not tunnel C<https>

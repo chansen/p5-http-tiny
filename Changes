@@ -2,6 +2,11 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [ADDED]
+
+    - If the REQUEST_METHOD environment variable is set, then CGI_HTTP_PROXY
+      replaces HTTP_PROXY.
+
     [PREREQS]
 
     - Optional IO::Socket::IP prereq must be at least version 0.32 to be used.
