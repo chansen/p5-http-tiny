@@ -45,6 +45,8 @@ This constructor returns a new HTTP::Tiny object.  Valid attributes include:
 * C<SSL_options> — A hashref of C<SSL_*> — options to pass through to
   L<IO::Socket::SSL>
 
+An accessor/mutator method exists for each attribute.
+
 Passing an explicit C<undef> for C<proxy>, C<http_proxy> or C<https_proxy> will
 prevent getting the corresponding proxies from the environment.
 
@@ -53,9 +55,9 @@ and a reason of "Internal Exception". The content field in the response will
 contain the text of the error.
 
 The C<keep_alive> parameter enables a persistent connection, but only to a
-single destination scheme, host and port.  Also, if any connection-relevant
-attributes are modified, or if the process ID or thread ID change, the
-persistent connection will be dropped.  If you want persistent connections
+single destination scheme, host and port.  If any connection-relevant
+attributes are modified via accessor, or if the process ID or thread ID change,
+the persistent connection will be dropped.  If you want persistent connections
 across multiple destinations, use multiple HTTP::Tiny objects.
 
 See L</SSL SUPPORT> for more on the C<verify_SSL> and C<SSL_options> attributes.
