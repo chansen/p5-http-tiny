@@ -26,8 +26,8 @@ This constructor returns a new HTTP::Tiny object.  Valid attributes include:
   scheme, host and port) (defaults to 1)
 * C<max_redirect> — Maximum number of redirects allowed (defaults to 5)
 * C<max_size> — Maximum response size in bytes (only when not using a data
-  callback).  If defined, responses larger than this will return an
-  exception.
+  callback).  If defined, requests with responses larger than this will return
+  a 599 status code.
 * C<http_proxy> — URL of a proxy server to use for HTTP connections
   (default is C<$ENV{http_proxy}> — if set)
 * C<https_proxy> — URL of a proxy server to use for HTTPS connections
@@ -38,7 +38,8 @@ This constructor returns a new HTTP::Tiny object.  Valid attributes include:
   be a comma-separated string or an array reference. (default is
   C<$ENV{no_proxy}> —)
 * C<timeout> — Request timeout in seconds (default is 60) If a socket open,
-  read or write takes longer than the timeout, an exception is thrown.
+  read or write takes longer than the timeout, the request response status code
+  will be 599.
 * C<verify_SSL> — A boolean that indicates whether to validate the SSL
   certificate of an C<https> — connection (default is false)
 * C<SSL_options> — A hashref of C<SSL_*> — options to pass through to
@@ -47,9 +48,9 @@ This constructor returns a new HTTP::Tiny object.  Valid attributes include:
 Passing an explicit C<undef> for C<proxy>, C<http_proxy> or C<https_proxy> will
 prevent getting the corresponding proxies from the environment.
 
-Exceptions from C<max_size>, C<timeout> or other errors will result in a
-pseudo-HTTP status code of 599 and a reason of "Internal Exception". The
-content field in the response will contain the text of the exception.
+Errors during request execution will result in a pseudo-HTTP status code of 599
+and a reason of "Internal Exception". The content field in the response will
+contain the text of the error.
 
 The C<keep_alive> parameter enables a persistent connection, but only to a
 single destination scheme, host and port.  Also, if any connection-relevant
@@ -416,8 +417,8 @@ will have the following keys:
     redirects in the same order that redirections occurred.  If it does
     not exist, then no redirections occurred.
 
-On an exception during the execution of the request, the C<status> field will
-contain 599, and the C<content> field will contain the text of the exception.
+On an error during the execution of the request, the C<status> field will
+contain 599, and the C<content> field will contain the text of the error.
 
 =cut
 
@@ -1727,8 +1728,8 @@ Cookie support requires L<HTTP::CookieJar> or an equivalent class.
 =head1 SSL SUPPORT
 
 Direct C<https> connections are supported only if L<IO::Socket::SSL> 1.56 or
-greater and L<Net::SSLeay> 1.49 or greater are installed. An exception will be
-thrown if new enough versions of these modules are not installed or if the SSL
+greater and L<Net::SSLeay> 1.49 or greater are installed. An error will occur
+if new enough versions of these modules are not installed or if the SSL
 encryption fails. You can also use C<HTTP::Tiny::can_ssl()> utility function
 that returns boolean to see if the required modules are installed.
 
@@ -1779,7 +1780,7 @@ system-specific default locations for a CA certificate file:
 * /etc/pki/tls/certs/ca-bundle.crt
 * /etc/ssl/ca-bundle.pem
 
-An exception will be raised if C<verify_SSL> is true and no CA certificate file
+An error will be occur if C<verify_SSL> is true and no CA certificate file
 is available.
 
 If you desire complete control over SSL connections, the C<SSL_options> attribute

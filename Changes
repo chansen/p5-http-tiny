@@ -17,6 +17,10 @@ Release notes for HTTP-Tiny
     - Sends Content-Length: 0 on empty body PUT/POST.  This is not in the spec,
       but some servers require this.
 
+    [DOCS]
+
+    - Clarified that exceptions/errors result in 599 status codes.
+
     [PREREQS]
 
     - Optional IO::Socket::IP prereq must be at least version 0.32 to be used.
