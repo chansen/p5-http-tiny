@@ -56,5 +56,13 @@ like(
     "Error for unsupported scheme"
 );
 
+$res = eval { $http->post_form("http://www.example.com/", [undef, "123"]) };
+my $err = $@;
+like(
+    $err,
+    qr/form data keys must not be undef/,
+    "Error for undef key in form"
+);
+
 done_testing;
 

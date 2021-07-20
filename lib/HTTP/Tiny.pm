@@ -493,6 +493,8 @@ sub www_form_urlencode {
     my @terms;
     while( @params ) {
         my ($key, $value) = splice(@params, 0, 2);
+        _croak("form data keys must not be undef")
+            if !defined($key);
         if ( ref $value eq 'ARRAY' ) {
             unshift @params, map { $key => $_ } @$value;
         }
@@ -1009,6 +1011,7 @@ my $unsafe_char = qr/[^A-Za-z0-9\-\._~]/;
 
 sub _uri_escape {
     my ($self, $str) = @_;
+    return "" if !defined $str;
     if ( $] ge '5.008' ) {
         utf8::encode($str);
     }

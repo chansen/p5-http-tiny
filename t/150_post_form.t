@@ -38,6 +38,9 @@ for my $file ( dir_list("corpus", qr/^form/ ) ) {
   if ( $case->{datatype}[0] eq 'HASH' ) {
     while ( @params ) {
       my ($key, $value) = splice( @params, 0, 2 );
+      if ($value eq "<undef>") {
+          $value = undef;
+      }
       if ( ref $formdata->{$key} ) {
         push @{$formdata->{$key}}, $value;
       }
@@ -50,7 +53,7 @@ for my $file ( dir_list("corpus", qr/^form/ ) ) {
     }
   }
   else {
-    $formdata = [ @params ];
+    $formdata = [ map { $_ eq "<undef>" ? undef : $_ } @params ];
   }
 
   # setup mocking and test
