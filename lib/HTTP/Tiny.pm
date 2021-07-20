@@ -607,6 +607,10 @@ sub _request {
 
     my ($scheme, $host, $port, $path_query, $auth) = $self->_split_url($url);
 
+    if ($scheme ne 'http' && $scheme ne 'https') {
+      die(qq/Unsupported URL scheme '$scheme'\n/);
+    }
+
     my $request = {
         method    => $method,
         scheme    => $scheme,
@@ -1062,9 +1066,7 @@ sub connect {
     if ( $scheme eq 'https' ) {
         $self->_assert_ssl;
     }
-    elsif ( $scheme ne 'http' ) {
-      die(qq/Unsupported URL scheme '$scheme'\n/);
-    }
+
     $self->{fh} = $SOCKET_CLASS->new(
         PeerHost  => $peer,
         PeerPort  => $port,
