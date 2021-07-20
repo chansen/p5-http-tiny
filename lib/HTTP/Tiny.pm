@@ -599,7 +599,9 @@ my %DefaultPort = (
 sub _agent {
     my $class = ref($_[0]) || $_[0];
     (my $default_agent = $class) =~ s{::}{-}g;
-    return $default_agent . "/" . $class->VERSION;
+    my $version = $class->VERSION;
+    $default_agent .= "/$version" if defined $version;
+    return $default_agent;
 }
 
 sub _request {
