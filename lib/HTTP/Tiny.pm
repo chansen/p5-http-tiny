@@ -818,13 +818,25 @@ sub _prepare_headers_and_cb {
     $request->{headers}{'connection'}   = "close"
         unless $self->{keep_alive};
 
+    # Some servers error on an empty-body PUT/POST without a content-length
+    if ( $request->{method} eq 'PUT' || $request->{method} eq 'POST' ) {
+        if (!defined($args->{content}) || !length($args->{content}) ) {
+            $request->{headers}{'content-length'} = 0;
+        }
+    }
+
     if ( defined $args->{content} ) {
-        if (ref $args->{content} eq 'CODE') {
-            $request->{headers}{'content-type'} ||= "application/octet-stream";
-            $request->{headers}{'transfer-encoding'} = 'chunked'
-              unless $request->{headers}{'content-length'}
+        if ( ref $args->{content} eq 'CODE' ) {
+            if ( exists $request->{'content-length'} && $request->{'content-length'} == 0 ) {
+                $request->{cb} = sub { "" };
+            }
+            else {
+                $request->{headers}{'content-type'} ||= "application/octet-stream";
+                $request->{headers}{'transfer-encoding'} = 'chunked'
+                  unless exists $request->{headers}{'content-length'}
                   || $request->{headers}{'transfer-encoding'};
-            $request->{cb} = $args->{content};
+                $request->{cb} = $args->{content};
+            }
         }
         elsif ( length $args->{content} ) {
             my $content = $args->{content};
@@ -1380,7 +1392,8 @@ sub read_body {
 sub write_body {
     @_ == 2 || die(q/Usage: $handle->write_body(request)/ . "\n");
     my ($self, $request) = @_;
-    if ($request->{headers}{'content-length'}) {
+    if (exists $request->{headers}{'content-length'}) {
+        return unless $request->{headers}{'content-length'};
         return $self->write_content_body($request);
     }
     else {

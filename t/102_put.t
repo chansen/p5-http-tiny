@@ -34,6 +34,9 @@ for my $file ( dir_list("corpus", qr/^put/ ) ) {
   if ( $case->{content} ) {
     $options{content} = $case->{content}[0];
   }
+  elsif ( exists $case->{content} ) {
+    $options{content} = "";
+  }
   elsif ( $case->{content_cb} ) {
     $options{content} = eval join "\n", @{$case->{content_cb}};
   }

@@ -87,6 +87,7 @@ sub parse_case {
     my ($case) = @_;
     my %args;
     my $key = '';
+    my %seen;
     for my $line ( split "\n", $case ) {
         chomp $line;
         if ( substr($line,0,1) eq q{ } ) {
@@ -95,7 +96,11 @@ sub parse_case {
         }
         else {
             $key = $line;
+            $seen{$key}++;
         }
+    }
+    for my $k (keys %seen) {
+        $args{$k}=undef unless exists $args{$k};
     }
     return \%args;
 }

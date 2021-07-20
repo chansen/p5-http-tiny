@@ -14,6 +14,9 @@ Release notes for HTTP-Tiny
     - Unsupported scheme errors early without giving an uninitialized value
       warning first.
 
+    - Sends Content-Length: 0 on empty body PUT/POST.  This is not in the spec,
+      but some servers require this.
+
     [PREREQS]
 
     - Optional IO::Socket::IP prereq must be at least version 0.32 to be used.
