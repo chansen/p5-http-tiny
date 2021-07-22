@@ -22,6 +22,8 @@ Release notes for HTTP-Tiny
     - Ignore SIGPIPE on reads as well as writes, as IO::Socket::SSL says that
       SSL reads can also send writes as a side effect.
 
+    - Check if a server has closed a connection before preserving it for reuse.
+
     [DOCS]
 
     - Clarified that exceptions/errors result in 599 status codes.
