@@ -19,6 +19,9 @@ Release notes for HTTP-Tiny
 
     - Allows optional status line reason, as clarified in RFC 7230.
 
+    - Ignore SIGPIPE on reads as well as writes, as IO::Socket::SSL says that
+      SSL reads can also send writes as a side effect.
+
     [DOCS]
 
     - Clarified that exceptions/errors result in 599 status codes.

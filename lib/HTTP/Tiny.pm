@@ -1208,6 +1208,11 @@ sub read {
         $len -= $take;
     }
 
+    # Ignore SIGPIPE because SSL reads can result in writes that might error.
+    # See "Expecting exactly the same behavior as plain sockets" in
+    # https://metacpan.org/dist/IO-Socket-SSL/view/lib/IO/Socket/SSL.pod#Common-Usage-Errors
+    local $SIG{PIPE} = 'IGNORE';
+
     while ($len > 0) {
         $self->can_read
           or die(q/Timed out while waiting for socket to become ready for reading/ . "\n");
