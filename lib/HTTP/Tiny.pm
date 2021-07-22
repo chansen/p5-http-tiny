@@ -578,16 +578,8 @@ host has closed its end of the socket.
 sub connected {
     my ($self) = @_;
 
-    # If a socket exists...
-    if ($self->{handle} && $self->{handle}{fh}) {
-        my $socket = $self->{handle}{fh};
-
-        # ...and is connected, return the peer host and port.
-        if ($socket->connected) {
-            return wantarray
-                ? ($socket->peerhost, $socket->peerport)
-                : join(':', $socket->peerhost, $socket->peerport);
-        }
+    if ( $self->{handle} ) {
+        return $self->{handle}->connected;
     }
     return;
 }
@@ -670,7 +662,7 @@ sub _request {
     }
 
     if ( $self->{keep_alive}
-        && $self->connected
+        && $handle->connected
         && $known_message_length
         && $response->{protocol} eq 'HTTP/1.1'
         && ($response->{headers}{connection} || '') ne 'close'
@@ -1118,6 +1110,16 @@ sub connect {
     $self->{tid} = _get_tid();
 
     return $self;
+}
+
+sub connected {
+    my ($self) = @_;
+    if ( $self->{fh} && $self->{fh}->connected ) {
+        return wantarray
+          ? ( $self->{fh}->peerhost, $self->{fh}->peerport )
+          : join( ':', $self->{fh}->peerhost, $self->{fh}->peerport );
+    }
+    return;
 }
 
 sub start_ssl {
