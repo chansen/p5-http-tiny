@@ -437,7 +437,7 @@ sub request {
     for ( 0 .. 1 ) {
         $response = eval { $self->_request($method, $url, $args) };
         last unless $@ && $idempotent{$method}
-            && $@ =~ m{^(?:Socket closed|Unexpected end)};
+            && $@ =~ m{^(?:Socket closed|Unexpected end|SSL read error)};
     }
 
     if (my $e = $@) {
