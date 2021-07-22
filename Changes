@@ -17,6 +17,8 @@ Release notes for HTTP-Tiny
     - Sends Content-Length: 0 on empty body PUT/POST.  This is not in the spec,
       but some servers require this.
 
+    - Allows optional status line reason, as clarified in RFC 7230.
+
     [DOCS]
 
     - Clarified that exceptions/errors result in 599 status codes.
