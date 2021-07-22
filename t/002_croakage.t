@@ -5,7 +5,7 @@ use warnings;
 
 use Test::More;
 use lib 't';
-use Util qw[tmpfile monkey_patch set_socket_source];
+use Util qw[tmpfile monkey_patch set_socket_source clear_socket_source];
 
 use HTTP::Tiny;
 
@@ -35,6 +35,7 @@ my $res_fh = tmpfile();
 my $req_fh = tmpfile();
 
 my $http = HTTP::Tiny->new;
+clear_socket_source();
 set_socket_source($req_fh, $res_fh);
 
 for my $c ( @cases ) {
