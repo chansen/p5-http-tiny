@@ -2,6 +2,11 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Fixed uninitialized value warnings on older Perls when the REQUEST_METHOD
+      environment variable is set and CGI_HTTP_PROXY is not.
+
 0.078     2021-08-02 09:24:03-04:00 America/New_York
 
     - No changes from 0.077-TRIAL.
