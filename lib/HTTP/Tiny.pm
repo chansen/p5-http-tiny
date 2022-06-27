@@ -245,7 +245,6 @@ sub post_form {
     while ( my ($key, $value) = each %{$args->{headers} || {}} ) {
         $headers->{lc $key} = $value;
     }
-    delete $args->{headers};
 
     return $self->request('POST', $url, {
             %$args,
