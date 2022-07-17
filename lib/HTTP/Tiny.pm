@@ -4,7 +4,7 @@ use strict;
 use warnings;
 # ABSTRACT: A small, simple, correct HTTP/1.1 client
 
-our $VERSION = '0.081';
+our $VERSION = '0.082';
 
 sub _croak { require Carp; Carp::croak(@_) }
 
