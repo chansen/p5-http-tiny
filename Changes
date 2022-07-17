@@ -6,6 +6,10 @@ Release notes for HTTP-Tiny
 
     - No longer deletes the 'headers' key from post_form arguments hashref.
 
+    [DOCS]
+
+    - Noted that request/response content are handled as raw bytes.
+
 0.080     2021-11-05 08:15:46-04:00 America/New_York
 
     - No changes from 0.079-TRIAL.

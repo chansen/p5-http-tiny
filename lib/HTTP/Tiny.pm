@@ -390,6 +390,10 @@ in-progress response hash reference, as described below.  (This allows
 customizing the action of the callback based on the C<status> or C<headers>
 received prior to the content body.)
 
+Content data in the request/response is handled as "raw bytes".  Any
+encoding/decoding (with associated headers) are the responsibility of the
+caller.
+
 The C<request> method returns a hashref containing the response.  The hashref
 will have the following keys:
 
