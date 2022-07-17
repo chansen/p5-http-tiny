@@ -247,6 +247,8 @@ sub post_form {
     }
 
     return $self->request('POST', $url, {
+            # Any existing 'headers' key in $args will be overridden with a
+            # normalized version below.
             %$args,
             content => $self->www_form_urlencode($data),
             headers => {
