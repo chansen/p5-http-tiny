@@ -41,7 +41,8 @@ This constructor returns a new HTTP::Tiny object.  Valid attributes include:
   read or write takes longer than the timeout, the request response status code
   will be 599.
 * C<verify_SSL> — A boolean that indicates whether to validate the SSL
-  certificate of an C<https> — connection (default is false)
+  certificate of an C<https> — connection (default is false, or the environment
+  variable HTTP_TINY_VERIFY_SSL_DEFAULT)
 * C<SSL_options> — A hashref of C<SSL_*> — options to pass through to
   L<IO::Socket::SSL>
 
@@ -77,7 +78,7 @@ BEGIN {
     no strict 'refs';
     no warnings 'uninitialized';
     for my $accessor ( @attributes ) {
-        *{$accessor} = sub {
+        my $method = sub {
             @_ > 1
                 ? do {
                     delete $_[0]->{handle} if !$persist_ok{$accessor} && $_[1] ne $_[0]->{$accessor};
@@ -85,6 +86,8 @@ BEGIN {
                 }
                 : $_[0]->{$accessor};
         };
+        # back-compat: verify_SSL should return 0 instead of undef, when unspecified
+        *{$accessor} = $accessor eq 'verify_SSL' ? sub { &$method || 0 } : $method;
     }
 }
 
@@ -111,11 +114,19 @@ sub timeout {
 sub new {
     my($class, %args) = @_;
 
+    # Use boolean supplied as argument (interpreting undef as false for back-compat),
+    # or environment variable if it is not empty.  undef value indicates no preference.
+    my $verify_SSL =
+          exists $args{verify_SSL} ? ($args{verify_SSL} || 0)
+        : exists $args{verify_ssl} ? ($args{verify_ssl} || 0)
+        : defined $ENV{HTTP_TINY_VERIFY_SSL_DEFAULT} && length $ENV{HTTP_TINY_VERIFY_SSL_DEFAULT} ? $ENV{HTTP_TINY_VERIFY_SSL_DEFAULT}
+        : undef;
+
     my $self = {
         max_redirect => 5,
         timeout      => defined $args{timeout} ? $args{timeout} : 60,
         keep_alive   => 1,
-        verify_SSL   => $args{verify_SSL} || $args{verify_ssl} || 0, # no verification by default
+        verify_SSL   => $verify_SSL,
         no_proxy     => $ENV{no_proxy},
     };
 
@@ -1060,7 +1071,7 @@ sub new {
         timeout          => 60,
         max_line_size    => 16384,
         max_header_lines => 64,
-        verify_SSL       => 0,
+        verify_SSL       => undef,
         SSL_options      => {},
         %args
     }, $class;
@@ -1665,6 +1676,7 @@ sub _get_tid {
     return threads->can("tid") ? threads->tid : 0;
 }
 
+our $_insecure_warned;
 sub _ssl_args {
     my ($self, $host) = @_;
 
@@ -1676,7 +1688,11 @@ sub _ssl_args {
         $ssl_args{SSL_hostname} = $host,          # Sane SNI support
     }
 
-    if ($self->{verify_SSL}) {
+    my $verify= defined $ENV{HTTP_TINY_VERIFY_SSL} && length $ENV{HTTP_TINY_VERIFY_SSL}
+        ? $ENV{HTTP_TINY_VERIFY_SSL}
+        : $self->{verify_SSL};
+
+    if ($verify) {
         $ssl_args{SSL_verifycn_scheme}  = 'http'; # enable CN validation
         $ssl_args{SSL_verifycn_name}    = $host;  # set validation hostname
         $ssl_args{SSL_verify_mode}      = 0x01;   # enable cert validation
@@ -1685,6 +1701,11 @@ sub _ssl_args {
     else {
         $ssl_args{SSL_verifycn_scheme}  = 'none'; # disable CN validation
         $ssl_args{SSL_verify_mode}      = 0x00;   # disable cert validation
+        if (! defined $verify && !$_insecure_warned) {
+            warn qq/Insecure HTTP::Tiny SSL connection made to '$host'. (default verify_SSL => 0)/
+                .qq/ Please specify this attribute or set a default in \$ENV{HTTP_TINY_VERIFY_SSL}\n/;
+            $_insecure_warned = 1;
+        }
     }
 
     # user options override settings from verify_SSL
@@ -1717,7 +1738,7 @@ verify_SSL
 
     use HTTP::Tiny;
 
-    my $response = HTTP::Tiny->new->get('http://example.com/');
+    my $response = HTTP::Tiny->new(verify_SSL => 1)->get('https://example.com/');
 
     die "Failed!\n" unless $response->{success};
 
@@ -1756,30 +1777,27 @@ An C<https> connection may be made via an C<http> proxy that supports the CONNEC
 command (i.e. RFC 2817).  You may not proxy C<https> via a proxy that itself
 requires C<https> to communicate.
 
-SSL provides two distinct capabilities:
+B<By default, HTTP::Tiny does not verify server identity> for backward compatibility.
+Setting the C<verify_SSL> attribute or the HTTP_TINY_VERIFY_SSL_DEFAULT environment
+variable to a true value will make HTTP::Tiny verify that an SSL connection has a
+valid SSL certificate corresponding to the host name of the connection and that the SSL
+certificate has been verified by a CA you trust (see below).
+Be aware that SSL provides little in the way of security unless you verify the
+identify of the server, because most attackers with the ability to observe
+network traffic also have the ability to conduct a L<man-in-the-middle
+attack|http://en.wikipedia.org/wiki/Man-in-the-middle_attack>, defeating the encryption.
+You should enable this option unless you specifically need to connect to a server
+where you cannot verify the CA and that server does not support plain HTTP.
+(Plain HTTP is faster, and should be preferred when security is not a concern.)
 
-=for :list
-* Encrypted communication channel
-* Verification of server identity
+If you do not specify the C<verify_SSL> attribute, HTTP::Tiny emits a warning the
+first time you establish an SSL connection without verification.  To avoid this
+warning without enabling verification, set HTTP_TINY_VERIFY_SSL_DEFAULT to a nonempty
+false value.
 
-B<By default, HTTP::Tiny does not verify server identity>.
-
-Server identity verification is controversial and potentially tricky because it
-depends on a (usually paid) third-party Certificate Authority (CA) trust model
-to validate a certificate as legitimate.  This discriminates against servers
-with self-signed certificates or certificates signed by free, community-driven
-CA's such as L<CAcert.org|http://cacert.org>.
-
-By default, HTTP::Tiny does not make any assumptions about your trust model,
-threat level or risk tolerance.  It just aims to give you an encrypted channel
-when you need one.
-
-Setting the C<verify_SSL> attribute to a true value will make HTTP::Tiny verify
-that an SSL connection has a valid SSL certificate corresponding to the host
-name of the connection and that the SSL certificate has been verified by a CA.
-Assuming you trust the CA, this will protect against a L<man-in-the-middle
-attack|http://en.wikipedia.org/wiki/Man-in-the-middle_attack>.  If you are
-concerned about security, you should enable this option.
+If you want to override the choice of C<verify_SSL> used by a script, you can set
+HTTP_TINY_VERIFY_SSL to a true or nonempty false value, which takes precedence over
+all other methods of setting C<verify_SSL>.
 
 Certificate verification requires a file containing trusted CA certificates.
 
@@ -1799,7 +1817,7 @@ system-specific default locations for a CA certificate file:
 * /etc/pki/tls/certs/ca-bundle.crt
 * /etc/ssl/ca-bundle.pem
 
-An error will be occur if C<verify_SSL> is true and no CA certificate file
+An error will occur if C<verify_SSL> is true and no CA certificate file
 is available.
 
 If you desire complete control over SSL connections, the C<SSL_options> attribute
