@@ -40,10 +40,15 @@ This constructor returns a new HTTP::Tiny object.  Valid attributes include:
 * C<timeout> — Request timeout in seconds (default is 60) If a socket open,
   read or write takes longer than the timeout, the request response status code
   will be 599.
-* C<verify_SSL> — A boolean that indicates whether to validate the SSL
-  certificate of an C<https> — connection (default is false)
+* C<verify_SSL> — A boolean that indicates whether to validate the TLS/SSL
+  certificate of an C<https> — connection (default is true). Changed from false
+  to true in version 0.083.
 * C<SSL_options> — A hashref of C<SSL_*> — options to pass through to
   L<IO::Socket::SSL>
+* C<$ENV{PERL_HTTP_TINY_SSL_INSECURE_BY_DEFAULT}> - Changes the default
+  certificate verification behavior to not check server identity if set to 1.
+  Only effective if C<verify_SSL> is not set. Added in version 0.083.
+
 
 An accessor/mutator method exists for each attribute.
 
@@ -111,11 +116,17 @@ sub timeout {
 sub new {
     my($class, %args) = @_;
 
+    # Support lower case verify_ssl argument, but only if verify_SSL is not
+    # true.
+    if ( exists $args{verify_ssl} ) {
+        $args{verify_SSL}  ||= $args{verify_ssl};
+    }
+
     my $self = {
         max_redirect => 5,
         timeout      => defined $args{timeout} ? $args{timeout} : 60,
         keep_alive   => 1,
-        verify_SSL   => $args{verify_SSL} || $args{verify_ssl} || 0, # no verification by default
+        verify_SSL   => defined $args{verify_SSL} ? $args{verify_SSL} : _verify_SSL_default(),
         no_proxy     => $ENV{no_proxy},
     };
 
@@ -132,6 +143,13 @@ sub new {
     $self->_set_proxies;
 
     return $self;
+}
+
+sub _verify_SSL_default {
+    my ($self) = @_;
+    # Check if insecure default certificate verification behaviour has been
+    # changed by the user by setting PERL_HTTP_TINY_SSL_INSECURE_BY_DEFAULT=1
+    return (($ENV{PERL_HTTP_TINY_INSECURE_BY_DEFAULT} || '') eq '1') ? 0 : 1;
 }
 
 sub _set_proxies {
@@ -1060,7 +1078,7 @@ sub new {
         timeout          => 60,
         max_line_size    => 16384,
         max_header_lines => 64,
-        verify_SSL       => 0,
+        verify_SSL       => HTTP::Tiny::_verify_SSL_default(),
         SSL_options      => {},
         %args
     }, $class;
@@ -1744,11 +1762,11 @@ of L<IO::Socket::INET> for transparent support for both IPv4 and IPv6.
 
 Cookie support requires L<HTTP::CookieJar> or an equivalent class.
 
-=head1 SSL SUPPORT
+=head1 TLS/SSL SUPPORT
 
 Direct C<https> connections are supported only if L<IO::Socket::SSL> 1.56 or
 greater and L<Net::SSLeay> 1.49 or greater are installed. An error will occur
-if new enough versions of these modules are not installed or if the SSL
+if new enough versions of these modules are not installed or if the TLS
 encryption fails. You can also use C<HTTP::Tiny::can_ssl()> utility function
 that returns boolean to see if the required modules are installed.
 
@@ -1756,30 +1774,23 @@ An C<https> connection may be made via an C<http> proxy that supports the CONNEC
 command (i.e. RFC 2817).  You may not proxy C<https> via a proxy that itself
 requires C<https> to communicate.
 
-SSL provides two distinct capabilities:
+TLS/SSL provides two distinct capabilities:
 
 =for :list
 * Encrypted communication channel
 * Verification of server identity
 
-B<By default, HTTP::Tiny does not verify server identity>.
+B<By default, HTTP::Tiny verifies server identity>.
 
-Server identity verification is controversial and potentially tricky because it
-depends on a (usually paid) third-party Certificate Authority (CA) trust model
-to validate a certificate as legitimate.  This discriminates against servers
-with self-signed certificates or certificates signed by free, community-driven
-CA's such as L<CAcert.org|http://cacert.org>.
+This was changed in version 0.083 due to security concerns. The previous default
+behavior can be enabled by setting C<$ENV{PERL_HTTP_TINY_SSL_INSECURE_BY_DEFAULT}>
+to 1.
 
-By default, HTTP::Tiny does not make any assumptions about your trust model,
-threat level or risk tolerance.  It just aims to give you an encrypted channel
-when you need one.
-
-Setting the C<verify_SSL> attribute to a true value will make HTTP::Tiny verify
-that an SSL connection has a valid SSL certificate corresponding to the host
-name of the connection and that the SSL certificate has been verified by a CA.
-Assuming you trust the CA, this will protect against a L<man-in-the-middle
-attack|http://en.wikipedia.org/wiki/Man-in-the-middle_attack>.  If you are
-concerned about security, you should enable this option.
+Verification is done by checking that that the TLS/SSL connection has a valid
+certificate corresponding to the host name of the connection and that the
+certificate has been verified by a CA. Assuming you trust the CA, this will
+protect against L<machine-in-the-middle
+attacks|http://en.wikipedia.org/wiki/Machine-in-the-middle_attack>.
 
 Certificate verification requires a file containing trusted CA certificates.
 
@@ -1787,9 +1798,7 @@ If the environment variable C<SSL_CERT_FILE> is present, HTTP::Tiny
 will try to find a CA certificate file in that location.
 
 If the L<Mozilla::CA> module is installed, HTTP::Tiny will use the CA file
-included with it as a source of trusted CA's.  (This means you trust Mozilla,
-the author of Mozilla::CA, the CPAN mirror where you got Mozilla::CA, the
-toolchain used to install it, and your operating system security, right?)
+included with it as a source of trusted CA's.
 
 If that module is not available, then HTTP::Tiny will search several
 system-specific default locations for a CA certificate file:
@@ -1798,12 +1807,17 @@ system-specific default locations for a CA certificate file:
 * /etc/ssl/certs/ca-certificates.crt
 * /etc/pki/tls/certs/ca-bundle.crt
 * /etc/ssl/ca-bundle.pem
+* /etc/openssl/certs/ca-certificates.crt
+* /etc/ssl/cert.pem
+* /usr/local/share/certs/ca-root-nss.crt
+* /etc/pki/tls/cacert.pem
+* /etc/certs/ca-certificates.crt
 
 An error will be occur if C<verify_SSL> is true and no CA certificate file
 is available.
 
-If you desire complete control over SSL connections, the C<SSL_options> attribute
-lets you provide a hash reference that will be passed through to
+If you desire complete control over TLS/SSL connections, the C<SSL_options>
+attribute lets you provide a hash reference that will be passed through to
 C<IO::Socket::SSL::start_SSL()>, overriding any options set by HTTP::Tiny. For
 example, to provide your own trusted CA file:
 
@@ -1813,7 +1827,7 @@ example, to provide your own trusted CA file:
 
 The C<SSL_options> attribute could also be used for such things as providing a
 client certificate for authentication to a server or controlling the choice of
-cipher used for the SSL connection. See L<IO::Socket::SSL> documentation for
+cipher used for the TLS/SSL connection. See L<IO::Socket::SSL> documentation for
 details.
 
 =head1 PROXY SUPPORT
