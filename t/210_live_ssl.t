@@ -32,14 +32,14 @@ if ( can_run('openssl') ) {
 test_ssl('https://cpan.org/' => {
     host => 'cpan.org',
     pass => { verify_SSL => 1 },
-    fail => { verify_SSL => 1, SSL_options => { SSL_ca_file => "t/snake-oil.crt" } },
+    fail => { verify_SSL => 1, SSL_options => { SSL_ca_file => "corpus/snake-oil.crt" } },
     default_verify_should_return => !!1,
 });
 
 test_ssl('https://github.com/' => {
     host => 'github.com',
     pass => { verify_SSL => 1 },
-    fail => { verify_SSL => 1, SSL_options => { SSL_ca_file => "t/snake-oil.crt" } },
+    fail => { verify_SSL => 1, SSL_options => { SSL_ca_file => "corpus/snake-oil.crt" } },
     default_verify_should_return => !!1,
 });
 
@@ -60,7 +60,7 @@ test_ssl('https://untrusted-root.badssl.com/' => {
 test_ssl('https://mozilla-modern.badssl.com/' => {
     host => 'mozilla-modern.badssl.com',
     pass => { verify_SSL => 1 },
-    fail => { verify_SSL => 1, SSL_options => { SSL_ca_file => "t/snake-oil.crt" } },
+    fail => { verify_SSL => 1, SSL_options => { SSL_ca_file => "corpus/snake-oil.crt" } },
     default_verify_should_return => !!1,
 });
 
