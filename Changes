@@ -2,6 +2,14 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [!!! SECURITY !!!]
+
+    - Changes the `verify_SSL` default parameter from `0` to `1`.
+      Fixes CVE-2023-31486.
+
+    - `$ENV{PERL_HTTP_TINY_SSL_INSECURE_BY_DEFAULT}` can be used to restore the
+      old default if required.
+
 0.082     2022-07-25 09:45:34-04:00 America/New_York
 
     - No changes from 0.081-TRIAL.
