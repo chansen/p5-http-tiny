@@ -2,6 +2,8 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    - No changes from 0.083-TRIAL.
+
 0.083     2023-06-11 07:05:45-04:00 America/New_York (TRIAL RELEASE)
 
     [!!! SECURITY !!!]
