@@ -149,7 +149,7 @@ sub _verify_SSL_default {
     my ($self) = @_;
     # Check if insecure default certificate verification behaviour has been
     # changed by the user by setting PERL_HTTP_TINY_SSL_INSECURE_BY_DEFAULT=1
-    return (($ENV{PERL_HTTP_TINY_INSECURE_BY_DEFAULT} || '') eq '1') ? 0 : 1;
+    return (($ENV{PERL_HTTP_TINY_SSL_INSECURE_BY_DEFAULT} || '') eq '1') ? 0 : 1;
 }
 
 sub _set_proxies {
