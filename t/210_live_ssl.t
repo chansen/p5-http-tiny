@@ -18,7 +18,7 @@ BEGIN {
 }
 use HTTP::Tiny;
 
-delete $ENV{PERL_HTTP_TINY_INSECURE_BY_DEFAULT};
+delete $ENV{PERL_HTTP_TINY_SSL_INSECURE_BY_DEFAULT};
 
 plan skip_all => 'Only run for $ENV{AUTOMATED_TESTING}'
   unless $ENV{AUTOMATED_TESTING};
@@ -65,7 +65,7 @@ test_ssl('https://mozilla-modern.badssl.com/' => {
 });
 
 {
-    local $ENV{PERL_HTTP_TINY_INSECURE_BY_DEFAULT} = 1;
+    local $ENV{PERL_HTTP_TINY_SSL_INSECURE_BY_DEFAULT} = 1;
     test_ssl('https://wrong.host.badssl.com/' => {
         host => 'wrong.host.badssl.com',
         pass => { verify_SSL => 0 },
