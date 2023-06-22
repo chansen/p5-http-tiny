@@ -2,6 +2,10 @@ Release notes for HTTP-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Fix code to use `$ENV{PERL_HTTP_TINY_SSL_INSECURE_BY_DEFAULT}` as documented.
+
 0.084     2023-06-14 06:35:01-04:00 America/New_York
 
     - No changes from 0.083-TRIAL.
