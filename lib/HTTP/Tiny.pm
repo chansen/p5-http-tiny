@@ -65,7 +65,7 @@ attributes are modified via accessor, or if the process ID or thread ID change,
 the persistent connection will be dropped.  If you want persistent connections
 across multiple destinations, use multiple HTTP::Tiny objects.
 
-See L</SSL SUPPORT> for more on the C<verify_SSL> and C<SSL_options> attributes.
+See L</TLS/SSL SUPPORT> for more on the C<verify_SSL> and C<SSL_options> attributes.
 
 =cut
 
@@ -350,7 +350,7 @@ Executes an HTTP request of the given method type ('GET', 'HEAD', 'POST',
 international domain names encoded.
 
 B<NOTE>: Method names are B<case-sensitive> per the HTTP/1.1 specification.
-Don't use C<get> when you really want C<GET>.  See L<LIMITATIONS> for
+Don't use C<get> when you really want C<GET>.  See L</LIMITATIONS> for
 how this applies to redirection.
 
 If the URL includes a "user:password" stanza, they will be used for Basic-style
